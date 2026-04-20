@@ -23,7 +23,7 @@ const hiddenCount = computed(() =>
     <!-- 상단: 이름 + 글자수 -->
     <div class="card-header">
       <h3 class="area-name">{{ area.name }}</h3>
-      <span class="byte-badge">최대 {{ area.byte_limit.toLocaleString() }}자</span>
+      <span class="byte-badge">최대 {{ area.byte_limit.toLocaleString() }} Bytes</span>
     </div>
 
     <!-- 활동 칩 -->
