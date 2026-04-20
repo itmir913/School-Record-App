@@ -332,13 +332,13 @@ async function doImport() {
         <div v-if="importResult" class="alert alert--success">
           <CheckCircle2 :size="15"/>
           <template v-if="importResult.inserted > 0 && importResult.updated > 0">
-            {{ importResult.inserted }}명 추가, {{ importResult.updated }}명 업데이트
+            {{ importResult.inserted }}명 추가, {{ importResult.updated }}명 업데이트됨.
           </template>
           <template v-else-if="importResult.inserted > 0">
-            {{ importResult.inserted }}명 추가
+            {{ importResult.inserted }}명 추가됨.
           </template>
           <template v-else>
-            {{ importResult.updated }}명 업데이트
+            {{ importResult.updated }}명 업데이트됨.
           </template>
         </div>
 
