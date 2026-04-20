@@ -14,7 +14,12 @@ const areaBadgeText = computed(() => {
   return '여러 영역'
 })
 
-const areaBadgeEmpty = computed(() => props.activity.areas.length === 0)
+const areaBadgeClass = computed(() => {
+  const count = props.activity.areas.length
+  if (count === 0) return 'area-count-badge--empty'
+  if (count > 1) return 'area-count-badge--multi'
+  return ''
+})
 
 const recordCountText = computed(() => {
   const n = props.activity.record_count ?? 0
@@ -31,7 +36,7 @@ const recordCountEmpty = computed(() => (props.activity.record_count ?? 0) === 0
       <h3 class="activity-name">{{ activity.name }}</h3>
       <span
           class="area-count-badge"
-          :class="areaBadgeEmpty ? 'area-count-badge--empty' : ''"
+          :class="areaBadgeClass"
       >
         {{ areaBadgeText }}
       </span>
@@ -94,6 +99,12 @@ const recordCountEmpty = computed(() => (props.activity.record_count ?? 0) === 0
   color: #fbbf24;
   background-color: rgba(251, 191, 36, 0.1);
   border-color: rgba(251, 191, 36, 0.3);
+}
+
+.area-count-badge--multi {
+  color: #f87171;
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .record-count {
