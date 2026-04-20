@@ -1,5 +1,5 @@
 <script setup>
-import {ref, watch} from 'vue'
+import {computed, ref, watch} from 'vue'
 import {Trash2, X} from 'lucide-vue-next'
 
 const props = defineProps({
@@ -15,6 +15,9 @@ const byteLimit = ref(1500)
 const error = ref('')
 const confirmDelete = ref(false)
 const selectedIds = ref(new Set())
+const sortedActivities = computed(() =>
+    [...props.allActivities].sort((a, b) => a.name.localeCompare(b.name, 'ko'))
+)
 
 // 편집 모드 진입 시 기존 값 채우기
 watch(
@@ -129,7 +132,7 @@ function handleDelete() {
           <div class="pane-title-row">
             <p class="pane-title">포함할 활동</p>
             <span v-if="allActivities.length > 0" class="selected-count">
-              {{ selectedIds.size }}개 선택
+              {{ selectedIds.size }}개 선택됨
             </span>
           </div>
 
@@ -138,7 +141,7 @@ function handleDelete() {
           </p>
           <div v-else class="chip-scroll">
             <button
-                v-for="act in allActivities"
+                v-for="act in sortedActivities"
                 :key="act.id"
                 type="button"
                 class="act-chip"
@@ -195,7 +198,7 @@ function handleDelete() {
 
 .modal {
   width: 100%;
-  max-width: 760px;
+  max-width: 920px;
   background-color: #0e1220;
   border: 1px solid #1a2035;
   border-radius: 20px;
@@ -242,7 +245,7 @@ function handleDelete() {
   display: flex;
   align-items: stretch;
   padding: 20px 0 4px;
-  min-height: 260px;
+  min-height: 380px;
 }
 
 .pane {
@@ -338,6 +341,7 @@ function handleDelete() {
   font-size: 15px;
   color: #7ba3d4;
   margin: 0;
+  text-align: right;
 }
 
 .form-error {
@@ -358,13 +362,19 @@ function handleDelete() {
   margin: 0;
 }
 
+.pane-right {
+  display: flex;
+  flex-direction: column;
+}
+
 .chip-scroll {
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
   gap: 8px;
+  flex: 1;
   overflow-y: auto;
-  max-height: 220px;
+  overflow-y: auto;
   padding-right: 4px;
 }
 

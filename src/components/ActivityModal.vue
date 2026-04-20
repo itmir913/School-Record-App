@@ -27,6 +27,9 @@ watch(
 )
 
 const multiAreaWarning = computed(() => selectedAreaIds.value.size >= 2)
+const sortedAreas = computed(() =>
+    [...props.allAreas].sort((a, b) => a.name.localeCompare(b.name, 'ko'))
+)
 
 function toggleArea(id) {
   const next = new Set(selectedAreaIds.value)
@@ -124,7 +127,7 @@ function handleDelete() {
           </p>
           <div v-else class="chip-scroll">
             <button
-                v-for="area in allAreas"
+                v-for="area in sortedAreas"
                 :key="area.id"
                 type="button"
                 class="area-chip"
@@ -188,7 +191,7 @@ function handleDelete() {
 
 .modal {
   width: 100%;
-  max-width: 760px;
+  max-width: 920px;
   background-color: #0e1220;
   border: 1px solid #1a2035;
   border-radius: 20px;
@@ -235,7 +238,7 @@ function handleDelete() {
   display: flex;
   align-items: stretch;
   padding: 20px 0 4px;
-  min-height: 240px;
+  min-height: 380px;
 }
 
 .pane {
@@ -369,6 +372,11 @@ function handleDelete() {
 }
 
 /* 우측 패널 */
+.pane-right {
+  display: flex;
+  flex-direction: column;
+}
+
 .empty-hint {
   font-size: 15px;
   color: #7ba3d4;
@@ -381,8 +389,8 @@ function handleDelete() {
   flex-wrap: wrap;
   align-content: flex-start;
   gap: 8px;
+  flex: 1;
   overflow-y: auto;
-  max-height: 180px;
   padding-right: 4px;
 }
 
