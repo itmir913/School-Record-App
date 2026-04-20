@@ -114,7 +114,7 @@ const hiddenCount = computed(() =>
 .no-activity {
   font-size: 15px;
   color: #7ba3d4;
-  margin: 0;
+  font-weight: 500;
 }
 
 .edit-hint {

@@ -41,6 +41,7 @@ struct ActivityDetail {
     id: i64,
     name: String,
     areas: Vec<AreaRef>,
+    record_count: i64,
 }
 
 // ── 헬퍼 매크로: 커넥션 잠금 ─────────────────────────────────
@@ -194,7 +195,8 @@ fn get_activities(state: State<DbState>) -> Result<Vec<ActivityDetail>, String> 
 
     let mut stmt = conn
         .prepare(
-            "SELECT act.id, act.name, a.id AS area_id, a.name AS area_name
+            "SELECT act.id, act.name, a.id AS area_id, a.name AS area_name,
+                    (SELECT COUNT(*) FROM ActivityRecord ar WHERE ar.activity_id = act.id) AS record_count
              FROM Activity act
              LEFT JOIN AreaActivity aa ON act.id = aa.activity_id
              LEFT JOIN Area a ON aa.area_id = a.id
@@ -212,12 +214,13 @@ fn get_activities(state: State<DbState>) -> Result<Vec<ActivityDetail>, String> 
                 row.get::<_, String>(1)?,
                 row.get::<_, Option<i64>>(2)?,
                 row.get::<_, Option<String>>(3)?,
+                row.get::<_, i64>(4)?,
             ))
         })
         .map_err(|e| e.to_string())?;
 
     for row in rows {
-        let (act_id, act_name, area_id, area_name) = row.map_err(|e| e.to_string())?;
+        let (act_id, act_name, area_id, area_name, record_count) = row.map_err(|e| e.to_string())?;
 
         let idx = if let Some(&i) = index_map.get(&act_id) {
             i
@@ -227,6 +230,7 @@ fn get_activities(state: State<DbState>) -> Result<Vec<ActivityDetail>, String> 
                 id: act_id,
                 name: act_name,
                 areas: vec![],
+                record_count,
             });
             index_map.insert(act_id, i);
             i
