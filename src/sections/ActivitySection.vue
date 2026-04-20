@@ -73,7 +73,8 @@ async function handleDeleted() {
       <div>
         <h2 class="section-title">활동(Activity) 관리</h2>
         <p class="section-desc">
-          각 영역에 포함될 세부 활동을 설정합니다. 영역 수정에서 활동을 영역에 연결할 수 있습니다.
+          <p>생기부 각 영역에 포함될 여러 세부 활동을 설정합니다.</p>
+          <p>예를 들어, '학생자치회', '교내캠페인', '안전교육' 활동은 '자율활동' 영역에 연결하시면 됩니다.</p>
         </p>
       </div>
       <button class="btn-add" @click="openAddModal">

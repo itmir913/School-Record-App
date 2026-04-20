@@ -84,7 +84,10 @@ async function handleDeleted() {
     <div class="section-header">
       <div>
         <h2 class="section-title">학생(Students) 관리</h2>
-        <p class="section-desc">학생 정보를 등록하고 영역에 배정합니다.</p>
+        <p class="section-desc">
+          <p>학교생활기록부 작성을 위한 학생 명단을 설정합니다.</p>
+          <p>학생 정보를 등록하신 후, '영역(Area)' 탭에서 각 학생을 배정해 주세요.</p>
+        </p>
       </div>
       <div class="header-actions">
         <button class="btn-bulk" @click="bulkModalVisible = true">

@@ -106,7 +106,7 @@ async function handleStudentSaved(studentIds) {
     <div class="section-header">
       <div>
         <h2 class="section-title">영역(Area) 관리</h2>
-        <p class="section-desc">자율활동, 동아리 등 생기부 대분류 영역을 설정합니다.</p>
+        <p class="section-desc">자율활동, 진로활동, 동아리, 세부능력특기사항 등 생기부 대분류 영역을 설정합니다.</p>
       </div>
       <button class="btn-add" @click="openAddModal">
         <Plus :size="18"/>
