@@ -115,7 +115,7 @@ const navGroups = [
       <!-- 자동 저장 인디케이터 -->
       <button v-if="fileName" class="autosave-indicator" :class="{ 'autosave-indicator--icon': collapsed }">
         <CheckCircle :size="18" class="autosave-icon"/>
-        <span v-if="!collapsed" class="autosave-text">자동 저장됨</span>
+        <span v-if="!collapsed" class="autosave-text">자동 저장 활성화됨</span>
       </button>
     </div>
   </aside>
