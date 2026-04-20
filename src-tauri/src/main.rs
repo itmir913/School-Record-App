@@ -24,7 +24,8 @@ fn new_project(path: String, state: State<DbState>) -> Result<(), String> {
 /// 기존 DB 파일 열기 (프론트에서 open 다이얼로그로 받은 경로를 넘겨줌)
 #[tauri::command]
 fn open_project(path: String, state: State<DbState>) -> Result<(), String> {
-    let conn = db::open_existing(std::path::Path::new(&path)).map_err(|e| e.to_string())?;
+    let conn = db::open_existing(std::path::Path::new(&path))
+        .map_err(|e| e.to_string())?;
     *state.0.lock().unwrap() = Some(conn);
     Ok(())
 }
