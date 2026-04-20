@@ -78,7 +78,7 @@ const hiddenCount = computed(() =>
 }
 
 .byte-badge {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: #fbbf24;
   background-color: rgba(251, 191, 36, 0.1);
@@ -96,7 +96,7 @@ const hiddenCount = computed(() =>
 }
 
 .chip {
-  font-size: 13px;
+  font-size: 15px;
   color: #93c5fd;
   background-color: rgba(59, 91, 219, 0.2);
   border: 1px solid rgba(59, 91, 219, 0.3);
@@ -105,25 +105,26 @@ const hiddenCount = computed(() =>
 }
 
 .chip--more {
-  color: #94a3b8;
+  font-size: 15px;
+  color: #7ba3d4;
   background-color: rgba(255, 255, 255, 0.04);
   border-color: #1a2035;
 }
 
 .no-activity {
-  font-size: 14px;
-  color: #64748b;
+  font-size: 15px;
+  color: #7ba3d4;
   margin: 0;
 }
 
 .edit-hint {
-  font-size: 12px;
-  color: #475569;
+  font-size: 13px;
+  color: #5a7aaa;
   text-align: right;
   margin-top: auto;
 }
 
 .card:hover .edit-hint {
-  color: #94a3b8;
+  color: #7ba3d4;
 }
 </style>

@@ -48,6 +48,7 @@ async function handleSaved({name, byteLimit, activityIds}) {
     }
     await invoke('set_area_activities', {areaId, activityIds})
     await areaStore.fetchAreas()
+    await activityStore.fetchActivities()  // ActivityDetail.areas 갱신
     closeModal()
   } catch (e) {
     console.error(e)
@@ -70,8 +71,8 @@ async function handleDeleted() {
     <!-- 섹션 헤더 -->
     <div class="section-header">
       <div>
-        <h2 class="section-title">영역 관리</h2>
-        <p class="section-desc">자율활동, 동아리활동 등 생기부 대분류 영역을 설정합니다.</p>
+        <h2 class="section-title">영역(Area) 관리</h2>
+        <p class="section-desc">자율활동, 동아리 등 생기부 대분류 영역을 설정합니다.</p>
       </div>
       <button class="btn-add" @click="openAddModal">
         <Plus :size="18"/>
@@ -91,7 +92,7 @@ async function handleDeleted() {
 
     <!-- 빈 상태 -->
     <div v-else-if="areaStore.areas.length === 0" class="empty-state">
-      <Layers :size="40" color="#1e2d45"/>
+      <Layers :size="40" color="#2a3a58"/>
       <p class="empty-title">등록된 영역이 없습니다</p>
       <p class="empty-desc">영역을 추가하여 학생부 구성을 시작하세요.</p>
       <button class="btn-add" @click="openAddModal">
@@ -150,7 +151,7 @@ async function handleDeleted() {
 
 .section-desc {
   font-size: 16px;
-  color: #4a6080;
+  color: #7ba3d4;
   margin: 0;
 }
 
@@ -192,7 +193,7 @@ async function handleDeleted() {
 
 .state-text {
   font-size: 16px;
-  color: #4a6080;
+  color: #7ba3d4;
   margin: 0;
 }
 
@@ -211,13 +212,13 @@ async function handleDeleted() {
 .empty-title {
   font-size: 18px;
   font-weight: 600;
-  color: #3d5580;
+  color: #7ba3d4;
   margin: 0;
 }
 
 .empty-desc {
   font-size: 16px;
-  color: #2a3a50;
+  color: #5a7aaa;
   margin: 0 0 8px;
 }
 

@@ -261,10 +261,10 @@ function handleDelete() {
 }
 
 .pane-title {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
-  color: #3d5580;
-  letter-spacing: 0.06em;
+  color: #7ba3d4;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   margin: 0;
 }
@@ -276,8 +276,8 @@ function handleDelete() {
 }
 
 .selected-count {
-  font-size: 13px;
-  color: #5a7aaa;
+  font-size: 15px;
+  color: #7ba3d4;
 }
 
 /* 필드 */
@@ -330,13 +330,13 @@ function handleDelete() {
 
 .input-unit {
   font-size: 16px;
-  color: #4a6080;
+  color: #7ba3d4;
   white-space: nowrap;
 }
 
 .field-hint {
-  font-size: 13px;
-  color: #4a6080;
+  font-size: 15px;
+  color: #7ba3d4;
   margin: 0;
 }
 
@@ -353,7 +353,7 @@ function handleDelete() {
 /* 우측 패널 */
 .empty-hint {
   font-size: 15px;
-  color: #2a3a50;
+  color: #7ba3d4;
   line-height: 1.7;
   margin: 0;
 }
@@ -389,14 +389,14 @@ function handleDelete() {
   cursor: pointer;
   border: 1px solid #1a2035;
   background-color: #0b1020;
-  color: #3d5580;
+  color: #7ba3d4;
   transition: border-color 0.15s, background-color 0.15s, color 0.15s;
   white-space: nowrap;
 }
 
 .act-chip:hover {
   border-color: #2a3a58;
-  color: #5a7aa0;
+  color: #93c5fd;
 }
 
 .act-chip--on {
