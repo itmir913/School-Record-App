@@ -235,7 +235,7 @@ function isNewGroup(students, index) {
           <th
               class="th-fixed th-total"
               :class="freezeColumns ? 'sticky' : ''"
-              style="left: 224px"
+              style="left: 244px"
           >합계
           </th>
           <th
@@ -285,7 +285,7 @@ function isNewGroup(students, index) {
                 freezeColumns ? 'sticky' : '',
                 isStudentOverLimit(student.id) ? 'td-total--over' : ''
               ]"
-              style="left: 224px"
+              style="left: 244px"
           >
             <span
                 v-if="byteLimit"
@@ -312,7 +312,7 @@ function isNewGroup(students, index) {
                   class="cell-input"
                   :value="getCellContent(act.id, student.id)"
                   @input="onCellInput(act.id, student.id, $event)"
-                  rows="3"
+                  rows="1"
               />
               <div
                   v-if="getCellContent(act.id, student.id)"
@@ -514,6 +514,7 @@ thead .sticky {
   padding: 6px 10px;
   border-bottom: 1px solid rgba(26, 32, 53, 0.7);
   vertical-align: top;
+  text-align: center;
 }
 
 .td-grade, .td-class, .td-number {
@@ -533,16 +534,16 @@ thead .sticky {
 }
 
 .td-name {
-  width: 80px;
-  min-width: 80px;
-  max-width: 80px;
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
   word-break: break-all;
 }
 
 .th-name {
-  width: 80px;
-  min-width: 80px;
-  max-width: 80px;
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
 }
 
 .th-total {
@@ -615,10 +616,13 @@ thead .sticky {
   border: 1px solid rgba(59, 91, 219, 0.25);
   border-radius: 6px;
   color: #e2e8f0;
-  resize: vertical;
+  field-sizing: content;
+  resize: none;
   outline: none;
   transition: border-color 0.15s, background-color 0.15s;
-  min-height: 72px;
+  min-height: 60px;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .cell-input:focus {
