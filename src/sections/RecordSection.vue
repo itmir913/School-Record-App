@@ -420,7 +420,8 @@ function isNewGroup(students, index) {
 }
 
 .grid-table {
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   min-width: 100%;
 }
 
@@ -454,15 +455,21 @@ function isNewGroup(students, index) {
   z-index: 2;
 }
 
-.th-fixed.sticky,
-.td-fixed.sticky {
+/* 헤더의 sticky 열은 thead의 z-index(3)보다 높아야 스크롤 콘텐츠 위에 유지 */
+thead .sticky {
+  z-index: 4;
+}
+
+.th-fixed,
+.td-fixed {
   background-color: #080b14;
 }
 
-/* 고정 열 shadow — 합계 열이 맡음 */
+/* 고정 열 shadow + 틀고정 구분선 — 합계 열이 담당 */
 .th-total.sticky,
 .td-total.sticky {
   box-shadow: 2px 0 6px rgba(0, 0, 0, 0.4);
+  border-right: 1px solid rgba(59, 91, 219, 0.35) !important;
 }
 
 /* 데이터 행 */
@@ -476,22 +483,43 @@ function isNewGroup(students, index) {
 
 .td-grade, .td-class, .td-number {
   width: 48px;
+  min-width: 48px;
+  max-width: 48px;
   text-align: center;
   color: #7ba3d4;
 }
 
+.th-grade, .th-class, .th-number {
+  width: 48px;
+  min-width: 48px;
+  max-width: 48px;
+  text-align: center;
+}
+
 .td-name {
   width: 80px;
+  min-width: 80px;
+  max-width: 80px;
   white-space: nowrap;
 }
 
+.th-name {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
 .th-total {
+  width: 90px;
   min-width: 90px;
+  max-width: 90px;
   text-align: center;
 }
 
 .td-total {
   width: 90px;
+  min-width: 90px;
+  max-width: 90px;
   text-align: center;
   vertical-align: middle;
 }
