@@ -108,7 +108,7 @@ async function saveCell(activityId, studentId, content) {
   }
 }
 
-// 바이트 길이 계산 (UTF-8)
+// 바이트 길이 계산 (UTF-8) TODO 나이스 형식의 바이트 계산으로 변경해야 함.
 function byteLength(str) {
   return new TextEncoder().encode(str).length
 }
@@ -297,7 +297,7 @@ function isNewGroup(students, index) {
                 class="total-bytes"
                 :class="isStudentOverLimit(student.id) ? 'total-bytes--over' : ''"
             >
-              {{ studentTotalBytes(student.id) }} / {{ byteLimit }}B
+              {{ studentTotalBytes(student.id) }} / {{ byteLimit }} Bytes
             </span>
           </td>
           <td
@@ -324,7 +324,7 @@ function isNewGroup(students, index) {
                   class="byte-counter"
                   :class="isOverLimit(act.id, student.id) ? 'byte-counter--over' : ''"
               >
-                {{ byteLength(getCellContent(act.id, student.id)) }}B
+                {{ byteLength(getCellContent(act.id, student.id)) }} Bytes
               </div>
             </template>
           </td>
