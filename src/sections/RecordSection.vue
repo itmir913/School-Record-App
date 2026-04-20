@@ -112,6 +112,20 @@ function isOverLimit(activityId, studentId) {
   return byteLength(content) > byteLimit.value
 }
 
+function studentTotalBytes(studentId) {
+  if (!gridData.value) return 0
+  let total = 0
+  for (const act of gridData.value.activities) {
+    total += byteLength(getCellContent(act.id, studentId))
+  }
+  return total
+}
+
+function isStudentOverLimit(studentId) {
+  if (!byteLimit.value) return false
+  return studentTotalBytes(studentId) > byteLimit.value
+}
+
 // 학년+반이 바뀌는 행에 구분선 표시
 function isNewGroup(students, index) {
   if (index === 0) return false
@@ -206,6 +220,12 @@ function isNewGroup(students, index) {
           >이름
           </th>
           <th
+              class="th-fixed th-total"
+              :class="freezeColumns ? 'sticky' : ''"
+              style="left: 224px"
+          >합계
+          </th>
+          <th
               v-for="act in gridData.activities"
               :key="act.id"
               class="th-activity"
@@ -244,6 +264,22 @@ function isNewGroup(students, index) {
           >{{ student.name }}
           </td>
           <td
+              class="td-fixed td-total"
+              :class="[
+                freezeColumns ? 'sticky' : '',
+                isStudentOverLimit(student.id) ? 'td-total--over' : ''
+              ]"
+              style="left: 224px"
+          >
+            <span
+                v-if="byteLimit"
+                class="total-bytes"
+                :class="isStudentOverLimit(student.id) ? 'total-bytes--over' : ''"
+            >
+              {{ studentTotalBytes(student.id) }} / {{ byteLimit }}B
+            </span>
+          </td>
+          <td
               v-for="act in gridData.activities"
               :key="act.id"
               class="td-cell"
@@ -260,11 +296,11 @@ function isNewGroup(students, index) {
                 rows="3"
             />
             <div
-                v-if="byteLimit && getCellContent(act.id, student.id)"
+                v-if="getCellContent(act.id, student.id)"
                 class="byte-counter"
                 :class="isOverLimit(act.id, student.id) ? 'byte-counter--over' : ''"
             >
-              {{ byteLength(getCellContent(act.id, student.id)) }} / {{ byteLimit }}B
+              {{ byteLength(getCellContent(act.id, student.id)) }}B
             </div>
           </td>
         </tr>
@@ -423,9 +459,9 @@ function isNewGroup(students, index) {
   background-color: #080b14;
 }
 
-/* 고정 열 shadow */
-.th-name.sticky,
-.td-name.sticky {
+/* 고정 열 shadow — 합계 열이 맡음 */
+.th-total.sticky,
+.td-total.sticky {
   box-shadow: 2px 0 6px rgba(0, 0, 0, 0.4);
 }
 
@@ -447,6 +483,32 @@ function isNewGroup(students, index) {
 .td-name {
   width: 80px;
   white-space: nowrap;
+}
+
+.th-total {
+  min-width: 90px;
+  text-align: center;
+}
+
+.td-total {
+  width: 90px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.td-total--over {
+  background-color: rgba(239, 68, 68, 0.06) !important;
+}
+
+.total-bytes {
+  font-size: 12px;
+  color: #5a7aaa;
+  white-space: nowrap;
+}
+
+.total-bytes--over {
+  color: #f87171;
+  font-weight: 600;
 }
 
 /* 반 구분선 */
