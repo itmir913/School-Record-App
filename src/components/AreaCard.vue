@@ -1,11 +1,12 @@
 <script setup>
 import {computed} from 'vue'
+import {Users} from 'lucide-vue-next'
 
 const props = defineProps({
   area: {type: Object, required: true},
 })
 
-const emit = defineEmits(['edit'])
+const emit = defineEmits(['edit', 'assign-students'])
 
 const CHIP_MAX = 4
 
@@ -39,8 +40,17 @@ const hiddenCount = computed(() =>
     </div>
     <p v-else class="no-activity">등록된 활동 없음</p>
 
-    <!-- 편집 힌트 -->
-    <div class="edit-hint">클릭하여 편집</div>
+    <!-- 하단 액션 -->
+    <div class="card-footer">
+      <button
+          class="btn-assign"
+          @click.stop="emit('assign-students', area)"
+      >
+        <Users :size="14"/>
+        학생 배정
+      </button>
+      <div class="edit-hint">클릭하여 편집</div>
+    </div>
   </div>
 </template>
 
@@ -117,11 +127,36 @@ const hiddenCount = computed(() =>
   font-weight: 500;
 }
 
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.btn-assign {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(59, 91, 219, 0.25);
+  background: rgba(59, 91, 219, 0.08);
+  color: #7ba8f0;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.btn-assign:hover {
+  background: rgba(59, 91, 219, 0.15);
+  border-color: rgba(59, 91, 219, 0.4);
+}
+
 .edit-hint {
   font-size: 13px;
   color: #5a7aaa;
-  text-align: right;
-  margin-top: auto;
 }
 
 .card:hover .edit-hint {

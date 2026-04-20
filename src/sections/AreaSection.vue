@@ -4,20 +4,29 @@ import {Layers, Plus} from 'lucide-vue-next'
 import {invoke} from '@tauri-apps/api/core'
 import {useAreaStore} from '../stores/area'
 import {useActivityStore} from '../stores/activity'
+import {useStudentStore} from '../stores/student'
 import AreaCard from '../components/AreaCard.vue'
 import AreaModal from '../components/AreaModal.vue'
+import AreaStudentModal from '../components/AreaStudentModal.vue'
 
 const areaStore = useAreaStore()
 const activityStore = useActivityStore()
+const studentStore = useStudentStore()
 
-// 모달 상태
+// 영역 편집 모달 상태
 const modalVisible = ref(false)
 const modalMode = ref('add')       // 'add' | 'edit'
 const selectedArea = ref(null)
 
+// 학생 배정 모달 상태
+const studentModalVisible = ref(false)
+const studentModalArea = ref(null)
+const studentModalInitialIds = ref([])
+
 onMounted(() => {
   areaStore.fetchAreas()
   activityStore.fetchActivities()
+  studentStore.fetchStudents()
 })
 
 function openAddModal() {
@@ -59,6 +68,31 @@ async function handleDeleted() {
   try {
     await areaStore.deleteArea(selectedArea.value.id)
     closeModal()
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function openStudentModal(area) {
+  studentModalArea.value = area
+  try {
+    studentModalInitialIds.value = await invoke('get_area_students', {areaId: area.id})
+  } catch (e) {
+    studentModalInitialIds.value = []
+    console.error(e)
+  }
+  studentModalVisible.value = true
+}
+
+function closeStudentModal() {
+  studentModalVisible.value = false
+  studentModalArea.value = null
+}
+
+async function handleStudentSaved(studentIds) {
+  try {
+    await invoke('set_area_students', {areaId: studentModalArea.value.id, studentIds})
+    closeStudentModal()
   } catch (e) {
     console.error(e)
   }
@@ -108,11 +142,12 @@ async function handleDeleted() {
           :key="area.id"
           :area="area"
           @edit="openEditModal"
+          @assign-students="openStudentModal"
       />
     </div>
   </div>
 
-  <!-- 모달 -->
+  <!-- 영역 편집 모달 -->
   <transition name="modal">
     <AreaModal
         v-if="modalVisible"
@@ -122,6 +157,18 @@ async function handleDeleted() {
         @close="closeModal"
         @saved="handleSaved"
         @deleted="handleDeleted"
+    />
+  </transition>
+
+  <!-- 학생 배정 모달 -->
+  <transition name="modal">
+    <AreaStudentModal
+        v-if="studentModalVisible"
+        :area="studentModalArea"
+        :all-students="studentStore.students"
+        :initial-student-ids="studentModalInitialIds"
+        @close="closeStudentModal"
+        @saved="handleStudentSaved"
     />
   </transition>
 </template>

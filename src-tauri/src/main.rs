@@ -35,6 +35,15 @@ struct AreaRef {
     name: String,
 }
 
+#[derive(Serialize, Clone)]
+struct StudentItem {
+    id: i64,
+    grade: i64,
+    class_num: i64,
+    number: i64,
+    name: String,
+}
+
 /// get_activities 가 반환하는 풍부한 Activity 항목
 #[derive(Serialize, Clone)]
 struct ActivityDetail {
@@ -324,6 +333,98 @@ fn set_activity_areas(
     Ok(())
 }
 
+// ── Student 커맨드 ────────────────────────────────────────────
+
+#[tauri::command]
+fn get_students(state: State<DbState>) -> Result<Vec<StudentItem>, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, grade, class_num, number, name
+             FROM Student
+             ORDER BY grade, class_num, number",
+        )
+        .map_err(|e| e.to_string())?;
+
+    let students = stmt
+        .query_map([], |row| {
+            Ok(StudentItem {
+                id: row.get(0)?,
+                grade: row.get(1)?,
+                class_num: row.get(2)?,
+                number: row.get(3)?,
+                name: row.get(4)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+
+    Ok(students)
+}
+
+#[tauri::command]
+fn create_student(
+    grade: i64,
+    class_num: i64,
+    number: i64,
+    name: String,
+    state: State<DbState>,
+) -> Result<i64, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    conn.execute(
+        "INSERT INTO Student (grade, class_num, number, name) VALUES (?1, ?2, ?3, ?4)",
+        rusqlite::params![grade, class_num, number, name],
+    )
+        .map_err(|e| e.to_string())?;
+
+    Ok(conn.last_insert_rowid())
+}
+
+#[tauri::command]
+fn update_student(
+    id: i64,
+    grade: i64,
+    class_num: i64,
+    number: i64,
+    name: String,
+    state: State<DbState>,
+) -> Result<(), String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    conn.execute(
+        "UPDATE Student SET grade = ?1, class_num = ?2, number = ?3, name = ?4 WHERE id = ?5",
+        rusqlite::params![grade, class_num, number, name, id],
+    )
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[tauri::command]
+fn delete_student(id: i64, state: State<DbState>) -> Result<(), String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    conn.execute("DELETE FROM Student WHERE id = ?1", rusqlite::params![id])
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
 #[tauri::command]
 fn set_area_activities(
     area_id: i64,
@@ -352,6 +453,186 @@ fn set_area_activities(
     Ok(())
 }
 
+// ── AreaStudent 커맨드 ────────────────────────────────────────
+
+#[tauri::command]
+fn get_area_students(area_id: i64, state: State<DbState>) -> Result<Vec<i64>, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    let mut stmt = conn
+        .prepare("SELECT student_id FROM AreaStudent WHERE area_id = ?1")
+        .map_err(|e| e.to_string())?;
+
+    let ids = stmt
+        .query_map(rusqlite::params![area_id], |row| row.get(0))
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<i64>, _>>()
+        .map_err(|e| e.to_string())?;
+
+    Ok(ids)
+}
+
+#[tauri::command]
+fn set_area_students(
+    area_id: i64,
+    student_ids: Vec<i64>,
+    state: State<DbState>,
+) -> Result<(), String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    conn.execute(
+        "DELETE FROM AreaStudent WHERE area_id = ?1",
+        rusqlite::params![area_id],
+    )
+        .map_err(|e| e.to_string())?;
+
+    for student_id in student_ids.iter() {
+        conn.execute(
+            "INSERT INTO AreaStudent (area_id, student_id, is_order_customized) VALUES (?1, ?2, 0)",
+            rusqlite::params![area_id, student_id],
+        )
+            .map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
+}
+
+// ── 기록 그리드 커맨드 ────────────────────────────────────────
+
+#[derive(Serialize, Clone)]
+struct RecordCell {
+    activity_id: i64,
+    student_id: i64,
+    content: String,
+}
+
+#[derive(Serialize, Clone)]
+struct AreaGridData {
+    activities: Vec<ActivityItem>,
+    students: Vec<StudentItem>,
+    records: Vec<RecordCell>,
+}
+
+#[tauri::command]
+fn get_area_grid(area_id: i64, state: State<DbState>) -> Result<AreaGridData, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    // 영역에 속한 활동 목록
+    let mut stmt = conn
+        .prepare(
+            "SELECT act.id, act.name
+             FROM Activity act
+             JOIN AreaActivity aa ON act.id = aa.activity_id
+             WHERE aa.area_id = ?1
+             ORDER BY aa.default_order",
+        )
+        .map_err(|e| e.to_string())?;
+
+    let activities = stmt
+        .query_map(rusqlite::params![area_id], |row| {
+            Ok(ActivityItem {
+                id: row.get(0)?,
+                name: row.get(1)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+
+    // 영역에 배정된 학생 목록
+    let mut stmt = conn
+        .prepare(
+            "SELECT s.id, s.grade, s.class_num, s.number, s.name
+             FROM Student s
+             JOIN AreaStudent as_ ON s.id = as_.student_id
+             WHERE as_.area_id = ?1
+             ORDER BY s.grade, s.class_num, s.number",
+        )
+        .map_err(|e| e.to_string())?;
+
+    let students = stmt
+        .query_map(rusqlite::params![area_id], |row| {
+            Ok(StudentItem {
+                id: row.get(0)?,
+                grade: row.get(1)?,
+                class_num: row.get(2)?,
+                number: row.get(3)?,
+                name: row.get(4)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+
+    // 해당 활동들의 기록
+    let activity_ids: Vec<i64> = activities.iter().map(|a| a.id).collect();
+    let records = if activity_ids.is_empty() {
+        vec![]
+    } else {
+        let placeholders = activity_ids
+            .iter()
+            .enumerate()
+            .map(|(i, _)| format!("?{}", i + 1))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = format!(
+            "SELECT activity_id, student_id, content
+             FROM ActivityRecord
+             WHERE activity_id IN ({})",
+            placeholders
+        );
+        let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
+        let rows = stmt
+            .query_map(rusqlite::params_from_iter(activity_ids.iter()), |row| {
+                Ok(RecordCell {
+                    activity_id: row.get(0)?,
+                    student_id: row.get(1)?,
+                    content: row.get(2)?,
+                })
+            })
+            .map_err(|e| e.to_string())?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| e.to_string())?;
+        rows
+    };
+
+    Ok(AreaGridData { activities, students, records })
+}
+
+#[tauri::command]
+fn upsert_record(
+    activity_id: i64,
+    student_id: i64,
+    content: String,
+    state: State<DbState>,
+) -> Result<(), String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    conn.execute(
+        "INSERT INTO ActivityRecord (activity_id, student_id, content, updated_at)
+         VALUES (?1, ?2, ?3, datetime('now'))
+         ON CONFLICT(activity_id, student_id) DO UPDATE SET
+           content = excluded.content,
+           updated_at = excluded.updated_at",
+        rusqlite::params![activity_id, student_id, content],
+    )
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
 // ── 앱 진입점 ────────────────────────────────────────────────
 
 fn main() {
@@ -371,6 +652,14 @@ fn main() {
             update_activity,
             delete_activity,
             set_activity_areas,
+            get_students,
+            create_student,
+            update_student,
+            delete_student,
+            get_area_students,
+            set_area_students,
+            get_area_grid,
+            upsert_record,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
