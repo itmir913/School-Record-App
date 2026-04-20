@@ -686,6 +686,102 @@ fn upsert_record(
     Ok(())
 }
 
+// ── 일괄 기록 가져오기 ────────────────────────────────────────
+
+#[derive(Deserialize)]
+struct ImportRecordInput {
+    grade: i64,
+    class_num: i64,
+    number: i64,
+    name: Option<String>,
+    activity_id: i64,
+    content: String,
+}
+
+#[derive(Serialize)]
+struct BulkImportResult {
+    students_created: i64,
+    students_updated: i64,
+    records_saved: i64,
+}
+
+#[tauri::command]
+fn bulk_import_records(
+    records: Vec<ImportRecordInput>,
+    state: State<DbState>,
+) -> Result<BulkImportResult, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    let mut students_created: i64 = 0;
+    let mut students_updated: i64 = 0;
+    let mut records_saved: i64 = 0;
+    let mut student_cache: HashMap<(i64, i64, i64), i64> = HashMap::new();
+
+    for r in records.iter() {
+        let key = (r.grade, r.class_num, r.number);
+
+        if !student_cache.contains_key(&key) {
+            let exists: bool = conn
+                .query_row(
+                    "SELECT COUNT(*) FROM Student WHERE grade=?1 AND class_num=?2 AND number=?3",
+                    rusqlite::params![r.grade, r.class_num, r.number],
+                    |row| row.get::<_, i32>(0),
+                )
+                .map_err(|e| e.to_string())?
+                > 0;
+
+            if exists {
+                if let Some(ref n) = r.name {
+                    if !n.is_empty() {
+                        conn.execute(
+                            "UPDATE Student SET name = ?1 WHERE grade=?2 AND class_num=?3 AND number=?4",
+                            rusqlite::params![n, r.grade, r.class_num, r.number],
+                        )
+                            .map_err(|e| e.to_string())?;
+                    }
+                }
+                students_updated += 1;
+            } else {
+                let name = r.name.as_deref().unwrap_or("");
+                conn.execute(
+                    "INSERT INTO Student (grade, class_num, number, name) VALUES (?1, ?2, ?3, ?4)",
+                    rusqlite::params![r.grade, r.class_num, r.number, name],
+                )
+                    .map_err(|e| e.to_string())?;
+                students_created += 1;
+            }
+
+            let student_id: i64 = conn
+                .query_row(
+                    "SELECT id FROM Student WHERE grade=?1 AND class_num=?2 AND number=?3",
+                    rusqlite::params![r.grade, r.class_num, r.number],
+                    |row| row.get(0),
+                )
+                .map_err(|e| e.to_string())?;
+
+            student_cache.insert(key, student_id);
+        }
+
+        let &student_id = student_cache.get(&key).unwrap();
+
+        conn.execute(
+            "INSERT INTO ActivityRecord (activity_id, student_id, content, updated_at)
+             VALUES (?1, ?2, ?3, datetime('now'))
+             ON CONFLICT(activity_id, student_id) DO UPDATE SET
+               content = excluded.content,
+               updated_at = excluded.updated_at",
+            rusqlite::params![r.activity_id, student_id, r.content],
+        )
+            .map_err(|e| e.to_string())?;
+        records_saved += 1;
+    }
+
+    Ok(BulkImportResult { students_created, students_updated, records_saved })
+}
+
 // ── 파일 유틸 ────────────────────────────────────────────────
 
 #[tauri::command]
@@ -721,6 +817,7 @@ fn main() {
             set_area_students,
             get_area_grid,
             upsert_record,
+            bulk_import_records,
             write_text_file,
         ])
         .run(tauri::generate_context!())
