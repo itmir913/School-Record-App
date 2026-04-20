@@ -71,8 +71,8 @@ const navGroups = [
     <!-- 상단: 타이틀 + 토글 -->
     <div class="sidebar-header">
       <div v-if="!collapsed" class="sidebar-title">
-        <span class="title-badge">학교</span>
-        <span class="title-text">생활기록부</span>
+        <span class="title-badge">생기부</span>
+        <span class="title-text">학교생활기록부</span>
       </div>
       <button class="toggle-btn" @click="toggle" :title="collapsed ? '사이드바 열기' : '사이드바 접기'">
         <ChevronLeft v-if="!collapsed" :size="18"/>
@@ -221,7 +221,7 @@ const navGroups = [
   border-radius: 10px;
   background: none;
   border: none;
-  color: #4a6080;
+  color: #94a3b8;
   cursor: pointer;
   font-size: 15px;
   font-weight: 500;
@@ -231,17 +231,18 @@ const navGroups = [
 }
 
 .nav-item:hover {
-  background-color: #131c30;
-  color: #93afd4;
+  background-color: #1e293b;
+  color: #e2e8f0;
 }
 
 .nav-item--active {
-  background-color: rgba(59, 91, 219, 0.15);
-  color: #7ba8f0;
+  background-color: rgba(59, 91, 219, 0.2);
+  color: #93c5fd;
 }
 
 .nav-item--active:hover {
-  background-color: rgba(59, 91, 219, 0.2);
+  background-color: rgba(59, 91, 219, 0.3);
+  color: #bfdbfe;
 }
 
 .nav-icon {
@@ -273,7 +274,7 @@ const navGroups = [
   border-radius: 10px;
   background: none;
   border: none;
-  color: #3d5580;
+  color: #829ab1;
   cursor: pointer;
   font-size: 14px;
   text-align: left;
@@ -283,8 +284,8 @@ const navGroups = [
 }
 
 .file-btn:hover {
-  background-color: #131c30;
-  color: #7ba3d4;
+  background-color: #1e293b;
+  color: #c0d6f0;
 }
 
 .file-icon {
@@ -305,18 +306,20 @@ const navGroups = [
   width: 100%;
   padding: 9px 10px;
   border-radius: 10px;
-  background-color: rgba(59, 91, 219, 0.15);
-  border: 1px solid rgba(59, 91, 219, 0.2);
-  color: #7ba8f0;
+  background-color: rgba(59, 91, 219, 0.2);
+  border: 1px solid rgba(59, 91, 219, 0.4);
+  color: #a7c8ff;
   cursor: pointer;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   transition: background-color 0.15s;
   margin-top: 4px;
 }
 
 .save-btn:hover {
-  background-color: rgba(59, 91, 219, 0.25);
+  background-color: rgba(59, 91, 219, 0.35);
+  border-color: rgba(59, 91, 219, 0.6);
+  color: #ffffff;
 }
 
 .save-btn--icon {
