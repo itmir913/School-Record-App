@@ -68,7 +68,7 @@ function onCellInput(activityId, studentId, event) {
   if (debounceTimers.has(key)) {
     clearTimeout(debounceTimers.get(key))
   }
-  const timer = setTimeout(() => saveCell(activityId, studentId, content), 300)
+  const timer = setTimeout(() => saveCell(activityId, studentId, content), 1000)
   debounceTimers.set(key, timer)
 }
 
