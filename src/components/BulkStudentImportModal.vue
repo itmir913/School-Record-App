@@ -251,8 +251,8 @@ async function doImport() {
           <p v-if="fileName" class="drop-filename">📄 {{ fileName }}</p>
         </div>
 
-        <!-- 열 매핑 패널 (파일 업로드 후 항상 표시) -->
-        <template v-if="rawHeaders.length > 0 && !importResult">
+        <!-- 열 매핑 패널 (미리보기 전에만 표시) -->
+        <template v-if="rawHeaders.length > 0 && !importResult && !showPreview">
           <div class="mapping-panel">
             <p class="mapping-title">열 매핑 확인</p>
             <p class="mapping-desc">자동으로 인식한 결과입니다. 잘못된 경우 직접 수정하세요.</p>
@@ -316,6 +316,7 @@ async function doImport() {
                 (오류 {{ errorRows.length }}행 제외)
               </span>
             </span>
+            <button class="btn-remap" @click="showPreview = false">열 매핑 수정</button>
           </div>
           <div class="preview-wrap">
             <table class="preview-table">
@@ -429,6 +430,7 @@ async function doImport() {
 .modal-body {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding: 20px 24px 8px;
   display: flex;
   flex-direction: column;
@@ -681,6 +683,20 @@ async function doImport() {
 
 .error-count {
   color: #fca5a5;
+}
+
+.btn-remap {
+  font-size: 13px;
+  color: #7ba8f0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.btn-remap:hover {
+  color: #93c5fd;
 }
 
 .preview-wrap {
