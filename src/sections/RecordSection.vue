@@ -530,7 +530,6 @@ thead .sticky {
   min-width: 48px;
   max-width: 48px;
   text-align: center;
-  padding: 8px 4px;
 }
 
 .td-name {
@@ -578,14 +577,14 @@ thead .sticky {
 
 /* 반 구분선 */
 .row-group-start td {
-  border-top: 2px solid rgba(59, 91, 219, 0.3);
+  border-top: 1px solid rgba(59, 91, 219, 0.3);
 }
 
 /* 셀 */
 .td-cell {
   padding: 6px 8px;
-  width: 320px;
-  min-width: 280px;
+  width: 600px;
+  min-width: 480px;
   position: relative;
 }
 
@@ -610,7 +609,7 @@ thead .sticky {
   width: 100%;
   box-sizing: border-box;
   padding: 6px 8px;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.5;
   background-color: transparent;
   border: 1px solid rgba(59, 91, 219, 0.25);
