@@ -481,7 +481,7 @@ function isNewGroup(students, index) {
   font-size: 14px;
   line-height: 1.5;
   background-color: transparent;
-  border: 1px solid transparent;
+  border: 1px solid rgba(59, 91, 219, 0.25);
   border-radius: 6px;
   color: #e2e8f0;
   resize: vertical;
@@ -491,7 +491,7 @@ function isNewGroup(students, index) {
 }
 
 .cell-input:focus {
-  border-color: rgba(59, 91, 219, 0.5);
+  border-color: rgba(226, 232, 240, 0.7);
   background-color: rgba(8, 11, 20, 0.6);
 }
 
