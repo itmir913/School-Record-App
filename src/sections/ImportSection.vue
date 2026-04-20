@@ -358,7 +358,7 @@ function resetWizard() {
 
       <!-- Step 1: 파일 업로드 -->
       <div v-if="step === 1" class="step-content">
-        <h3 class="step-title">파일 선택</h3>
+        <h3 class="step-title">가져올 파일 선택</h3>
         <p class="step-desc">CSV 또는 XLSX 파일을 선택하거나 드래그하세요.</p>
 
         <input ref="fileInputRef" type="file" accept=".csv,.xlsx,.xls" style="display:none" @change="onFileChange"/>
