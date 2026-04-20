@@ -460,7 +460,7 @@ function isNewGroup(students, index) {
   padding: 10px 10px;
   border-bottom: 1px solid #1a2035;
   white-space: nowrap;
-  text-align: left;
+  text-align: center;
   letter-spacing: 0.03em;
 }
 
@@ -503,7 +503,7 @@ thead .sticky {
 /* 고정 열 shadow + 틀고정 구분선 — 합계 열이 담당 */
 .th-total.sticky,
 .td-total.sticky {
-  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.4);
+  box-shadow: 1px 0 6px rgba(0, 0, 0, 0.4);
   border-right: 1px solid rgba(59, 91, 219, 0.35) !important;
 }
 
