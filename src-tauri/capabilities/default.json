@@ -11,6 +11,7 @@
     "core:window:allow-center",
     "opener:default",
     "opener:allow-reveal-item-in-dir",
-    "dialog:default"
+    "dialog:default",
+    "dialog:allow-save"
   ]
 }

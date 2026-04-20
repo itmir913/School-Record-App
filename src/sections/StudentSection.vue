@@ -1,15 +1,17 @@
 <script setup>
 import {computed, onMounted, ref} from 'vue'
 import {invoke} from '@tauri-apps/api/core'
-import {Pencil, Plus, Users} from 'lucide-vue-next'
+import {Pencil, Plus, TableProperties, Users} from 'lucide-vue-next'
 import {useStudentStore} from '../stores/student'
 import StudentModal from '../components/StudentModal.vue'
+import BulkStudentImportModal from '../components/BulkStudentImportModal.vue'
 
 const studentStore = useStudentStore()
 
 const modalVisible = ref(false)
 const modalMode = ref('add')
 const selectedStudent = ref(null)
+const bulkModalVisible = ref(false)
 
 onMounted(() => {
   studentStore.fetchStudents()
@@ -84,10 +86,16 @@ async function handleDeleted() {
         <h2 class="section-title">학생 관리</h2>
         <p class="section-desc">학생 정보를 등록하고 영역에 배정합니다.</p>
       </div>
-      <button class="btn-add" @click="openAddModal">
-        <Plus :size="18"/>
-        학생 추가
-      </button>
+      <div class="header-actions">
+        <button class="btn-bulk" @click="bulkModalVisible = true">
+          <TableProperties :size="16"/>
+          일괄 추가
+        </button>
+        <button class="btn-add" @click="openAddModal">
+          <Plus :size="18"/>
+          학생 추가
+        </button>
+      </div>
     </div>
 
     <!-- 로딩 -->
@@ -152,7 +160,16 @@ async function handleDeleted() {
     </div>
   </div>
 
-  <!-- 모달 -->
+  <!-- 일괄 추가 모달 -->
+  <transition name="modal">
+    <BulkStudentImportModal
+        v-if="bulkModalVisible"
+        @close="bulkModalVisible = false"
+        @imported="studentStore.fetchStudents()"
+    />
+  </transition>
+
+  <!-- 학생 추가/수정 모달 -->
   <transition name="modal">
     <StudentModal
         v-if="modalVisible"
@@ -192,6 +209,33 @@ async function handleDeleted() {
   font-size: 16px;
   color: #7ba3d4;
   margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-bulk {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: rgba(59, 91, 219, 0.1);
+  border: 1px solid rgba(59, 91, 219, 0.3);
+  color: #7ba8f0;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s;
+}
+
+.btn-bulk:hover {
+  background: rgba(59, 91, 219, 0.18);
 }
 
 .btn-add {

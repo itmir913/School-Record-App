@@ -4,7 +4,7 @@
 mod db;
 
 use rusqlite::Connection;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Mutex;
 use tauri::State;
@@ -453,6 +453,38 @@ fn set_area_activities(
     Ok(())
 }
 
+#[derive(Deserialize)]
+struct StudentInput {
+    grade: i64,
+    class_num: i64,
+    number: i64,
+    name: String,
+}
+
+#[tauri::command]
+fn bulk_upsert_students(
+    students: Vec<StudentInput>,
+    state: State<DbState>,
+) -> Result<i64, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    let mut inserted: i64 = 0;
+    for s in students.iter() {
+        let n = conn
+            .execute(
+                "INSERT OR IGNORE INTO Student (grade, class_num, number, name)
+                 VALUES (?1, ?2, ?3, ?4)",
+                rusqlite::params![s.grade, s.class_num, s.number, s.name],
+            )
+            .map_err(|e| e.to_string())?;
+        inserted += n as i64;
+    }
+    Ok(inserted)
+}
+
 // ── AreaStudent 커맨드 ────────────────────────────────────────
 
 #[tauri::command]
@@ -633,6 +665,13 @@ fn upsert_record(
     Ok(())
 }
 
+// ── 파일 유틸 ────────────────────────────────────────────────
+
+#[tauri::command]
+fn write_text_file(path: String, content: String) -> Result<(), String> {
+    std::fs::write(&path, content.as_bytes()).map_err(|e| e.to_string())
+}
+
 // ── 앱 진입점 ────────────────────────────────────────────────
 
 fn main() {
@@ -656,10 +695,12 @@ fn main() {
             create_student,
             update_student,
             delete_student,
+            bulk_upsert_students,
             get_area_students,
             set_area_students,
             get_area_grid,
             upsert_record,
+            write_text_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
