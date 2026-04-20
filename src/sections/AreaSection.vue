@@ -179,9 +179,10 @@ async function handleStudentSaved(studentIds) {
 
 <style scoped>
 .section {
-  padding: 36px 40px;
+  padding: 36px 40px 48px;
   height: 100%;
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 /* 헤더 */
