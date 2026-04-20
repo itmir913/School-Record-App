@@ -461,28 +461,49 @@ struct StudentInput {
     name: String,
 }
 
+#[derive(Serialize)]
+struct BulkUpsertResult {
+    inserted: i64,
+    updated: i64,
+}
+
 #[tauri::command]
 fn bulk_upsert_students(
     students: Vec<StudentInput>,
     state: State<DbState>,
-) -> Result<i64, String> {
+) -> Result<BulkUpsertResult, String> {
     let guard = state.0.lock().unwrap();
     let conn = guard
         .as_ref()
         .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
 
     let mut inserted: i64 = 0;
+    let mut updated: i64 = 0;
     for s in students.iter() {
-        let n = conn
-            .execute(
-                "INSERT OR IGNORE INTO Student (grade, class_num, number, name)
-                 VALUES (?1, ?2, ?3, ?4)",
-                rusqlite::params![s.grade, s.class_num, s.number, s.name],
+        let exists: bool = conn
+            .query_row(
+                "SELECT COUNT(*) FROM Student WHERE grade=?1 AND class_num=?2 AND number=?3",
+                rusqlite::params![s.grade, s.class_num, s.number],
+                |row| row.get::<_, i32>(0),
             )
+            .map_err(|e| e.to_string())?
+            > 0;
+
+        conn.execute(
+            "INSERT INTO Student (grade, class_num, number, name)
+             VALUES (?1, ?2, ?3, ?4)
+             ON CONFLICT (grade, class_num, number) DO UPDATE SET name = excluded.name",
+            rusqlite::params![s.grade, s.class_num, s.number, s.name],
+        )
             .map_err(|e| e.to_string())?;
-        inserted += n as i64;
+
+        if exists {
+            updated += 1;
+        } else {
+            inserted += 1;
+        }
     }
-    Ok(inserted)
+    Ok(BulkUpsertResult { inserted, updated })
 }
 
 // ── AreaStudent 커맨드 ────────────────────────────────────────

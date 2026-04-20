@@ -180,8 +180,8 @@ async function doImport() {
       number: r.number,
       name: r.name,
     }))
-    const inserted = await invoke('bulk_upsert_students', {students})
-    importResult.value = {inserted, total: rows.length}
+    const {inserted, updated} = await invoke('bulk_upsert_students', {students})
+    importResult.value = {inserted, updated, total: rows.length}
     emit('imported')
   } catch (e) {
     parseError.value = '가져오기 실패: ' + String(e)
@@ -331,10 +331,15 @@ async function doImport() {
         <!-- 가져오기 결과 -->
         <div v-if="importResult" class="alert alert--success">
           <CheckCircle2 :size="15"/>
-          {{ importResult.total }}명 중 {{ importResult.inserted }}명 추가됨
-          <span v-if="importResult.total - importResult.inserted > 0" class="skip-hint">
-            ({{ importResult.total - importResult.inserted }}명은 이미 존재하여 건너뜀)
-          </span>
+          <template v-if="importResult.inserted > 0 && importResult.updated > 0">
+            {{ importResult.inserted }}명 추가, {{ importResult.updated }}명 업데이트
+          </template>
+          <template v-else-if="importResult.inserted > 0">
+            {{ importResult.inserted }}명 추가
+          </template>
+          <template v-else>
+            {{ importResult.updated }}명 업데이트
+          </template>
         </div>
 
       </div>
