@@ -686,6 +686,93 @@ fn upsert_record(
     Ok(())
 }
 
+// ── 히스토리 커맨드 ──────────────────────────────────────────
+
+#[derive(Serialize)]
+struct HistoryEntry {
+    id: i64,
+    content: String,
+    changed_at: String,
+    note: Option<String>,
+}
+
+/// 특정 셀의 히스토리 목록 조회 (최신순, 페이지네이션)
+#[tauri::command]
+fn get_record_history(
+    activity_id: i64,
+    student_id: i64,
+    limit: i64,
+    offset: i64,
+    state: State<DbState>,
+) -> Result<Vec<HistoryEntry>, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    let mut stmt = conn
+        .prepare(
+            "SELECT h.id, h.content, h.changed_at, h.note
+             FROM ActivityRecordHistory h
+             JOIN ActivityRecord r ON r.id = h.activity_record_id
+             WHERE r.activity_id = ?1 AND r.student_id = ?2
+             ORDER BY h.changed_at DESC
+             LIMIT ?3 OFFSET ?4",
+        )
+        .map_err(|e| e.to_string())?;
+
+    let entries = stmt
+        .query_map(rusqlite::params![activity_id, student_id, limit, offset], |row| {
+            Ok(HistoryEntry {
+                id: row.get(0)?,
+                content: row.get(1)?,
+                changed_at: row.get(2)?,
+                note: row.get(3)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+
+    Ok(entries)
+}
+
+/// 현재 DB content를 히스토리에 스냅샷으로 기록.
+/// note = null → 자동 저장, note = Some(text) → 수동 저장.
+/// ActivityRecord가 없거나 content가 비어 있으면 아무 것도 하지 않음.
+fn save_snapshot_internal(
+    conn: &Connection,
+    activity_id: i64,
+    student_id: i64,
+    note: Option<&str>,
+) -> Result<(), String> {
+    conn.execute(
+        "INSERT INTO ActivityRecordHistory (activity_record_id, content, changed_at, note)
+         SELECT r.id, r.content, datetime('now'), ?3
+         FROM ActivityRecord r
+         WHERE r.activity_id = ?1 AND r.student_id = ?2
+           AND r.content != ''",
+        rusqlite::params![activity_id, student_id, note],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn save_history_snapshot(
+    activity_id: i64,
+    student_id: i64,
+    note: Option<String>,
+    state: State<DbState>,
+) -> Result<(), String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    save_snapshot_internal(conn, activity_id, student_id, note.as_deref())
+}
+
 // ── 일괄 기록 가져오기 ────────────────────────────────────────
 
 #[derive(Deserialize)]
@@ -776,6 +863,8 @@ fn bulk_import_records(
             rusqlite::params![r.activity_id, student_id, r.content],
         )
             .map_err(|e| e.to_string())?;
+
+        save_snapshot_internal(conn, r.activity_id, student_id, Some("import"))?;
         records_saved += 1;
     }
 
@@ -826,6 +915,8 @@ fn main() {
             set_area_students,
             get_area_grid,
             upsert_record,
+            get_record_history,
+            save_history_snapshot,
             bulk_import_records,
             write_text_file,
             write_bytes_file,

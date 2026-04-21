@@ -1,8 +1,9 @@
 <script setup>
-import {computed, nextTick, onMounted, ref, watch} from 'vue'
+import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
 import {invoke} from '@tauri-apps/api/core'
 import {ArrowLeftRight, Minimize2, MousePointerClick, Pin, PinOff} from 'lucide-vue-next'
 import {useAreaStore} from '../stores/area'
+import CellHistoryModal from '../components/CellHistoryModal.vue'
 
 const areaStore = useAreaStore()
 
@@ -25,14 +26,28 @@ function toggleActivity(actId) {
 const savingState = ref(new Map())
 // 편집 중인 내용 map
 const cellContent = ref(new Map())
-// debounce 타이머 map
+// 1초 auto-save debounce 타이머
 const debounceTimers = new Map()
+// 5분 히스토리 스냅샷 debounce 타이머 (main save 성공 후에만 시작)
+const historyTimers = new Map()
+// TODO: SettingSection 구현 시 DB 설정값으로 교체
+const HISTORY_DEBOUNCE_MS = 5 * 60 * 1000
 
 onMounted(async () => {
   await areaStore.fetchAreas()
 })
 
+function clearAllTimers() {
+  debounceTimers.forEach(t => clearTimeout(t))
+  debounceTimers.clear()
+  historyTimers.forEach(t => clearTimeout(t))
+  historyTimers.clear()
+}
+
+onBeforeUnmount(clearAllTimers)
+
 watch(selectedAreaId, async (id) => {
+  clearAllTimers()
   if (!id) {
     gridData.value = null
     return
@@ -129,6 +144,20 @@ function onGridWheel(event) {
   el.scrollLeft += event.deltaY
 }
 
+function scheduleHistorySnapshot(activityId, studentId) {
+  const key = cellKey(activityId, studentId)
+  if (historyTimers.has(key)) clearTimeout(historyTimers.get(key))
+  const timer = setTimeout(async () => {
+    try {
+      await invoke('save_history_snapshot', {activityId, studentId, note: null})
+    } catch (e) {
+      console.error('history snapshot failed:', e)
+    }
+    historyTimers.delete(key)
+  }, HISTORY_DEBOUNCE_MS)
+  historyTimers.set(key, timer)
+}
+
 async function saveCell(activityId, studentId, content) {
   const key = cellKey(activityId, studentId)
   const stateMap = new Map(savingState.value)
@@ -144,6 +173,7 @@ async function saveCell(activityId, studentId, content) {
       clear.delete(key)
       savingState.value = clear
     }, 500)
+    scheduleHistorySnapshot(activityId, studentId)
   } catch (e) {
     console.error(e)
     const next = new Map(savingState.value)
@@ -183,6 +213,18 @@ function isStudentOverLimit(studentId) {
   return studentTotalBytes(studentId) > byteLimit.value
 }
 
+// 히스토리 모달
+const historyModal = ref(null) // { activityId, studentId, activityName, studentName }
+
+function openHistory(act, student) {
+  historyModal.value = {
+    activityId: act.id,
+    studentId: student.id,
+    activityName: act.name,
+    studentName: student.name,
+  }
+}
+
 // 학년+반이 바뀌는 행에 구분선 표시
 function isNewGroup(students, index) {
   if (index === 0) return false
@@ -193,176 +235,177 @@ function isNewGroup(students, index) {
 </script>
 
 <template>
-  <div class="section">
+  <div class="activity-section-wrapper">
+    <div class="section">
 
-    <!-- 상단 컨트롤 -->
-    <div class="toolbar">
-      <div class="toolbar-left">
-        <div class="section-wrap">
-          <h2 class="section-title">생기부 작성</h2>
-          <div class="section-tips">
+      <!-- 상단 컨트롤 -->
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <div class="section-wrap">
+            <h2 class="section-title">생기부 작성</h2>
+            <div class="section-tips">
             <span class="tip">
               <MousePointerClick :size="12"/>
               헤더 클릭 → 열 접기/펼치기
             </span>
-            <span class="tip">
+              <span class="tip">
               <ArrowLeftRight :size="12"/>
               스마트스크롤 ON → 활동 열 스크롤 시 가로 이동
             </span>
+            </div>
           </div>
+        </div>
+
+        <div class="toolbar-right">
+          <select
+              v-model="selectedAreaId"
+              class="area-select"
+          >
+            <option :value="null" disabled>영역 선택...</option>
+            <option
+                v-for="area in areaStore.areas"
+                :key="area.id"
+                :value="area.id"
+            >{{ area.name }}
+            </option>
+          </select>
+          <button
+              class="btn-freeze"
+              :class="freezeColumns ? 'btn-freeze--on' : ''"
+              @click="freezeColumns = !freezeColumns"
+              title="틀고정 켜기/끄기"
+          >
+            <Pin v-if="freezeColumns" :size="15"/>
+            <PinOff v-else :size="15"/>
+            {{ freezeColumns ? '틀고정 ON' : '틀고정 OFF' }}
+          </button>
+          <button
+              class="btn-freeze"
+              :class="smartScroll ? 'btn-freeze--on' : ''"
+              @click="smartScroll = !smartScroll"
+              title="스마트 스크롤: 활동 영역에서 휠 → 좌우 스크롤"
+          >
+            <ArrowLeftRight :size="15"/>
+            {{ smartScroll ? '스마트스크롤 ON' : '스마트스크롤 OFF' }}
+          </button>
+          <button
+              class="btn-freeze"
+              :class="compactCell ? 'btn-freeze--on' : ''"
+              @click="toggleCompactCell"
+              title="셀 높이: 고정(ON) / 자동(OFF)"
+          >
+            <Minimize2 :size="15"/>
+            {{ compactCell ? '셀높이 고정' : '셀높이 자동' }}
+          </button>
         </div>
       </div>
 
-      <div class="toolbar-right">
-        <select
-            v-model="selectedAreaId"
-            class="area-select"
-        >
-          <option :value="null" disabled>영역 선택...</option>
-          <option
-              v-for="area in areaStore.areas"
-              :key="area.id"
-              :value="area.id"
-          >{{ area.name }}
-          </option>
-        </select>
-        <button
-            class="btn-freeze"
-            :class="freezeColumns ? 'btn-freeze--on' : ''"
-            @click="freezeColumns = !freezeColumns"
-            title="틀고정 켜기/끄기"
-        >
-          <Pin v-if="freezeColumns" :size="15"/>
-          <PinOff v-else :size="15"/>
-          {{ freezeColumns ? '틀고정 ON' : '틀고정 OFF' }}
-        </button>
-        <button
-            class="btn-freeze"
-            :class="smartScroll ? 'btn-freeze--on' : ''"
-            @click="smartScroll = !smartScroll"
-            title="스마트 스크롤: 활동 영역에서 휠 → 좌우 스크롤"
-        >
-          <ArrowLeftRight :size="15"/>
-          {{ smartScroll ? '스마트스크롤 ON' : '스마트스크롤 OFF' }}
-        </button>
-        <button
-            class="btn-freeze"
-            :class="compactCell ? 'btn-freeze--on' : ''"
-            @click="toggleCompactCell"
-            title="셀 높이: 고정(ON) / 자동(OFF)"
-        >
-          <Minimize2 :size="15"/>
-          {{ compactCell ? '셀높이 고정' : '셀높이 자동' }}
-        </button>
+      <!-- 빈 상태: 영역 미선택 -->
+      <div v-if="!selectedAreaId" class="empty-state">
+        <p class="empty-text">상단 드롭다운 메뉴에서 영역(Area)을 선택하세요.</p>
       </div>
-    </div>
 
-    <!-- 빈 상태: 영역 미선택 -->
-    <div v-if="!selectedAreaId" class="empty-state">
-      <p class="empty-text">상단 드롭다운 메뉴에서 영역(Area)을 선택하세요.</p>
-    </div>
+      <!-- 로딩 -->
+      <div v-else-if="loading" class="empty-state">
+        <p class="empty-text">불러오는 중...</p>
+      </div>
 
-    <!-- 로딩 -->
-    <div v-else-if="loading" class="empty-state">
-      <p class="empty-text">불러오는 중...</p>
-    </div>
+      <!-- 그리드 없음 (학생 또는 활동 없음) -->
+      <div v-else-if="!gridData || gridData.students.length === 0 || gridData.activities.length === 0"
+           class="empty-state">
+        <p class="empty-text">
+          <template v-if="gridData && gridData.students.length === 0">이 영역에 배정된 학생이 없습니다. 학생 관리에서 영역에 학생을 배정하세요.
+          </template>
+          <template v-else-if="gridData && gridData.activities.length === 0">이 영역에 등록된 활동이 없습니다. 영역 편집에서 활동을 추가하세요.
+          </template>
+          <template v-else>데이터를 불러올 수 없습니다.</template>
+        </p>
+      </div>
 
-    <!-- 그리드 없음 (학생 또는 활동 없음) -->
-    <div v-else-if="!gridData || gridData.students.length === 0 || gridData.activities.length === 0"
-         class="empty-state">
-      <p class="empty-text">
-        <template v-if="gridData && gridData.students.length === 0">이 영역에 배정된 학생이 없습니다. 학생 관리에서 영역에 학생을 배정하세요.
-        </template>
-        <template v-else-if="gridData && gridData.activities.length === 0">이 영역에 등록된 활동이 없습니다. 영역 편집에서 활동을 추가하세요.
-        </template>
-        <template v-else>데이터를 불러올 수 없습니다.</template>
-      </p>
-    </div>
-
-    <!-- 그리드 -->
-    <div v-else class="grid-wrapper" @wheel="onGridWheel">
-      <table class="grid-table">
-        <thead>
-        <tr>
-          <th
-              class="th-fixed th-grade"
-              :class="freezeColumns ? 'sticky' : ''"
-              style="left: 0"
-          >학년
-          </th>
-          <th
-              class="th-fixed th-class"
-              :class="freezeColumns ? 'sticky' : ''"
-              style="left: 48px"
-          >반
-          </th>
-          <th
-              class="th-fixed th-number"
-              :class="freezeColumns ? 'sticky' : ''"
-              style="left: 96px"
-          >번호
-          </th>
-          <th
-              class="th-fixed th-name"
-              :class="freezeColumns ? 'sticky' : ''"
-              style="left: 144px"
-          >이름
-          </th>
-          <th
-              class="th-fixed th-total"
-              :class="freezeColumns ? 'sticky' : ''"
-              style="left: 244px"
-          >합계
-          </th>
-          <th
-              v-for="act in gridData.activities"
-              :key="act.id"
-              class="th-activity"
-              :class="{ 'th-activity--collapsed': collapsedActivities.has(act.id) }"
-              :style="collapsedActivities.has(act.id) ? { width: '80px', minWidth: '80px', maxWidth: '80px' } : {}"
-              @click="toggleActivity(act.id)"
-          >{{ collapsedActivities.has(act.id) ? truncateName(act.name) : act.name }}
-          </th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr
-            v-for="(student, idx) in gridData.students"
-            :key="student.id"
-            :class="isNewGroup(gridData.students, idx) ? 'row-group-start' : ''"
-        >
-          <td
-              class="td-fixed td-grade"
-              :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : '']"
-              style="left: 0"
-          >{{ student.grade }}
-          </td>
-          <td
-              class="td-fixed td-class"
-              :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : '']"
-              style="left: 48px"
-          >{{ student.class_num }}
-          </td>
-          <td
-              class="td-fixed td-number"
-              :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : '']"
-              style="left: 96px"
-          >{{ student.number }}
-          </td>
-          <td
-              class="td-fixed td-name"
-              :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : '']"
-              style="left: 144px"
-          >{{ student.name }}
-          </td>
-          <td
-              class="td-fixed td-total"
-              :class="[
+      <!-- 그리드 -->
+      <div v-else class="grid-wrapper" @wheel="onGridWheel">
+        <table class="grid-table">
+          <thead>
+          <tr>
+            <th
+                class="th-fixed th-grade"
+                :class="freezeColumns ? 'sticky' : ''"
+                style="left: 0"
+            >학년
+            </th>
+            <th
+                class="th-fixed th-class"
+                :class="freezeColumns ? 'sticky' : ''"
+                style="left: 48px"
+            >반
+            </th>
+            <th
+                class="th-fixed th-number"
+                :class="freezeColumns ? 'sticky' : ''"
+                style="left: 96px"
+            >번호
+            </th>
+            <th
+                class="th-fixed th-name"
+                :class="freezeColumns ? 'sticky' : ''"
+                style="left: 144px"
+            >이름
+            </th>
+            <th
+                class="th-fixed th-total"
+                :class="freezeColumns ? 'sticky' : ''"
+                style="left: 244px"
+            >합계
+            </th>
+            <th
+                v-for="act in gridData.activities"
+                :key="act.id"
+                class="th-activity"
+                :class="{ 'th-activity--collapsed': collapsedActivities.has(act.id) }"
+                :style="collapsedActivities.has(act.id) ? { width: '80px', minWidth: '80px', maxWidth: '80px' } : {}"
+                @click="toggleActivity(act.id)"
+            >{{ collapsedActivities.has(act.id) ? truncateName(act.name) : act.name }}
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr
+              v-for="(student, idx) in gridData.students"
+              :key="student.id"
+              :class="isNewGroup(gridData.students, idx) ? 'row-group-start' : ''"
+          >
+            <td
+                class="td-fixed td-grade"
+                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : '']"
+                style="left: 0"
+            >{{ student.grade }}
+            </td>
+            <td
+                class="td-fixed td-class"
+                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : '']"
+                style="left: 48px"
+            >{{ student.class_num }}
+            </td>
+            <td
+                class="td-fixed td-number"
+                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : '']"
+                style="left: 96px"
+            >{{ student.number }}
+            </td>
+            <td
+                class="td-fixed td-name"
+                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : '']"
+                style="left: 144px"
+            >{{ student.name }}
+            </td>
+            <td
+                class="td-fixed td-total"
+                :class="[
                 freezeColumns ? 'sticky' : '',
                 isStudentOverLimit(student.id) ? 'td-total--over' : ''
               ]"
-              style="left: 244px"
-          >
+                style="left: 244px"
+            >
             <span
                 v-if="byteLimit"
                 class="total-bytes"
@@ -370,20 +413,20 @@ function isNewGroup(students, index) {
             >
               {{ studentTotalBytes(student.id) }} / {{ byteLimit }} Bytes
             </span>
-          </td>
-          <td
-              v-for="act in gridData.activities"
-              :key="act.id"
-              class="td-cell"
-              :style="collapsedActivities.has(act.id) ? { width: '80px', minWidth: '80px', maxWidth: '80px' } : {}"
-              :class="{
+            </td>
+            <td
+                v-for="act in gridData.activities"
+                :key="act.id"
+                class="td-cell"
+                :style="collapsedActivities.has(act.id) ? { width: '80px', minWidth: '80px', maxWidth: '80px' } : {}"
+                :class="{
                 'td-cell--collapsed': collapsedActivities.has(act.id),
                 'td-cell--saving': getCellSavingState(act.id, student.id) === 'saving',
                 'td-cell--saved': getCellSavingState(act.id, student.id) === 'saved',
                 'td-cell--over': isOverLimit(act.id, student.id),
               }"
-          >
-            <template v-if="!collapsedActivities.has(act.id)">
+            >
+              <template v-if="!collapsedActivities.has(act.id)">
               <textarea
                   class="cell-input"
                   :class="{ 'cell-input--compact': compactCell }"
@@ -391,15 +434,28 @@ function isNewGroup(students, index) {
                   @input="onCellInput(act.id, student.id, $event)"
                   rows="1"
               />
-              <div class="byte-counter" :class="isOverLimit(act.id, student.id) ? 'byte-counter--over' : ''">
-                {{ byteLength(getCellContent(act.id, student.id) || '') }} Bytes
-              </div>
-            </template>
-          </td>
-        </tr>
-        </tbody>
-      </table>
+                <div class="byte-counter" :class="isOverLimit(act.id, student.id) ? 'byte-counter--over' : ''">
+                  {{ byteLength(getCellContent(act.id, student.id) || '') }} Bytes
+                  <span class="history-sep">|</span>
+                  <button class="btn-history" @click.stop="openHistory(act, student)">History</button>
+                </div>
+              </template>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+
+    <!-- 히스토리 모달 -->
+    <CellHistoryModal
+        v-if="historyModal"
+        :activity-id="historyModal.activityId"
+        :student-id="historyModal.studentId"
+        :activity-name="historyModal.activityName"
+        :student-name="historyModal.studentName"
+        @close="historyModal = null"
+    />
   </div>
 </template>
 
@@ -768,9 +824,33 @@ thead .sticky {
   color: var(--clr-text-hint);
   text-align: right;
   padding-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
 }
 
 .byte-counter--over {
   color: #f87171;
+}
+
+.history-sep {
+  color: #2a3a60;
+  user-select: none;
+}
+
+.btn-history {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 11px;
+  color: #4a6aaa;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.btn-history:hover {
+  color: #8aaaf8;
+  text-decoration: underline;
 }
 </style>
