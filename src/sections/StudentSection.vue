@@ -78,113 +78,115 @@ async function handleDeleted() {
 </script>
 
 <template>
-  <div class="section">
+  <div class="activity-section-wrapper">
+    <div class="section">
 
-    <!-- 섹션 헤더 -->
-    <div class="section-header">
-      <div>
-        <h2 class="section-title">학생(Students) 관리</h2>
-        <div class="section-desc">
-          <p>학교생활기록부 작성을 위한 학생 명단을 설정합니다.</p>
-          <p>학생 정보를 등록하신 후, '영역(Area)' 탭에서 각 학생을 배정해 주세요.</p>
+      <!-- 섹션 헤더 -->
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">학생(Students) 관리</h2>
+          <div class="section-desc">
+            <p>학교생활기록부 작성을 위한 학생 명단을 설정합니다.</p>
+            <p>학생 정보를 등록하신 후, '영역(Area)' 탭에서 각 학생을 배정해 주세요.</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="btn-bulk" @click="bulkModalVisible = true">
+            <TableProperties :size="16"/>
+            일괄 추가
+          </button>
+          <button class="btn-add" @click="openAddModal">
+            <Plus :size="18"/>
+            학생 추가
+          </button>
         </div>
       </div>
-      <div class="header-actions">
-        <button class="btn-bulk" @click="bulkModalVisible = true">
-          <TableProperties :size="16"/>
-          일괄 추가
-        </button>
-        <button class="btn-add" @click="openAddModal">
-          <Plus :size="18"/>
-          학생 추가
-        </button>
+
+      <div class="section-body">
+        <!-- 로딩 -->
+        <div v-if="studentStore.loading" class="state-box">
+          <p class="state-text">불러오는 중...</p>
+        </div>
+
+        <!-- 에러 -->
+        <div v-else-if="studentStore.error" class="state-box state-box--error">
+          <p class="state-text">{{ studentStore.error }}</p>
+        </div>
+
+        <!-- 빈 상태 -->
+        <div v-else-if="studentStore.students.length === 0" class="empty-state">
+          <Users :size="40" color="#6b8ab5"/>
+          <p class="empty-title">등록된 학생이 없습니다</p>
+          <p class="empty-desc">학생을 추가한 후 영역에 배정하세요.</p>
+          <button class="btn-add" @click="openAddModal">
+            <Plus :size="18"/>
+            첫 학생 추가하기
+          </button>
+        </div>
+
+        <!-- 학생 테이블 -->
+        <div v-else class="table-wrap">
+          <table class="student-table">
+            <thead>
+            <tr>
+              <th>학년</th>
+              <th>반</th>
+              <th>번호</th>
+              <th>이름</th>
+              <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <template v-for="group in groupedStudents" :key="`${group.grade}-${group.classNum}`">
+              <tr class="group-header-row">
+                <td colspan="5">
+                  {{ group.grade }}학년 {{ group.classNum }}반
+                  <span class="group-count">{{ group.students.length }}명</span>
+                </td>
+              </tr>
+              <tr
+                  v-for="student in group.students"
+                  :key="student.id"
+                  class="student-row"
+              >
+                <td>{{ student.grade }}</td>
+                <td>{{ student.class_num }}</td>
+                <td>{{ student.number }}</td>
+                <td>{{ student.name }}</td>
+                <td class="action-cell">
+                  <button class="btn-edit" @click="openEditModal(student)">
+                    <Pencil :size="14"/>
+                  </button>
+                </td>
+              </tr>
+            </template>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <div class="section-body">
-      <!-- 로딩 -->
-      <div v-if="studentStore.loading" class="state-box">
-        <p class="state-text">불러오는 중...</p>
-      </div>
+    <!-- 일괄 추가 모달 -->
+    <transition name="modal">
+      <BulkStudentImportModal
+          v-if="bulkModalVisible"
+          @close="bulkModalVisible = false"
+          @imported="studentStore.fetchStudents()"
+      />
+    </transition>
 
-      <!-- 에러 -->
-      <div v-else-if="studentStore.error" class="state-box state-box--error">
-        <p class="state-text">{{ studentStore.error }}</p>
-      </div>
-
-      <!-- 빈 상태 -->
-      <div v-else-if="studentStore.students.length === 0" class="empty-state">
-        <Users :size="40" color="#6b8ab5"/>
-        <p class="empty-title">등록된 학생이 없습니다</p>
-        <p class="empty-desc">학생을 추가한 후 영역에 배정하세요.</p>
-        <button class="btn-add" @click="openAddModal">
-          <Plus :size="18"/>
-          첫 학생 추가하기
-        </button>
-      </div>
-
-      <!-- 학생 테이블 -->
-      <div v-else class="table-wrap">
-        <table class="student-table">
-          <thead>
-          <tr>
-            <th>학년</th>
-            <th>반</th>
-            <th>번호</th>
-            <th>이름</th>
-            <th></th>
-          </tr>
-          </thead>
-          <tbody>
-          <template v-for="group in groupedStudents" :key="`${group.grade}-${group.classNum}`">
-            <tr class="group-header-row">
-              <td colspan="5">
-                {{ group.grade }}학년 {{ group.classNum }}반
-                <span class="group-count">{{ group.students.length }}명</span>
-              </td>
-            </tr>
-            <tr
-                v-for="student in group.students"
-                :key="student.id"
-                class="student-row"
-            >
-              <td>{{ student.grade }}</td>
-              <td>{{ student.class_num }}</td>
-              <td>{{ student.number }}</td>
-              <td>{{ student.name }}</td>
-              <td class="action-cell">
-                <button class="btn-edit" @click="openEditModal(student)">
-                  <Pencil :size="14"/>
-                </button>
-              </td>
-            </tr>
-          </template>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <!-- 학생 추가/수정 모달 -->
+    <transition name="modal">
+      <StudentModal
+          v-if="modalVisible"
+          :mode="modalMode"
+          :student="selectedStudent"
+          @close="closeModal"
+          @saved="handleSaved"
+          @deleted="handleDeleted"
+      />
+    </transition>
   </div>
-
-  <!-- 일괄 추가 모달 -->
-  <transition name="modal">
-    <BulkStudentImportModal
-        v-if="bulkModalVisible"
-        @close="bulkModalVisible = false"
-        @imported="studentStore.fetchStudents()"
-    />
-  </transition>
-
-  <!-- 학생 추가/수정 모달 -->
-  <transition name="modal">
-    <StudentModal
-        v-if="modalVisible"
-        :mode="modalMode"
-        :student="selectedStudent"
-        @close="closeModal"
-        @saved="handleSaved"
-        @deleted="handleDeleted"
-    />
-  </transition>
 </template>
 
 <style scoped>

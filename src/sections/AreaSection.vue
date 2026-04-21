@@ -104,79 +104,81 @@ async function handleStudentSaved(studentIds) {
 </script>
 
 <template>
-  <div class="section">
+  <div class="activity-section-wrapper">
+    <div class="section">
 
-    <!-- 섹션 헤더 -->
-    <div class="section-header">
-      <div>
-        <h2 class="section-title">영역(Area) 관리</h2>
-        <p class="section-desc">자율활동, 진로활동, 동아리, 세부능력특기사항 등 생기부 대분류 영역을 설정합니다.</p>
-      </div>
-      <button class="btn-add" @click="openAddModal">
-        <Plus :size="18"/>
-        영역 추가
-      </button>
-    </div>
-
-    <div class="section-body">
-      <!-- 로딩 -->
-      <div v-if="areaStore.loading" class="state-box">
-        <p class="state-text">불러오는 중...</p>
-      </div>
-
-      <!-- 에러 -->
-      <div v-else-if="areaStore.error" class="state-box state-box--error">
-        <p class="state-text">{{ areaStore.error }}</p>
-      </div>
-
-      <!-- 빈 상태 -->
-      <div v-else-if="areaStore.areas.length === 0" class="empty-state">
-        <Layers :size="40" color="#6b8ab5"/>
-        <p class="empty-title">등록된 영역이 없습니다</p>
-        <p class="empty-desc">영역을 추가하여 학생부 구성을 시작하세요.</p>
+      <!-- 섹션 헤더 -->
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">영역(Area) 관리</h2>
+          <p class="section-desc">자율활동, 진로활동, 동아리, 세부능력특기사항 등 생기부 대분류 영역을 설정합니다.</p>
+        </div>
         <button class="btn-add" @click="openAddModal">
           <Plus :size="18"/>
-          첫 영역 추가하기
+          영역 추가
         </button>
       </div>
 
-      <!-- 카드 그리드 -->
-      <div v-else class="card-grid">
-        <AreaCard
-            v-for="area in sortedAreas"
-            :key="area.id"
-            :area="area"
-            @edit="openEditModal"
-            @assign-students="openStudentModal"
-        />
+      <div class="section-body">
+        <!-- 로딩 -->
+        <div v-if="areaStore.loading" class="state-box">
+          <p class="state-text">불러오는 중...</p>
+        </div>
+
+        <!-- 에러 -->
+        <div v-else-if="areaStore.error" class="state-box state-box--error">
+          <p class="state-text">{{ areaStore.error }}</p>
+        </div>
+
+        <!-- 빈 상태 -->
+        <div v-else-if="areaStore.areas.length === 0" class="empty-state">
+          <Layers :size="40" color="#6b8ab5"/>
+          <p class="empty-title">등록된 영역이 없습니다</p>
+          <p class="empty-desc">영역을 추가하여 학생부 구성을 시작하세요.</p>
+          <button class="btn-add" @click="openAddModal">
+            <Plus :size="18"/>
+            첫 영역 추가하기
+          </button>
+        </div>
+
+        <!-- 카드 그리드 -->
+        <div v-else class="card-grid">
+          <AreaCard
+              v-for="area in sortedAreas"
+              :key="area.id"
+              :area="area"
+              @edit="openEditModal"
+              @assign-students="openStudentModal"
+          />
+        </div>
       </div>
     </div>
+
+    <!-- 영역 편집 모달 -->
+    <transition name="modal">
+      <AreaModal
+          v-if="modalVisible"
+          :mode="modalMode"
+          :area="selectedArea"
+          :all-activities="activityStore.activities"
+          @close="closeModal"
+          @saved="handleSaved"
+          @deleted="handleDeleted"
+      />
+    </transition>
+
+    <!-- 학생 배정 모달 -->
+    <transition name="modal">
+      <AreaStudentModal
+          v-if="studentModalVisible"
+          :area="studentModalArea"
+          :all-students="studentStore.students"
+          :initial-student-ids="studentModalInitialIds"
+          @close="closeStudentModal"
+          @saved="handleStudentSaved"
+      />
+    </transition>
   </div>
-
-  <!-- 영역 편집 모달 -->
-  <transition name="modal">
-    <AreaModal
-        v-if="modalVisible"
-        :mode="modalMode"
-        :area="selectedArea"
-        :all-activities="activityStore.activities"
-        @close="closeModal"
-        @saved="handleSaved"
-        @deleted="handleDeleted"
-    />
-  </transition>
-
-  <!-- 학생 배정 모달 -->
-  <transition name="modal">
-    <AreaStudentModal
-        v-if="studentModalVisible"
-        :area="studentModalArea"
-        :all-students="studentStore.students"
-        :initial-student-ids="studentModalInitialIds"
-        @close="closeStudentModal"
-        @saved="handleStudentSaved"
-    />
-  </transition>
 </template>
 
 <style scoped>

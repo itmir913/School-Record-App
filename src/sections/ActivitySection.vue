@@ -70,69 +70,71 @@ async function handleDeleted() {
 </script>
 
 <template>
-  <div class="section">
+  <div class="activity-section-wrapper">
+    <div class="section">
 
-    <!-- 섹션 헤더 -->
-    <div class="section-header">
-      <div>
-        <h2 class="section-title">활동(Activity) 관리</h2>
-        <div class="section-desc">
-          <p>생기부 각 활동을 설정하고 해당 영역에 연결합니다.</p>
-          <p>예: 현재 탭에서 '학생자치회', '교내캠페인', '안전교육' 활동 생성 → '자율활동' 영역으로 연결</p>
+      <!-- 섹션 헤더 -->
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">활동(Activity) 관리</h2>
+          <div class="section-desc">
+            <p>생기부 각 활동을 설정하고 해당 영역에 연결합니다.</p>
+            <p>예: 현재 탭에서 '학생자치회', '교내캠페인', '안전교육' 활동 생성 → '자율활동' 영역으로 연결</p>
+          </div>
         </div>
-      </div>
-      <button class="btn-add" @click="openAddModal">
-        <Plus :size="18"/>
-        활동 추가
-      </button>
-    </div>
-
-    <div class="section-body">
-      <!-- 로딩 -->
-      <div v-if="activityStore.loading" class="state-box">
-        <p class="state-text">불러오는 중...</p>
-      </div>
-
-      <!-- 에러 -->
-      <div v-else-if="activityStore.error" class="state-box state-box--error">
-        <p class="state-text">{{ activityStore.error }}</p>
-      </div>
-
-      <!-- 빈 상태 -->
-      <div v-else-if="activityStore.activities.length === 0" class="empty-state">
-        <BookOpen :size="40" color="#6b8ab5"/>
-        <p class="empty-title">등록된 활동이 없습니다</p>
-        <p class="empty-desc">활동을 추가한 후 영역에 연결하세요.</p>
         <button class="btn-add" @click="openAddModal">
           <Plus :size="18"/>
-          첫 활동 추가하기
+          활동 추가
         </button>
       </div>
 
-      <!-- 카드 그리드 -->
-      <div v-else class="card-grid">
-        <ActivityCard
-            v-for="activity in sortedActivities"
-            :key="activity.id"
-            :activity="activity"
-            @edit="openEditModal"
-        />
+      <div class="section-body">
+        <!-- 로딩 -->
+        <div v-if="activityStore.loading" class="state-box">
+          <p class="state-text">불러오는 중...</p>
+        </div>
+
+        <!-- 에러 -->
+        <div v-else-if="activityStore.error" class="state-box state-box--error">
+          <p class="state-text">{{ activityStore.error }}</p>
+        </div>
+
+        <!-- 빈 상태 -->
+        <div v-else-if="activityStore.activities.length === 0" class="empty-state">
+          <BookOpen :size="40" color="#6b8ab5"/>
+          <p class="empty-title">등록된 활동이 없습니다</p>
+          <p class="empty-desc">활동을 추가한 후 영역에 연결하세요.</p>
+          <button class="btn-add" @click="openAddModal">
+            <Plus :size="18"/>
+            첫 활동 추가하기
+          </button>
+        </div>
+
+        <!-- 카드 그리드 -->
+        <div v-else class="card-grid">
+          <ActivityCard
+              v-for="activity in sortedActivities"
+              :key="activity.id"
+              :activity="activity"
+              @edit="openEditModal"
+          />
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- 모달 -->
-  <transition name="modal">
-    <ActivityModal
-        v-if="modalVisible"
-        :mode="modalMode"
-        :activity="selectedActivity"
-        :all-areas="areaStore.areas"
-        @close="closeModal"
-        @saved="handleSaved"
-        @deleted="handleDeleted"
-    />
-  </transition>
+    <!-- 모달 -->
+    <transition name="modal">
+      <ActivityModal
+          v-if="modalVisible"
+          :mode="modalMode"
+          :activity="selectedActivity"
+          :all-areas="areaStore.areas"
+          @close="closeModal"
+          @saved="handleSaved"
+          @deleted="handleDeleted"
+      />
+    </transition>
+  </div>
 </template>
 
 <style scoped>
