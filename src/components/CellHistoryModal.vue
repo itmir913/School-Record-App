@@ -177,7 +177,7 @@ async function saveManualSnapshot() {
   border-radius: 14px;
   width: 680px;
   max-width: 95vw;
-  max-height: 80vh;
+  height: 85vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -281,6 +281,7 @@ async function saveManualSnapshot() {
   overflow-y: auto;
   padding: 16px 24px;
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -297,6 +298,7 @@ async function saveManualSnapshot() {
   border: 1px solid #1a2035;
   border-radius: 10px;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .item-meta {
