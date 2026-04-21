@@ -238,7 +238,7 @@ const guideSteps = [
 
 .logo-text p {
   font-size: 12px;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   margin: 4px 0 0;
 }
 
@@ -329,7 +329,7 @@ const guideSteps = [
   background: none;
   border: none;
   font-size: 12px;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   cursor: pointer;
   margin-top: 2px;
   transition: color 0.15s;
@@ -362,7 +362,7 @@ const guideSteps = [
   margin-top: 20px;
   text-align: center;
   font-size: 10px;
-  color: #1e2d45;
+  color: var(--clr-text-hint);
 }
 
 /* ── 모달 오버레이 ── */
@@ -403,7 +403,7 @@ const guideSteps = [
 
 .modal-header p {
   font-size: 11px;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   margin: 4px 0 0;
 }
 
@@ -411,7 +411,7 @@ const guideSteps = [
   background: none;
   border: none;
   cursor: pointer;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   padding: 6px;
   border-radius: 8px;
   display: flex;
@@ -452,7 +452,7 @@ const guideSteps = [
 
 .guide-desc {
   font-size: 11px;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   line-height: 1.6;
   margin: 0;
 }

@@ -223,7 +223,7 @@ function submit() {
   border-radius: 8px;
   background: none;
   border: none;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s;
   flex-shrink: 0;
@@ -306,7 +306,7 @@ function submit() {
 
 .group-count {
   font-size: 13px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
 }
 
 .group-selected-count {
@@ -318,7 +318,7 @@ function submit() {
 }
 
 .chevron {
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   flex-shrink: 0;
 }
 
@@ -352,7 +352,7 @@ function submit() {
 
 .student-number {
   font-size: 14px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   width: 36px;
   flex-shrink: 0;
 }

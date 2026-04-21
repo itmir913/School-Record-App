@@ -223,7 +223,7 @@ function handleDelete() {
   border-radius: 8px;
   background: none;
   border: none;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s;
 }
@@ -311,7 +311,7 @@ function handleDelete() {
 }
 
 .field-input::placeholder {
-  color: #3d5580;
+  color: var(--clr-text-hint);
 }
 
 .field-hint {
@@ -421,7 +421,7 @@ function handleDelete() {
 }
 
 .area-chip:hover {
-  border-color: #2a3a58;
+  border-color: var(--clr-text-subtle);
   color: #93c5fd;
 }
 

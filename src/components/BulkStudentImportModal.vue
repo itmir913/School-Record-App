@@ -410,7 +410,7 @@ async function doImport() {
   border-radius: 8px;
   background: none;
   border: none;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s;
 }
@@ -494,7 +494,7 @@ async function doImport() {
 }
 
 .drop-icon {
-  color: #3d5580;
+  color: var(--clr-text-hint);
 }
 
 .drop-text {
@@ -510,7 +510,7 @@ async function doImport() {
 
 .drop-hint {
   font-size: 13px;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   margin: 0;
 }
 
@@ -560,7 +560,7 @@ async function doImport() {
 
 .mapping-desc {
   font-size: 14px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin: -6px 0 0;
   white-space: nowrap;
   overflow: hidden;
@@ -675,7 +675,7 @@ async function doImport() {
 
 .preview-desc {
   font-size: 14px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin: -6px 0 0;
 }
 
@@ -697,7 +697,7 @@ async function doImport() {
 .preview-table th {
   font-size: 12px;
   font-weight: 600;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   padding: 8px 10px;
   background-color: #080b14;
   border-bottom: 1px solid #1a2035;
@@ -718,12 +718,12 @@ async function doImport() {
 }
 
 .td-row {
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   font-size: 13px;
 }
 
 .td-unmapped {
-  color: #2a3a58;
+  color: var(--clr-text-subtle);
 }
 
 /* 알림 */
@@ -749,7 +749,7 @@ async function doImport() {
 }
 
 .skip-hint {
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   font-size: 14px;
 }
 

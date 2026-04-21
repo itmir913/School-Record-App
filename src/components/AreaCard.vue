@@ -156,7 +156,7 @@ const hiddenCount = computed(() =>
 
 .edit-hint {
   font-size: 13px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
 }
 
 .card:hover .edit-hint {

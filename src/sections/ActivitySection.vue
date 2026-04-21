@@ -100,7 +100,7 @@ async function handleDeleted() {
 
       <!-- 빈 상태 -->
       <div v-else-if="activityStore.activities.length === 0" class="empty-state">
-        <BookOpen :size="40" color="#2a3a58"/>
+        <BookOpen :size="40" color="#6b8ab5"/>
         <p class="empty-title">등록된 활동이 없습니다</p>
         <p class="empty-desc">활동을 추가한 후 영역에 연결하세요.</p>
         <button class="btn-add" @click="openAddModal">
@@ -237,7 +237,7 @@ async function handleDeleted() {
 
 .empty-desc {
   font-size: 16px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin: 0 0 8px;
 }
 

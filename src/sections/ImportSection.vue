@@ -775,7 +775,7 @@ function resetWizard() {
   font-size: 13px;
   font-weight: 600;
   border: 1px solid #1a2035;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   background: transparent;
   transition: all 0.2s;
 }
@@ -820,7 +820,7 @@ function resetWizard() {
 
 .step-desc {
   font-size: 15px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin: 0 0 24px;
 }
 
@@ -837,7 +837,7 @@ function resetWizard() {
 
 .empty-hint {
   font-size: 15px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin: 0;
 }
 
@@ -867,12 +867,12 @@ function resetWizard() {
 
 .persistent-preview-label {
   font-size: 14px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
 }
 
 .persistent-preview-toggle {
   font-size: 13px;
-  color: #3d5580;
+  color: var(--clr-text-hint);
 }
 
 /* Step 1: 드롭존 */
@@ -901,12 +901,12 @@ function resetWizard() {
 }
 
 .drop-icon {
-  color: #3d5580;
+  color: var(--clr-text-hint);
 }
 
 .drop-main {
   font-size: 16px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin: 0;
 }
 
@@ -917,7 +917,7 @@ function resetWizard() {
 
 .drop-hint {
   font-size: 13px;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   margin: 0;
 }
 
@@ -928,7 +928,7 @@ function resetWizard() {
 
 .preview-label {
   font-size: 14px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin: 0 0 10px;
 }
 
@@ -947,7 +947,7 @@ function resetWizard() {
 .preview-table th {
   padding: 8px 12px;
   background: #0d1220;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   font-weight: 600;
   text-align: left;
   white-space: nowrap;
@@ -1014,7 +1014,7 @@ function resetWizard() {
 
 .type-desc {
   font-size: 14px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin: 0 0 14px;
   line-height: 1.6;
 }
@@ -1034,7 +1034,7 @@ function resetWizard() {
 .sample-table th {
   padding: 6px 8px;
   background: #0a0f1e;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   font-weight: 600;
   text-align: left;
   border-bottom: 1px solid #1a2035;
@@ -1078,7 +1078,7 @@ function resetWizard() {
   padding: 7px 16px;
   background: none;
   border: none;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s;
@@ -1103,7 +1103,7 @@ function resetWizard() {
 
 .sid-preview-label {
   font-size: 13px;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   margin: 0 0 10px;
 }
 
@@ -1158,7 +1158,7 @@ function resetWizard() {
 
 .activity-cols-hint {
   font-size: 13px;
-  color: #3d5580;
+  color: var(--clr-text-hint);
 }
 
 .activity-col-tag {
@@ -1189,7 +1189,7 @@ function resetWizard() {
   background: #0d1220;
   font-size: 13px;
   font-weight: 600;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   border-bottom: 1px solid #1a2035;
 }
 
@@ -1213,7 +1213,7 @@ function resetWizard() {
 
 .match-arrow {
   font-size: 16px;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   text-align: center;
 }
 
@@ -1255,7 +1255,7 @@ function resetWizard() {
 
 .summary-key {
   font-size: 14px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
 }
 
 .summary-val {
@@ -1325,7 +1325,7 @@ function resetWizard() {
 
 .stat-label {
   font-size: 13px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
 }
 
 .btn-reset {
@@ -1334,7 +1334,7 @@ function resetWizard() {
   background: none;
   border: 1px solid #1a2035;
   border-radius: 8px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   font-size: 15px;
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s;
@@ -1364,7 +1364,7 @@ function resetWizard() {
   border-radius: 8px;
   border: 1px solid #1a2035;
   background: none;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   font-size: 15px;
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s, border-color 0.15s;

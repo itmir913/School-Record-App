@@ -448,7 +448,7 @@ async function doExport() {
   font-size: 13px;
   font-weight: 600;
   border: 1px solid #1a2035;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   background: transparent;
   transition: all 0.2s;
 }
@@ -492,13 +492,13 @@ async function doExport() {
 
 .step-desc {
   font-size: 15px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin: 0 0 24px;
 }
 
 .empty-hint {
   font-size: 15px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin: 0;
 }
 
@@ -568,7 +568,7 @@ async function doExport() {
 
 .type-desc {
   font-size: 14px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin: 0 0 14px;
   line-height: 1.6;
 }
@@ -588,7 +588,7 @@ async function doExport() {
 .sample-table th {
   padding: 6px 8px;
   background: #0a0f1e;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   font-weight: 600;
   text-align: left;
   border-bottom: 1px solid #1a2035;
@@ -642,7 +642,7 @@ async function doExport() {
 
 .area-card-meta {
   font-size: 13px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
 }
 
 /* Step 3: 요약 & 결과 */
@@ -667,7 +667,7 @@ async function doExport() {
 
 .summary-key {
   font-size: 14px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
 }
 
 .summary-val {
@@ -737,12 +737,12 @@ async function doExport() {
 
 .stat-label {
   font-size: 13px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
 }
 
 .result-filename {
   font-size: 14px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin: 0;
 }
 
@@ -752,7 +752,7 @@ async function doExport() {
   background: none;
   border: 1px solid #1a2035;
   border-radius: 8px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   font-size: 15px;
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s;
@@ -782,7 +782,7 @@ async function doExport() {
   border-radius: 8px;
   border: 1px solid #1a2035;
   background: none;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   font-size: 15px;
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s, border-color 0.15s;

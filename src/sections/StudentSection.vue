@@ -114,7 +114,7 @@ async function handleDeleted() {
 
       <!-- 빈 상태 -->
       <div v-else-if="studentStore.students.length === 0" class="empty-state">
-        <Users :size="40" color="#2a3a58"/>
+        <Users :size="40" color="#6b8ab5"/>
         <p class="empty-title">등록된 학생이 없습니다</p>
         <p class="empty-desc">학생을 추가한 후 영역에 배정하세요.</p>
         <button class="btn-add" @click="openAddModal">
@@ -313,7 +313,7 @@ async function handleDeleted() {
 
 .empty-desc {
   font-size: 16px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin: 0 0 8px;
 }
 
@@ -332,7 +332,7 @@ async function handleDeleted() {
 .student-table th {
   font-size: 13px;
   font-weight: 600;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   text-align: left;
   padding: 12px 16px;
   background-color: #080b14;
@@ -354,7 +354,7 @@ async function handleDeleted() {
 .group-count {
   font-size: 13px;
   font-weight: 400;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin-left: 8px;
 }
 
@@ -387,7 +387,7 @@ async function handleDeleted() {
   border-radius: 6px;
   border: none;
   background: none;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s;
 }

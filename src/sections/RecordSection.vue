@@ -410,7 +410,7 @@ function isNewGroup(students, index) {
   border-radius: 8px;
   border: 1px solid #1a2035;
   background: none;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s, border-color 0.15s;
@@ -439,7 +439,7 @@ function isNewGroup(students, index) {
 
 .empty-text {
   font-size: 16px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin: 0;
   text-align: center;
   line-height: 1.7;
@@ -477,7 +477,7 @@ function isNewGroup(students, index) {
 .grid-table th {
   font-size: 13px;
   font-weight: 600;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   background-color: #080b14;
   padding: 10px 10px;
   border-bottom: 1px solid #1a2035;
@@ -589,7 +589,7 @@ thead .sticky {
 
 .total-bytes {
   font-size: 12px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   white-space: nowrap;
 }
 
@@ -653,12 +653,12 @@ thead .sticky {
 }
 
 .cell-input::placeholder {
-  color: #2a3a58;
+  color: var(--clr-text-subtle);
 }
 
 .byte-counter {
   font-size: 11px;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   text-align: right;
   padding-top: 2px;
 }

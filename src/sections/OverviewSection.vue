@@ -31,7 +31,7 @@
 
 .placeholder-box {
   font-size: 16px;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   border: 1px dashed #1a2035;
   border-radius: 12px;
   padding: 60px;

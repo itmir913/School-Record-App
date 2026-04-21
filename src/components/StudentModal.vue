@@ -214,7 +214,7 @@ function handleDelete() {
   border-radius: 8px;
   background: none;
   border: none;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s;
 }
@@ -276,7 +276,7 @@ function handleDelete() {
 }
 
 .field-input::placeholder {
-  color: #3d5580;
+  color: var(--clr-text-hint);
 }
 
 /* 삭제 경고 */

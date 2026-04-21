@@ -230,7 +230,7 @@ function handleDelete() {
   border-radius: 8px;
   background: none;
   border: none;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s;
 }
@@ -405,7 +405,7 @@ function handleDelete() {
 }
 
 .act-chip:hover {
-  border-color: #2a3a58;
+  border-color: var(--clr-text-subtle);
   color: #93c5fd;
 }
 

@@ -185,7 +185,7 @@ const navGroups = [
   border-radius: 8px;
   background: none;
   border: none;
-  color: #3d5580;
+  color: var(--clr-text-hint);
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s;
   margin-left: auto;

@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+:root {
+  --clr-text-hint:   #6b8ab5;   /* 기존 #3d5580 대체 — 대비 5.57:1 on #080b14 */
+  --clr-text-subtle: #6080b5;   /* 기존 #5a7aaa 대체 — 대비 4.93:1 on #080b14 */
+}

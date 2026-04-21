@@ -131,7 +131,7 @@ async function handleStudentSaved(studentIds) {
 
       <!-- 빈 상태 -->
       <div v-else-if="areaStore.areas.length === 0" class="empty-state">
-        <Layers :size="40" color="#2a3a58"/>
+        <Layers :size="40" color="#6b8ab5"/>
         <p class="empty-title">등록된 영역이 없습니다</p>
         <p class="empty-desc">영역을 추가하여 학생부 구성을 시작하세요.</p>
         <button class="btn-add" @click="openAddModal">
@@ -281,7 +281,7 @@ async function handleStudentSaved(studentIds) {
 
 .empty-desc {
   font-size: 16px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   margin: 0 0 8px;
 }
 

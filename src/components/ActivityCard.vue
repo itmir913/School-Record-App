@@ -119,7 +119,7 @@ const recordCountEmpty = computed(() => (props.activity.record_count ?? 0) === 0
 
 .edit-hint {
   font-size: 13px;
-  color: #5a7aaa;
+  color: var(--clr-text-subtle);
   text-align: right;
   margin-top: auto;
 }
