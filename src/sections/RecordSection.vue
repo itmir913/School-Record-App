@@ -392,7 +392,6 @@ function isNewGroup(students, index) {
                   rows="1"
               />
               <div
-                  v-if="getCellContent(act.id, student.id)"
                   class="byte-counter"
                   :class="isOverLimit(act.id, student.id) ? 'byte-counter--over' : ''"
               >
