@@ -89,7 +89,7 @@ function closeUpdateModal() {
         <!-- 로고 -->
         <div class="logo-wrap">
           <div class="logo-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none"
                  stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -112,32 +112,32 @@ function closeUpdateModal() {
         <!-- 버튼 -->
         <div class="actions">
           <button class="btn-primary" @click="handleNew">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 4v16m8-8H4"/>
             </svg>
             새 학생부 만들기
-            <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            <svg class="arrow" width="17" height="17" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M9 5l7 7-7 7"/>
             </svg>
           </button>
 
           <button class="btn-secondary" @click="handleOpen">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path
                   d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"/>
             </svg>
             기존 파일 열기
-            <svg class="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            <svg class="arrow" width="17" height="17" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M9 5l7 7-7 7"/>
             </svg>
           </button>
 
           <button class="btn-update" @click="checkUpdate">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="1 4 1 10 7 10"/>
               <polyline points="23 20 23 14 17 14"/>
@@ -150,7 +150,7 @@ function closeUpdateModal() {
         <!-- 에러 -->
         <transition name="err">
           <div v-if="error" class="error-box">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                  style="flex-shrink:0; margin-top:1px;">
               <path
@@ -174,7 +174,7 @@ function closeUpdateModal() {
               <p>현재 버전 v{{ currentVersion }}</p>
             </div>
             <button class="close-btn" @click="closeUpdateModal">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M6 18L18 6M6 6l12 12"/>
               </svg>
@@ -190,7 +190,7 @@ function closeUpdateModal() {
 
             <!-- 최신 버전 -->
             <div v-else-if="updateStatus === 'latest'" class="update-state update-latest">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 6L9 17l-5-5"/>
               </svg>
@@ -202,7 +202,7 @@ function closeUpdateModal() {
 
             <!-- 새 버전 있음 -->
             <div v-else-if="updateStatus === 'found'" class="update-state update-found">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path
                     d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
@@ -215,7 +215,7 @@ function closeUpdateModal() {
 
             <!-- 오류 -->
             <div v-else-if="updateStatus === 'error'" class="update-state update-error">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/>
                 <path d="M12 8v4m0 4h.01"/>
@@ -228,7 +228,7 @@ function closeUpdateModal() {
 
             <!-- 다운로드 버튼 (새 버전일 때만) -->
             <button v-if="updateStatus === 'found'" class="btn-download" @click="openUrl(releaseUrl)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
               </svg>
@@ -268,11 +268,11 @@ function closeUpdateModal() {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 360px;
+  max-width: 440px;
   background-color: #0e1220;
   border: 1px solid #1a2035;
   border-radius: 20px;
-  padding: 36px 32px 28px;
+  padding: 40px 36px 32px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
@@ -281,15 +281,15 @@ function closeUpdateModal() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 28px;
+  gap: 18px;
+  margin-bottom: 32px;
 }
 
 .logo-icon {
   position: relative;
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
+  width: 68px;
+  height: 68px;
+  border-radius: 20px;
   background: linear-gradient(135deg, #3b5bdb, #4c6ef5);
   display: flex;
   align-items: center;
@@ -299,10 +299,10 @@ function closeUpdateModal() {
 
 .logo-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 12px;
-  height: 12px;
+  top: -5px;
+  right: -5px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background-color: #fbbf24;
   border: 2px solid #0e1220;
@@ -314,7 +314,7 @@ function closeUpdateModal() {
 }
 
 .logo-text h1 {
-  font-size: 17px;
+  font-size: 21px;
   font-weight: 700;
   color: #e2e8f0;
   letter-spacing: -0.02em;
@@ -322,16 +322,16 @@ function closeUpdateModal() {
 }
 
 .logo-text p {
-  font-size: 12px;
+  font-size: 15px;
   color: var(--clr-text-hint);
-  margin: 4px 0 0;
+  margin: 5px 0 0;
 }
 
 /* ── 구분선 ── */
 .divider {
   display: flex;
   align-items: center;
-  margin-bottom: 22px;
+  margin-bottom: 26px;
 }
 
 .divider-line {
@@ -341,30 +341,30 @@ function closeUpdateModal() {
 }
 
 .divider-dot {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background-color: #fbbf24;
   opacity: 0.5;
-  margin: 0 10px;
+  margin: 0 12px;
 }
 
 /* ── 버튼 ── */
 .actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .btn-primary,
 .btn-secondary {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  padding: 12px 16px;
-  border-radius: 12px;
-  font-size: 14px;
+  padding: 15px 20px;
+  border-radius: 14px;
+  font-size: 17px;
   font-weight: 500;
   cursor: pointer;
   border: 1px solid transparent;
@@ -413,13 +413,13 @@ function closeUpdateModal() {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   background: none;
   border: 1px solid #2e3f60;
-  border-radius: 8px;
-  font-size: 12px;
+  border-radius: 10px;
+  font-size: 15px;
   color: var(--clr-text-hint);
   cursor: pointer;
   margin-top: 2px;
@@ -436,13 +436,13 @@ function closeUpdateModal() {
 .error-box {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  margin-top: 14px;
-  padding: 12px 14px;
-  border-radius: 10px;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 14px 18px;
+  border-radius: 12px;
   background-color: #2a1020;
   border: 1px solid #4a1a28;
-  font-size: 12px;
+  font-size: 15px;
   color: #fca5a5;
   line-height: 1.5;
 }
@@ -458,9 +458,9 @@ function closeUpdateModal() {
 
 /* ── 버전 ── */
 .version {
-  margin-top: 20px;
+  margin-top: 24px;
   text-align: center;
-  font-size: 10px;
+  font-size: 13px;
   color: var(--clr-text-hint);
 }
 
@@ -478,11 +478,11 @@ function closeUpdateModal() {
 
 .modal {
   width: 100%;
-  max-width: 480px;
+  max-width: 560px;
   background-color: #0e1220;
   border: 1px solid #1a2035;
-  border-radius: 20px;
-  padding: 28px;
+  border-radius: 24px;
+  padding: 34px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
 }
 
@@ -490,20 +490,20 @@ function closeUpdateModal() {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .modal-header h2 {
-  font-size: 15px;
+  font-size: 19px;
   font-weight: 600;
   color: #e2e8f0;
   margin: 0;
 }
 
 .modal-header p {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--clr-text-hint);
-  margin: 4px 0 0;
+  margin: 5px 0 0;
 }
 
 .close-btn {
@@ -511,8 +511,8 @@ function closeUpdateModal() {
   border: none;
   cursor: pointer;
   color: var(--clr-text-hint);
-  padding: 6px;
-  border-radius: 8px;
+  padding: 8px;
+  border-radius: 10px;
   display: flex;
   transition: background-color 0.15s, color 0.15s;
 }
@@ -526,22 +526,22 @@ function closeUpdateModal() {
 .update-body {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
 }
 
 .update-checking {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 24px 0;
+  gap: 18px;
+  padding: 30px 0;
   color: var(--clr-text-hint);
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .spinner {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   border: 2px solid #1a2035;
   border-top-color: #4c6ef5;
   border-radius: 50%;
@@ -557,9 +557,9 @@ function closeUpdateModal() {
 .update-state {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: 12px;
+  gap: 15px;
+  padding: 18px 20px;
+  border-radius: 14px;
   border: 1px solid;
 }
 
@@ -587,13 +587,13 @@ function closeUpdateModal() {
 }
 
 .state-title {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
-  margin: 0 0 4px;
+  margin: 0 0 5px;
 }
 
 .state-desc {
-  font-size: 11px;
+  font-size: 14px;
   opacity: 0.75;
   margin: 0;
   line-height: 1.5;
@@ -603,11 +603,11 @@ function closeUpdateModal() {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  padding: 11px 16px;
-  border-radius: 10px;
-  font-size: 13px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   border: none;
