@@ -177,8 +177,13 @@ async function saveCell(activityId, studentId, content) {
   } catch (e) {
     console.error(e)
     const next = new Map(savingState.value)
-    next.delete(key)
+    next.set(key, 'error')
     savingState.value = next
+    setTimeout(() => {
+      const clear = new Map(savingState.value)
+      clear.delete(key)
+      savingState.value = clear
+    }, 3000)
   }
 }
 
@@ -423,6 +428,7 @@ function isNewGroup(students, index) {
                 'td-cell--collapsed': collapsedActivities.has(act.id),
                 'td-cell--saving': getCellSavingState(act.id, student.id) === 'saving',
                 'td-cell--saved': getCellSavingState(act.id, student.id) === 'saved',
+                'td-cell--error': getCellSavingState(act.id, student.id) === 'error',
                 'td-cell--over': isOverLimit(act.id, student.id),
               }"
             >
@@ -755,6 +761,11 @@ thead .sticky {
 
 .td-cell--saved {
   background-color: rgba(52, 211, 153, 0.3) !important;
+}
+
+.td-cell--error {
+  background-color: rgba(239, 68, 68, 0.4) !important;
+  outline: 2px solid rgba(239, 68, 68, 0.8);
 }
 
 .td-cell--over {
