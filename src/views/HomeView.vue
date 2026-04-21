@@ -1,14 +1,25 @@
 <script setup>
-import {ref} from 'vue'
+import {ref, onMounted} from 'vue'
 import {useRouter} from 'vue-router'
 import {invoke} from '@tauri-apps/api/core'
 import {open, save} from '@tauri-apps/plugin-dialog'
+import {getVersion} from '@tauri-apps/api/app'
+import {openUrl} from '@tauri-apps/plugin-opener'
 import {useProjectStore} from '../stores/project'
 
 const router = useRouter()
 const project = useProjectStore()
 const error = ref('')
-const showGuide = ref(false)
+
+const currentVersion = ref('')
+const showUpdateModal = ref(false)
+const updateStatus = ref('idle') // 'idle' | 'checking' | 'latest' | 'found' | 'error'
+const latestVersion = ref('')
+const releaseUrl = ref('')
+
+onMounted(async () => {
+  currentVersion.value = await getVersion()
+})
 
 async function handleNew() {
   error.value = ''
@@ -44,12 +55,26 @@ async function handleOpen() {
   }
 }
 
-const guideSteps = [
-  { num: '01', title: 'Area 영역 설정',  desc: '자율활동, 동아리활동 등 생기부 대분류를 Area로 등록합니다.',       accent: '#60a5fa' },
-  { num: '02', title: 'Activity 등록',   desc: '각 Area 안에 세부 활동 항목을 구성합니다.',                       accent: '#818cf8' },
-  { num: '03', title: '학생 정보 입력',  desc: '학년·반·번호·이름으로 학생을 등록합니다.',                        accent: '#38bdf8' },
-  { num: '04', title: '기록 작성',       desc: '그리드 뷰에서 학생별 활동 내용을 직접 입력하고 저장합니다.',       accent: '#fbbf24' },
-]
+async function checkUpdate() {
+  showUpdateModal.value = true
+  updateStatus.value = 'checking'
+  try {
+    const res = await fetch('https://api.github.com/repos/itmir913/School-Record-App/releases/latest')
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    latestVersion.value = data.tag_name
+    releaseUrl.value = data.html_url
+    const tag = data.tag_name.replace(/^v/, '')
+    updateStatus.value = tag !== currentVersion.value ? 'found' : 'latest'
+  } catch {
+    updateStatus.value = 'error'
+  }
+}
+
+function closeUpdateModal() {
+  showUpdateModal.value = false
+  updateStatus.value = 'idle'
+}
 </script>
 
 <template>
@@ -70,8 +95,8 @@ const guideSteps = [
           <span class="logo-badge" />
         </div>
         <div class="logo-text">
-          <h1>학생부 작성 프로그램</h1>
-          <p>생활기록부 작성 및 관리 도구</p>
+          <h1>학교생활기록부 작성 프로그램</h1>
+          <p>학생부를 체계적으로 작성하기 위한 유틸리티 프로그램</p>
         </div>
       </div>
 
@@ -108,8 +133,14 @@ const guideSteps = [
           </svg>
         </button>
 
-        <button class="btn-ghost" @click="showGuide = true">
-          사용법 안내
+        <button class="btn-update" @click="checkUpdate">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"/>
+            <polyline points="23 20 23 14 17 14"/>
+            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+          </svg>
+          업데이트 확인
         </button>
       </div>
 
@@ -125,32 +156,79 @@ const guideSteps = [
         </div>
       </transition>
 
-      <p class="version">v0.1.0</p>
+      <p class="version">v{{ currentVersion }}</p>
     </div>
   </div>
 
-  <!-- 사용법 모달 -->
+  <!-- 업데이트 모달 -->
   <transition name="modal">
-    <div v-if="showGuide" class="overlay">
+    <div v-if="showUpdateModal" class="overlay">
       <div class="modal">
         <div class="modal-header">
           <div>
-            <h2>사용법 안내</h2>
-            <p>처음 사용하시는 분을 위한 워크플로우</p>
+            <h2>업데이트 확인</h2>
+            <p>현재 버전 v{{ currentVersion }}</p>
           </div>
-          <button class="close-btn" @click="showGuide = false">
+          <button class="close-btn" @click="closeUpdateModal">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
         </div>
-        <div class="guide-grid">
-          <div v-for="step in guideSteps" :key="step.num" class="guide-item">
-            <span class="guide-num" :style="{ color: step.accent }">{{ step.num }}</span>
-            <p class="guide-title">{{ step.title }}</p>
-            <p class="guide-desc">{{ step.desc }}</p>
+        <div class="update-body">
+
+          <!-- 확인 중 -->
+          <div v-if="updateStatus === 'checking'" class="update-checking">
+            <div class="spinner" />
+            <p>최신 버전을 확인하는 중…</p>
           </div>
+
+          <!-- 최신 버전 -->
+          <div v-else-if="updateStatus === 'latest'" class="update-state update-latest">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6L9 17l-5-5"/>
+            </svg>
+            <div>
+              <p class="state-title">최신 버전입니다</p>
+              <p class="state-desc">현재 사용 중인 버전이 최신입니다.</p>
+            </div>
+          </div>
+
+          <!-- 새 버전 있음 -->
+          <div v-else-if="updateStatus === 'found'" class="update-state update-found">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            <div>
+              <p class="state-title">새 버전이 있습니다 — {{ latestVersion }}</p>
+              <p class="state-desc">GitHub에서 최신 버전을 다운로드할 수 있습니다.</p>
+            </div>
+          </div>
+
+          <!-- 오류 -->
+          <div v-else-if="updateStatus === 'error'" class="update-state update-error">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+            </svg>
+            <div>
+              <p class="state-title">확인에 실패했습니다</p>
+              <p class="state-desc">인터넷 연결을 확인한 후 다시 시도해 주세요.</p>
+            </div>
+          </div>
+
+          <!-- 다운로드 버튼 (새 버전일 때만) -->
+          <button v-if="updateStatus === 'found'" class="btn-download" @click="openUrl(releaseUrl)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            GitHub에서 다운로드
+          </button>
+
         </div>
       </div>
     </div>
@@ -282,7 +360,7 @@ const guideSteps = [
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  border: none;
+  border: 1px solid transparent;
   transition: background-color 0.15s, transform 0.1s;
   text-align: left;
 }
@@ -303,12 +381,13 @@ const guideSteps = [
 
 .btn-secondary {
   background-color: #131c30;
-  border: 1px solid #1a2035;
+  border-color: #2e3f60;
   color: #7ba3d4;
 }
 
 .btn-secondary:hover {
   background-color: #1a2640;
+  border-color: #4a6090;
 }
 
 .arrow {
@@ -323,20 +402,27 @@ const guideSteps = [
   transform: translateX(2px);
 }
 
-.btn-ghost {
+.btn-update {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   width: 100%;
   padding: 8px;
   background: none;
-  border: none;
+  border: 1px solid #2e3f60;
+  border-radius: 8px;
   font-size: 12px;
   color: var(--clr-text-hint);
   cursor: pointer;
   margin-top: 2px;
-  transition: color 0.15s;
+  transition: color 0.15s, border-color 0.15s, background-color 0.15s;
 }
 
-.btn-ghost:hover {
-  color: #7ba3d4;
+.btn-update:hover {
+  color: #a8c4e8;
+  border-color: #4a6090;
+  background-color: #0d1525;
 }
 
 /* ── 에러 ── */
@@ -423,38 +509,104 @@ const guideSteps = [
   color: #7ba3d4;
 }
 
-.guide-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+/* ── 업데이트 모달 바디 ── */
+.update-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.guide-item {
-  background-color: #0b1020;
-  border: 1px solid #1a2035;
-  border-radius: 12px;
-  padding: 16px;
-}
-
-.guide-num {
-  display: block;
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.guide-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: #c8d8f0;
-  margin: 0 0 6px;
-}
-
-.guide-desc {
-  font-size: 11px;
+.update-checking {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 24px 0;
   color: var(--clr-text-hint);
-  line-height: 1.6;
+  font-size: 13px;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #1a2035;
+  border-top-color: #4c6ef5;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.update-state {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid;
+}
+
+.update-latest {
+  background-color: #0a1f14;
+  border-color: #1a4a2a;
+  color: #4ade80;
+}
+
+.update-found {
+  background-color: #1c1508;
+  border-color: #4a3800;
+  color: #fbbf24;
+}
+
+.update-error {
+  background-color: #1c0a0a;
+  border-color: #4a1a1a;
+  color: #fca5a5;
+}
+
+.update-state svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.state-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.state-desc {
+  font-size: 11px;
+  opacity: 0.75;
   margin: 0;
+  line-height: 1.5;
+}
+
+.btn-download {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background-color: #3b5bdb;
+  color: #ffffff;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.btn-download:hover {
+  background-color: #4c6ef5;
+}
+
+.btn-download:active {
+  transform: scale(0.98);
 }
 
 .modal-enter-from, .modal-leave-to { opacity: 0; }
