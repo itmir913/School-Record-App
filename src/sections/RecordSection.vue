@@ -392,7 +392,7 @@ function isNewGroup(students, index) {
                   rows="1"
               />
               <div class="byte-counter" :class="isOverLimit(act.id, student.id) ? 'byte-counter--over' : ''">
-                {{ byteLength(getCellContent(act.id, student.id) || '0') }} Bytes
+                {{ byteLength(getCellContent(act.id, student.id) || '') }} Bytes
               </div>
             </template>
           </td>
