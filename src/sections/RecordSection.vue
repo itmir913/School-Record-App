@@ -1,7 +1,7 @@
 <script setup>
 import {computed, nextTick, onMounted, ref, watch} from 'vue'
 import {invoke} from '@tauri-apps/api/core'
-import {ArrowLeftRight, Minimize2, Pin, PinOff} from 'lucide-vue-next'
+import {ArrowLeftRight, Minimize2, MousePointerClick, Pin, PinOff} from 'lucide-vue-next'
 import {useAreaStore} from '../stores/area'
 
 const areaStore = useAreaStore()
@@ -200,9 +200,15 @@ function isNewGroup(students, index) {
       <div class="toolbar-left">
         <div class="section-wrap">
           <h2 class="section-title">생기부 작성</h2>
-          <div class="section-desc">
-            <p>좌측 드롭다운 메뉴에서 원하는 영역(Area)을 선택하여 학생별 활동 내용을 입력합니다.</p>
-            <p>활동(Activity) 헤더명을 클릭하면 해당 활동 열을 숨길 수 있습니다.</p>
+          <div class="section-tips">
+            <span class="tip">
+              <MousePointerClick :size="12"/>
+              헤더 클릭 → 열 접기/펼치기
+            </span>
+            <span class="tip">
+              <ArrowLeftRight :size="12"/>
+              스마트스크롤 ON → 활동 열 스크롤 시 가로 이동
+            </span>
           </div>
         </div>
       </div>
@@ -447,9 +453,25 @@ function isNewGroup(students, index) {
   white-space: nowrap;
 }
 
-.section-desc {
-  font-size: 16px;
-  color: #7ba3d4;
+.section-tips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.tip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #98bcd8;
+  background: rgba(26, 32, 53, 0.7);
+  border: 1px solid #1a2035;
+  border-radius: 6px;
+  padding: 3px 10px;
+  white-space: nowrap;
 }
 
 .area-select {
@@ -476,7 +498,7 @@ function isNewGroup(students, index) {
   border-radius: 8px;
   border: 1px solid #1a2035;
   background: none;
-  color: var(--clr-text-subtle);
+  color: #a0bcd8;
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s, border-color 0.15s;
@@ -485,11 +507,11 @@ function isNewGroup(students, index) {
 
 .btn-freeze:hover {
   background-color: #1a2035;
-  color: #93afd4;
+  color: #c8ddf0;
 }
 
 .btn-freeze--on {
-  color: #7ba8f0;
+  color: #a8c8ff;
   border-color: rgba(59, 91, 219, 0.3);
   background-color: rgba(59, 91, 219, 0.08);
 }
@@ -505,7 +527,7 @@ function isNewGroup(students, index) {
 
 .empty-text {
   font-size: 16px;
-  color: var(--clr-text-subtle);
+  color: #a0bcd8;
   margin: 0;
   text-align: center;
   line-height: 1.7;
@@ -556,7 +578,7 @@ function isNewGroup(students, index) {
 .grid-table th {
   font-size: 13px;
   font-weight: 600;
-  color: var(--clr-text-subtle);
+  color: #b0cce0;
   background-color: #080b14;
   padding: 10px 10px;
   border-bottom: 1px solid #1a2035;
@@ -575,7 +597,7 @@ function isNewGroup(students, index) {
 }
 
 .th-activity:hover {
-  color: #93afd4;
+  color: #c8ddf0;
   background-color: #0d1220;
 }
 
@@ -584,7 +606,7 @@ function isNewGroup(students, index) {
   overflow: hidden;
   text-overflow: ellipsis;
   padding: 10px 8px;
-  color: #3b5bdb;
+  color: #8aaaf8;
 }
 
 /* sticky 열 */
@@ -613,9 +635,9 @@ thead .sticky {
 /* 데이터 행 */
 .grid-table td {
   font-size: 14px;
-  color: #c8d8f0;
+  color: #dce8f8;
   padding: 6px 10px;
-  border-bottom: 1px solid rgba(26, 32, 53, 0.7);
+  border-bottom: 1px solid rgba(60, 80, 120, 0.8);
   vertical-align: top;
   text-align: center;
 }
@@ -625,7 +647,7 @@ thead .sticky {
   min-width: 48px;
   max-width: 48px;
   text-align: center;
-  color: #7ba3d4;
+  color: #a8c4e0;
   padding: 6px 4px;
 }
 
@@ -670,7 +692,7 @@ thead .sticky {
 
 .total-bytes {
   font-size: 12px;
-  color: var(--clr-text-subtle);
+  color: #90b4d4;
 }
 
 .total-bytes--over {
@@ -715,7 +737,7 @@ thead .sticky {
   font-size: 16px;
   line-height: 1.5;
   background-color: transparent;
-  border: 1px solid rgba(59, 91, 219, 0.25);
+  border: 1px solid rgba(100, 140, 240, 0.5);
   border-radius: 6px;
   color: #e2e8f0;
   resize: none;
