@@ -891,6 +891,7 @@ fn write_bytes_file(path: String, data: String) -> Result<(), String> {
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .manage(DbState(Mutex::new(None)))
         .invoke_handler(tauri::generate_handler![
