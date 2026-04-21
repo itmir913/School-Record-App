@@ -4,6 +4,9 @@ import { invoke } from '@tauri-apps/api/core'
 import { X } from 'lucide-vue-next'
 import DiffView from './DiffView.vue'
 
+// 'content' = 버전별 내용 그대로, 'diff' = 직전 버전과의 차이
+const viewMode = ref('content')
+
 const props = defineProps({
   activityId: { type: Number, default: null },
   studentId:  { type: Number, default: null },
@@ -129,6 +132,20 @@ async function saveManualSnapshot() {
         </template>
       </div>
 
+      <!-- 뷰 모드 토글 -->
+      <div class="view-mode-bar">
+        <button
+          class="btn-mode"
+          :class="{ active: viewMode === 'content' }"
+          @click="viewMode = 'content'"
+        >원문 보기</button>
+        <button
+          class="btn-mode"
+          :class="{ active: viewMode === 'diff' }"
+          @click="viewMode = 'diff'"
+        >수정된 부분(diff) 보기</button>
+      </div>
+
       <!-- 히스토리 목록 -->
       <div class="history-list">
         <div v-if="entries.length === 0 && !loading" class="empty-msg">
@@ -143,7 +160,8 @@ async function saveManualSnapshot() {
             <span v-else class="item-auto">자동</span>
           </div>
           <div class="item-diff">
-            <DiffView :before="prevContent(idx)" :after="entry.content" />
+            <DiffView v-if="viewMode === 'diff'" :before="prevContent(idx)" :after="entry.content" />
+            <span v-else class="plain-content">{{ entry.content }}</span>
           </div>
         </div>
 
@@ -332,4 +350,39 @@ async function saveManualSnapshot() {
   margin-top: 4px;
 }
 .btn-more:hover { background: #1a2035; }
+
+/* 뷰 모드 토글 */
+.view-mode-bar {
+  display: flex;
+  gap: 6px;
+  padding: 10px 24px;
+  border-bottom: 1px solid #1a2035;
+  flex-shrink: 0;
+}
+
+.btn-mode {
+  padding: 5px 14px;
+  border-radius: 7px;
+  border: 1px solid #1a2035;
+  background: none;
+  color: #6080a0;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.btn-mode:hover { background: #1a2035; color: #a0bcd8; }
+.btn-mode.active {
+  background: rgba(59, 91, 219, 0.18);
+  border-color: rgba(59, 91, 219, 0.5);
+  color: #a8c8ff;
+}
+
+/* 버전 내용 일반 텍스트 */
+.plain-content {
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: #c8ddf0;
+}
 </style>
