@@ -179,7 +179,10 @@ function isNewGroup(students, index) {
       <div class="toolbar-left">
         <div class="section-wrap">
           <h2 class="section-title">생기부 작성</h2>
-          <p class="section-desc">좌측 드롭다운 메뉴에서 원하는 영역(Area)을 선택하여 학생별 활동 내용을 입력합니다.</p>
+          <div class="section-desc">
+            <p>좌측 드롭다운 메뉴에서 원하는 영역(Area)을 선택하여 학생별 활동 내용을 입력합니다.</p>
+            <p>활동(Activity) 헤더명을 클릭하면 해당 활동 열을 숨길 수 있습니다.</p>
+          </div>
         </div>
       </div>
 
