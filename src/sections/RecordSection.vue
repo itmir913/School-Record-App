@@ -491,6 +491,8 @@ function isNewGroup(students, index) {
   min-width: 280px;
   cursor: pointer;
   user-select: none;
+  white-space: normal;
+  word-break: keep-all;
 }
 
 .th-activity:hover {
@@ -569,16 +571,16 @@ thead .sticky {
 }
 
 .th-total {
-  width: 90px;
-  min-width: 90px;
-  max-width: 90px;
+  width: 110px;
+  min-width: 110px;
+  max-width: 110px;
   text-align: center;
 }
 
 .td-total {
-  width: 90px;
-  min-width: 90px;
-  max-width: 90px;
+  width: 110px;
+  min-width: 110px;
+  max-width: 110px;
   text-align: center;
   vertical-align: middle;
 }
@@ -590,7 +592,6 @@ thead .sticky {
 .total-bytes {
   font-size: 12px;
   color: var(--clr-text-subtle);
-  white-space: nowrap;
 }
 
 .total-bytes--over {
