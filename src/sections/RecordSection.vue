@@ -391,11 +391,8 @@ function isNewGroup(students, index) {
                   @input="onCellInput(act.id, student.id, $event)"
                   rows="1"
               />
-              <div
-                  class="byte-counter"
-                  :class="isOverLimit(act.id, student.id) ? 'byte-counter--over' : ''"
-              >
-                {{ byteLength(getCellContent(act.id, student.id)) }} Bytes
+              <div class="byte-counter" :class="isOverLimit(act.id, student.id) ? 'byte-counter--over' : ''">
+                {{ byteLength(getCellContent(act.id, student.id) || '0') }} Bytes
               </div>
             </template>
           </td>
