@@ -340,6 +340,7 @@ function isNewGroup(students, index) {
                   class="cell-input"
                   :value="getCellContent(act.id, student.id)"
                   @input="onCellInput(act.id, student.id, $event)"
+                  @select.stop
                   rows="1"
               />
               <div
