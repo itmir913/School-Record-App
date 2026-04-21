@@ -32,21 +32,16 @@ const recordCountEmpty = computed(() => (props.activity.record_count ?? 0) === 0
 
 <template>
   <div class="card" @click="emit('edit', activity)">
-    <div class="card-header">
+    <div class="card-top">
+      <span class="area-count-badge" :class="areaBadgeClass">{{ areaBadgeText }}</span>
       <h3 class="activity-name">{{ activity.name }}</h3>
-      <span
-          class="area-count-badge"
-          :class="areaBadgeClass"
-      >
-        {{ areaBadgeText }}
+    </div>
+    <div class="card-bottom">
+      <span class="record-count" :class="recordCountEmpty ? 'record-count--empty' : ''">
+        {{ recordCountText }}
       </span>
+      <span class="edit-hint">편집</span>
     </div>
-
-    <div class="record-count" :class="recordCountEmpty ? 'record-count--empty' : ''">
-      {{ recordCountText }}
-    </div>
-
-    <div class="edit-hint">클릭하여 편집</div>
   </div>
 </template>
 
@@ -54,45 +49,37 @@ const recordCountEmpty = computed(() => (props.activity.record_count ?? 0) === 0
 .card {
   background-color: #0e1220;
   border: 1px solid #1e293b;
-  border-radius: 16px;
-  padding: 22px;
+  border-radius: 14px;
+  padding: 18px 20px;
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .card:hover {
   border-color: rgba(59, 91, 219, 0.5);
-  box-shadow: 0 4px 24px rgba(59, 91, 219, 0.08);
+  box-shadow: 0 4px 20px rgba(59, 91, 219, 0.1);
 }
 
-.card-header {
+.card-top {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.activity-name {
-  font-size: 18px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0;
-  line-height: 1.3;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
 }
 
 .area-count-badge {
+  align-self: flex-start;
   font-size: 15px;
   font-weight: 600;
   color: #7ba8f0;
   background-color: rgba(59, 91, 219, 0.12);
   border: 1px solid rgba(59, 91, 219, 0.25);
-  border-radius: 6px;
-  padding: 3px 8px;
+  border-radius: 5px;
+  padding: 2px 9px;
   white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .area-count-badge--empty {
@@ -107,24 +94,39 @@ const recordCountEmpty = computed(() => (props.activity.record_count ?? 0) === 0
   border-color: rgba(239, 68, 68, 0.3);
 }
 
+.activity-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid #1a2035;
+}
+
 .record-count {
   font-size: 15px;
-  color: #93c5fd;
+  color: #7ba8f0;
   font-weight: 500;
 }
 
 .record-count--empty {
-  color: #7ba3d4;
+  color: #3d5070;
 }
 
 .edit-hint {
   font-size: 13px;
-  color: var(--clr-text-subtle);
-  text-align: right;
-  margin-top: auto;
+  color: transparent;
+  transition: color 0.15s;
 }
 
 .card:hover .edit-hint {
-  color: #7ba3d4;
+  color: #4a6080;
 }
 </style>
