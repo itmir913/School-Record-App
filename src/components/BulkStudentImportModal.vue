@@ -217,10 +217,10 @@ async function doImport() {
 
         <!-- 샘플 다운로드 (항상 표시) -->
         <div class="sample-section">
-          <p class="guide-text">
+          <div class="guide-text">
             <p>학생 명단이 담긴 CSV 또는 엑셀 파일을 업로드해 주세요.</p>
             <p>파일 내에 '학년, 반, 번호, 이름' 열이 포함되어 있는지 확인해 주세요.</p>
-          </p>
+          </div>
           <button class="btn-sample" @click="downloadSample">
             <Download :size="14"/>
             샘플 파일 다운로드

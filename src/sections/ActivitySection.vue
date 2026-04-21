@@ -76,10 +76,10 @@ async function handleDeleted() {
     <div class="section-header">
       <div>
         <h2 class="section-title">활동(Activity) 관리</h2>
-        <p class="section-desc">
+        <div class="section-desc">
           <p>생기부 각 활동을 설정하고 해당 영역에 연결합니다.</p>
           <p>예: 현재 탭에서 '학생자치회', '교내캠페인', '안전교육' 활동 생성 → '자율활동' 영역으로 연결</p>
-        </p>
+        </div>
       </div>
       <button class="btn-add" @click="openAddModal">
         <Plus :size="18"/>
