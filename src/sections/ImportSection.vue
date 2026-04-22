@@ -60,10 +60,16 @@ const importError = ref('')
 
 const previewRows = computed(() => rawData.value.slice(0, 5))
 
+const hasDuplicateCols = computed(() => {
+  const vals = Object.values(colMap.value).filter(v => v !== null)
+  return vals.length !== new Set(vals).size
+})
+
 const canGoNext = computed(() => {
   if (step.value === 1) return rawHeaders.value.length > 0
   if (step.value === 2) return fileType.value !== null
   if (step.value === 3) {
+    if (hasDuplicateCols.value) return false
     const m = colMap.value
     if (idMode.value === 'studentId') {
       if (m.studentId === null) return false
@@ -614,6 +620,8 @@ function resetWizard() {
               </div>
             </div>
           </template>
+
+          <p v-if="hasDuplicateCols" class="col-map-error">동일한 열을 여러 필드에 지정할 수 없습니다. 각 필드에 서로 다른 열을 선택해 주세요.</p>
         </div>
       </div>
 
@@ -828,6 +836,12 @@ function resetWizard() {
   font-size: 14px;
   color: #f87171;
   margin: 12px 0 0;
+}
+
+.col-map-error {
+  font-size: 13px;
+  color: #f87171;
+  margin: 8px 0 0;
 }
 
 .empty-hint {
