@@ -420,7 +420,7 @@ function resetWizard() {
           >
             <div class="type-card-top">
               <span class="type-badge type-badge--a">A 타입</span>
-              <span class="type-name">행별 활동 형식</span>
+              <span class="type-name">행 단위 활동 형식</span>
             </div>
             <p class="type-desc">한 행에 학생 1명의 활동 1개가 기재됩니다.<br>여러 활동을 한 파일에서 동시에 가져올 수 있습니다.</p>
             <div class="sample-table-wrap">
@@ -472,7 +472,7 @@ function resetWizard() {
           >
             <div class="type-card-top">
               <span class="type-badge type-badge--b">B 타입</span>
-              <span class="type-name">열별 활동 형식</span>
+              <span class="type-name">열 단위 활동 형식</span>
             </div>
             <p class="type-desc">활동이 열(헤더)로 나뉜 형식입니다.<br>한 학생의 여러 활동이 한 행에 있습니다.</p>
             <div class="sample-table-wrap">
@@ -661,7 +661,7 @@ function resetWizard() {
             </div>
             <div class="summary-row">
               <span class="summary-key">양식</span>
-              <span class="summary-val">{{ fileType === 'A' ? 'A타입 — 행별 활동 형식' : 'B타입 — 열별 활동 형식' }}</span>
+              <span class="summary-val">{{ fileType === 'A' ? 'A타입 — 행 단위 활동 형식' : 'B타입 — 열 단위 활동 형식' }}</span>
             </div>
             <div class="summary-row">
               <span class="summary-key">데이터 행</span>

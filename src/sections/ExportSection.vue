@@ -48,8 +48,8 @@ const estimatedRows = computed(() => {
 })
 
 const typeLabel = computed(() => {
-  if (exportType.value === 'A') return 'A타입 — 행별 활동 형식'
-  if (exportType.value === 'B') return 'B타입 — 열별 활동 형식'
+  if (exportType.value === 'A') return 'A타입 — 행 단위 활동 형식'
+  if (exportType.value === 'B') return 'B타입 — 열 단위 활동 형식'
   if (exportType.value === 'C') return 'C타입 — 합본 형식'
   return ''
 })
@@ -182,7 +182,7 @@ async function doExport() {
           <div class="type-card" :class="{ 'type-card--selected': exportType === 'A' }" @click="exportType = 'A'">
             <div class="type-card-top">
               <span class="type-badge type-badge--a">A 타입</span>
-              <span class="type-name">행별 활동 형식</span>
+              <span class="type-name">행 단위 활동 형식</span>
             </div>
             <p class="type-desc">한 행에 학생 1명의 활동 1개가 기재됩니다.<br>기록이 없는 활동도 빈 행으로 포함됩니다.</p>
             <div class="sample-table-wrap">
@@ -230,7 +230,7 @@ async function doExport() {
           <div class="type-card" :class="{ 'type-card--selected': exportType === 'B' }" @click="exportType = 'B'">
             <div class="type-card-top">
               <span class="type-badge type-badge--b">B 타입</span>
-              <span class="type-name">열별 활동 형식</span>
+              <span class="type-name">열 단위 활동 형식</span>
             </div>
             <p class="type-desc">활동이 열(헤더)로 나뉜 형식입니다.<br>한 학생의 모든 활동이 한 행에 있습니다.</p>
             <div class="sample-table-wrap">
