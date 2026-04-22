@@ -1,7 +1,7 @@
 <script setup>
 import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
 import {invoke} from '@tauri-apps/api/core'
-import {ArrowLeftRight, Minimize2, MousePointerClick, Pin, PinOff} from 'lucide-vue-next'
+import {ArrowLeftRight, CircleAlert, Minimize2, MousePointerClick, Pin, PinOff} from 'lucide-vue-next'
 import {useAreaStore} from '../stores/area'
 import CellHistoryModal from '../components/CellHistoryModal.vue'
 
@@ -13,6 +13,7 @@ const loading = ref(false)
 const freezeColumns = ref(true)
 const smartScroll = ref(true)
 const compactCell = ref(true)
+const highlightEmpty = ref(false)
 const collapsedActivities = ref(new Set())
 
 function toggleActivity(actId) {
@@ -227,6 +228,10 @@ function isStudentOverLimit(studentId) {
   return studentTotalBytes(studentId) > byteLimit.value
 }
 
+function isStudentEmpty(studentId) {
+  return studentTotalBytes(studentId) === 0
+}
+
 // 히스토리 모달
 const historyModal = ref(null) // { activityId, studentId, activityName, studentName }
 
@@ -311,6 +316,15 @@ function isNewGroup(students, index) {
             <Minimize2 :size="15"/>
             {{ compactCell ? '셀높이 고정' : '셀높이 자동' }}
           </button>
+          <button
+              class="btn-freeze"
+              :class="highlightEmpty ? 'btn-freeze--on btn-freeze--warn' : ''"
+              @click="highlightEmpty = !highlightEmpty"
+              title="기록이 없는 학생 행 강조 켜기/끄기"
+          >
+            <CircleAlert :size="15"/>
+            {{ highlightEmpty ? '빈학생 ON' : '빈학생 OFF' }}
+          </button>
         </div>
       </div>
 
@@ -392,25 +406,25 @@ function isNewGroup(students, index) {
           >
             <td
                 class="td-fixed td-grade"
-                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : '']"
+                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : (highlightEmpty && isStudentEmpty(student.id) ? 'td-row--empty' : '')]"
                 style="left: 0"
             >{{ student.grade }}
             </td>
             <td
                 class="td-fixed td-class"
-                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : '']"
+                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : (highlightEmpty && isStudentEmpty(student.id) ? 'td-row--empty' : '')]"
                 style="left: 48px"
             >{{ student.class_num }}
             </td>
             <td
                 class="td-fixed td-number"
-                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : '']"
+                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : (highlightEmpty && isStudentEmpty(student.id) ? 'td-row--empty' : '')]"
                 style="left: 96px"
             >{{ student.number }}
             </td>
             <td
                 class="td-fixed td-name"
-                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : '']"
+                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : (highlightEmpty && isStudentEmpty(student.id) ? 'td-row--empty' : '')]"
                 style="left: 144px"
             >{{ student.name }}
             </td>
@@ -418,14 +432,14 @@ function isNewGroup(students, index) {
                 class="td-fixed td-total"
                 :class="[
                 freezeColumns ? 'sticky' : '',
-                isStudentOverLimit(student.id) ? 'td-total--over' : ''
+                isStudentOverLimit(student.id) ? 'td-total--over' : (highlightEmpty && isStudentEmpty(student.id) ? 'td-total--empty' : '')
               ]"
                 style="left: 244px"
             >
             <span
                 v-if="byteLimit"
                 class="total-bytes"
-                :class="isStudentOverLimit(student.id) ? 'total-bytes--over' : ''"
+                :class="isStudentOverLimit(student.id) ? 'total-bytes--over' : (highlightEmpty && isStudentEmpty(student.id) ? 'total-bytes--empty' : '')"
             >
               {{ studentTotalBytes(student.id) }} / {{ byteLimit }} Bytes
             </span>
@@ -750,6 +764,21 @@ thead .sticky {
 .total-bytes--over {
   color: #ff9090;
   font-weight: 700;
+}
+
+.td-row--empty,
+.td-total--empty {
+  background-color: #1e1a00 !important;
+}
+
+.total-bytes--empty {
+  color: #fbbf24;
+}
+
+.btn-freeze--warn {
+  color: #fbbf24 !important;
+  border-color: rgba(251, 191, 36, 0.3) !important;
+  background-color: rgba(251, 191, 36, 0.08) !important;
 }
 
 /* 반 구분선 */
