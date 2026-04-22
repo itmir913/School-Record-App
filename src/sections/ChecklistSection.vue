@@ -362,10 +362,11 @@ async function doExport() {
                   {{ row.hasContent ? 'O' : 'X' }}
                 </td>
                 <td v-if="previewEnabled" class="cell-topic">
-                  <input
+                  <textarea
                       v-if="row.hasContent"
                       v-model="row.topic"
                       class="topic-input"
+                      rows="1"
                       placeholder="활동주제 입력…"
                   />
                 </td>
@@ -755,6 +756,10 @@ async function doExport() {
   outline: none;
   transition: border-color 0.15s;
   box-sizing: border-box;
+  line-height: 1.4;
+  min-height: 20px;
+  resize: vertical;
+  white-space: pre-wrap;
 }
 
 .topic-input:focus {
