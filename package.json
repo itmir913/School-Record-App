@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:portable": "tauri build --no-bundle",
-    "tauri:installer": "tauri build --bundles nsis"
+    "tauri:installer": "tauri build --bundles nsis",
+    "clean:rust": "cargo clean --manifest-path src-tauri/Cargo.toml",
+    "clean": "npm run clean:rust"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
