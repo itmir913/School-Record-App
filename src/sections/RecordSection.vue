@@ -248,7 +248,7 @@ function isNewGroup(students, index) {
               v-model="selectedAreaId"
               class="area-select"
           >
-            <option :value="null" disabled>영역 선택...</option>
+            <option :value="null" disabled>영역(Area) 선택...</option>
             <option
                 v-for="area in areaStore.areas"
                 :key="area.id"
@@ -294,7 +294,7 @@ function isNewGroup(students, index) {
               title="기록이 없는 학생 행 강조 켜기/끄기"
           >
             <CircleAlert :size="15"/>
-            {{ highlightEmpty ? '빈학생 ON' : '빈학생 OFF' }}
+            {{ highlightEmpty ? '빈 학생 ON' : '빈 학생 OFF' }}
           </button>
         </div>
       </div>
