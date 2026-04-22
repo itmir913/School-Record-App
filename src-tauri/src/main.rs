@@ -872,11 +872,20 @@ fn bulk_import_records(
                 if exists {
                     if let Some(ref n) = r.name {
                         if !n.is_empty() {
-                            conn.execute(
-                                "UPDATE Student SET name = ?1 WHERE grade=?2 AND class_num=?3 AND number=?4",
-                                rusqlite::params![n, r.grade, r.class_num, r.number],
-                            )
+                            let existing_name: String = conn
+                                .query_row(
+                                    "SELECT name FROM Student WHERE grade=?1 AND class_num=?2 AND number=?3",
+                                    rusqlite::params![r.grade, r.class_num, r.number],
+                                    |row| row.get(0),
+                                )
                                 .map_err(|e| e.to_string())?;
+                            if existing_name.trim().is_empty() {
+                                conn.execute(
+                                    "UPDATE Student SET name = ?1 WHERE grade=?2 AND class_num=?3 AND number=?4",
+                                    rusqlite::params![n, r.grade, r.class_num, r.number],
+                                )
+                                    .map_err(|e| e.to_string())?;
+                            }
                         }
                     }
                     students_updated += 1;
