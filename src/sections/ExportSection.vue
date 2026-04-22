@@ -2,6 +2,7 @@
 import {computed, onMounted, ref, watch} from 'vue'
 import {invoke} from '@tauri-apps/api/core'
 import {save} from '@tauri-apps/plugin-dialog'
+import {revealItemInDir} from '@tauri-apps/plugin-opener'
 import {ArrowLeft, ArrowRight} from 'lucide-vue-next'
 import * as XLSX from 'xlsx'
 
@@ -144,6 +145,7 @@ async function doExport() {
 
     exportResult.value = {
       fileName: filePath.split(/[\\/]/).pop(),
+      filePath,
       rowCount: rows.length,
     }
   } catch (e) {
@@ -386,7 +388,10 @@ async function doExport() {
             </div>
           </div>
           <p class="result-filename">{{ exportResult.fileName }}</p>
-          <button class="btn-reset" @click="resetWizard">새로 내보내기</button>
+          <div class="result-actions">
+            <button class="btn-reveal" @click="revealItemInDir(exportResult.filePath)">파일 확인</button>
+            <button class="btn-reset" @click="resetWizard">새로 내보내기</button>
+          </div>
         </div>
       </div>
 
@@ -738,9 +743,31 @@ async function doExport() {
   margin: 0;
 }
 
-.btn-reset {
+.result-actions {
+  display: flex;
+  gap: 10px;
   margin-top: 8px;
+}
+
+.btn-reveal {
   padding: 9px 24px;
+  background: rgba(59, 91, 219, 0.12);
+  border: 1px solid rgba(59, 91, 219, 0.35);
+  border-radius: 8px;
+  color: #7ba8f0;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.btn-reveal:hover {
+  background: rgba(59, 91, 219, 0.22);
+  color: #93c5fd;
+}
+
+.btn-reset {
+  padding: 9px 24px;
+  margin-top: 0;
   background: none;
   border: 1px solid #1a2035;
   border-radius: 8px;
