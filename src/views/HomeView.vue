@@ -63,7 +63,7 @@ async function checkUpdate() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = await res.json()
     latestVersion.value = data.tag_name
-    releaseUrl.value = 'https://github.com/itmir913/School-Record-App/releases/latest'
+    releaseUrl.value = data.html_url
     const tag = data.tag_name.replace(/^v/, '')
     updateStatus.value = tag !== currentVersion.value ? 'found' : 'latest'
   } catch {
