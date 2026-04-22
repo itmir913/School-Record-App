@@ -419,7 +419,7 @@ function resetWizard() {
               @click="fileType = 'A'"
           >
             <div class="type-card-top">
-              <span class="type-badge">A 타입</span>
+              <span class="type-badge type-badge--a">A 타입</span>
               <span class="type-name">행별 활동 형식</span>
             </div>
             <p class="type-desc">한 행에 학생 1명의 활동 1개가 기재됩니다.<br>여러 활동을 한 파일에서 동시에 가져올 수 있습니다.</p>
@@ -471,7 +471,7 @@ function resetWizard() {
               @click="fileType = 'B'"
           >
             <div class="type-card-top">
-              <span class="type-badge">B 타입</span>
+              <span class="type-badge type-badge--b">B 타입</span>
               <span class="type-name">열별 활동 형식</span>
             </div>
             <p class="type-desc">활동이 열(헤더)로 나뉜 형식입니다.<br>한 학생의 여러 활동이 한 행에 있습니다.</p>
@@ -1008,11 +1008,23 @@ function resetWizard() {
 .type-badge {
   font-size: 12px;
   font-weight: 700;
+  border-radius: 6px;
+  padding: 2px 8px;
   color: #7ba8f0;
   background: rgba(59, 91, 219, 0.15);
   border: 1px solid rgba(59, 91, 219, 0.3);
-  border-radius: 6px;
-  padding: 2px 8px;
+}
+
+.type-badge--a {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+.type-badge--b {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.15);
+  border-color: rgba(251, 191, 36, 0.4);
 }
 
 .type-name {
