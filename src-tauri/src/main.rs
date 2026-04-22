@@ -498,7 +498,7 @@ fn bulk_upsert_students(
                 .query_row(
                     "SELECT COUNT(*) FROM Student WHERE grade=?1 AND class_num=?2 AND number=?3",
                     rusqlite::params![s.grade, s.class_num, s.number],
-                    |row| row.get::<_, i32>(0),
+                    |row| row.get::<_, i64>(0),
                 )
                 .map_err(|e| e.to_string())?
                 > 0;
@@ -860,7 +860,7 @@ fn bulk_import_records(
                     .query_row(
                         "SELECT COUNT(*) FROM Student WHERE grade=?1 AND class_num=?2 AND number=?3",
                         rusqlite::params![r.grade, r.class_num, r.number],
-                        |row| row.get::<_, i32>(0),
+                        |row| row.get::<_, i64>(0),
                     )
                     .map_err(|e| e.to_string())?
                     > 0;
