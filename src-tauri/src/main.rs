@@ -53,17 +53,6 @@ struct ActivityDetail {
     record_count: i64,
 }
 
-// ── 헬퍼 매크로: 커넥션 잠금 ─────────────────────────────────
-
-macro_rules! conn {
-    ($state:expr) => {{
-        let guard = $state.0.lock().unwrap();
-        guard
-            .as_ref()
-            .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())
-            .map(|c| c as *const Connection)
-    }};
-}
 
 // ── 프로젝트 커맨드 ──────────────────────────────────────────
 
