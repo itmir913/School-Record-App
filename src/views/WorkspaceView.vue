@@ -11,10 +11,13 @@ import StudentSection from '../sections/StudentSection.vue'
 import RecordSection from '../sections/RecordSection.vue'
 import ImportSection from '../sections/ImportSection.vue'
 import ExportSection from '../sections/ExportSection.vue'
+import SnapshotModal from '../components/SnapshotModal.vue'
 
 const project = useProjectStore()
 const collapsed = ref(false)
 const activeSection = ref('overview')
+const sectionKey = ref(0)
+const showSnapshotModal = ref(false)
 
 const sectionMap = {
   overview: OverviewSection,
@@ -48,10 +51,16 @@ onMounted(async () => {
         :active-section="activeSection"
         :file-path="project.filePath"
         @select="activeSection = $event"
+        @openSnapshot="showSnapshotModal = true"
     />
     <main class="workspace-main">
-      <component :is="currentSection" @navigate="activeSection = $event"/>
+      <component :is="currentSection" :key="sectionKey" @navigate="activeSection = $event"/>
     </main>
+    <SnapshotModal
+        v-if="showSnapshotModal"
+        @close="showSnapshotModal = false"
+        @restored="sectionKey++"
+    />
   </div>
 </template>
 

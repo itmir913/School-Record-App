@@ -82,4 +82,13 @@ CREATE INDEX IF NOT EXISTS idx_record_student ON ActivityRecord (student_id);
 CREATE INDEX IF NOT EXISTS idx_areastudent_student ON AreaStudent (student_id);
 CREATE INDEX IF NOT EXISTS idx_areaactivity_activity ON AreaActivity (activity_id);
 
+-- ================================================================
+-- 스냅샷
+-- ================================================================
 
+CREATE TABLE IF NOT EXISTS Snapshot
+(
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    memo       TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);

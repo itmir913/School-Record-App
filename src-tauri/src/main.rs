@@ -776,7 +776,6 @@ fn get_record_history(
 
 /// 현재 DB content를 히스토리에 스냅샷으로 기록.
 /// 같은 버전(changed_at = updated_at)의 항목이 이미 존재하면 note만 갱신한다.
-/// ActivityRecord가 없거나 content가 비어 있으면 아무 것도 하지 않음.
 fn save_snapshot_internal(
     conn: &Connection,
     activity_id: i64,
@@ -789,7 +788,6 @@ fn save_snapshot_internal(
          SELECT r.id, r.content, r.updated_at, ?3
          FROM ActivityRecord r
          WHERE r.activity_id = ?1 AND r.student_id = ?2
-           AND r.content != ''
            AND NOT EXISTS (
                SELECT 1 FROM ActivityRecordHistory h
                WHERE h.activity_record_id = r.id
@@ -963,6 +961,151 @@ fn bulk_import_records(
     }
 }
 
+// ── 스냅샷 ───────────────────────────────────────────────────
+
+#[derive(Serialize)]
+struct SnapshotItem {
+    id: i64,
+    memo: Option<String>,
+    created_at: String,
+}
+
+#[tauri::command]
+fn create_snapshot(
+    memo: Option<String>,
+    state: State<DbState>,
+) -> Result<SnapshotItem, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
+
+    let result: Result<SnapshotItem, String> = (|| {
+        // 변경된 레코드만 history 삽입 (기존 노트 보존을 위해 note = NULL)
+        conn.execute(
+            "INSERT INTO ActivityRecordHistory (activity_record_id, content, changed_at, note)
+             SELECT r.id, r.content, r.updated_at, NULL
+             FROM ActivityRecord r
+             WHERE NOT EXISTS (
+                 SELECT 1 FROM ActivityRecordHistory h
+                 WHERE h.activity_record_id = r.id
+                   AND h.changed_at = r.updated_at
+             )",
+            [],
+        )
+        .map_err(|e| e.to_string())?;
+
+        conn.execute(
+            "INSERT INTO Snapshot (memo) VALUES (?1)",
+            rusqlite::params![memo],
+        )
+        .map_err(|e| e.to_string())?;
+
+        let snapshot_id = conn.last_insert_rowid();
+        let created_at: String = conn
+            .query_row(
+                "SELECT created_at FROM Snapshot WHERE id = ?1",
+                rusqlite::params![snapshot_id],
+                |row| row.get(0),
+            )
+            .map_err(|e| e.to_string())?;
+
+        Ok(SnapshotItem { id: snapshot_id, memo, created_at })
+    })();
+
+    match result {
+        Ok(item) => {
+            conn.execute_batch("COMMIT").map_err(|e| e.to_string())?;
+            Ok(item)
+        }
+        Err(e) => {
+            let _ = conn.execute_batch("ROLLBACK");
+            Err(e)
+        }
+    }
+}
+
+#[tauri::command]
+fn get_snapshots(state: State<DbState>) -> Result<Vec<SnapshotItem>, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    let mut stmt = conn
+        .prepare("SELECT id, memo, created_at FROM Snapshot ORDER BY created_at DESC")
+        .map_err(|e| e.to_string())?;
+
+    let items = stmt
+        .query_map([], |row| {
+            Ok(SnapshotItem {
+                id: row.get(0)?,
+                memo: row.get(1)?,
+                created_at: row.get(2)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+
+    Ok(items)
+}
+
+#[tauri::command]
+fn restore_snapshot(
+    snapshot_id: i64,
+    state: State<DbState>,
+) -> Result<i64, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    let snapshot_at: String = conn
+        .query_row(
+            "SELECT created_at FROM Snapshot WHERE id = ?1",
+            rusqlite::params![snapshot_id],
+            |row| row.get(0),
+        )
+        .map_err(|_| format!("스냅샷을 찾을 수 없습니다. id={snapshot_id}"))?;
+
+    conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
+
+    let result: Result<i64, String> = (|| {
+        // history 있는 레코드 → 해당 시점 content 복원
+        // history 없는 레코드(스냅샷 이후 생성) → '' 초기화
+        let rows = conn
+            .execute(
+                "UPDATE ActivityRecord SET
+                   content = COALESCE(
+                     (SELECT h.content
+                      FROM ActivityRecordHistory h
+                      WHERE h.activity_record_id = ActivityRecord.id
+                        AND h.changed_at <= ?1
+                      ORDER BY h.changed_at DESC LIMIT 1),
+                     ''
+                   ),
+                   updated_at = datetime('now')",
+                rusqlite::params![snapshot_at],
+            )
+            .map_err(|e| e.to_string())?;
+        Ok(rows as i64)
+    })();
+
+    match result {
+        Ok(count) => {
+            conn.execute_batch("COMMIT").map_err(|e| e.to_string())?;
+            Ok(count)
+        }
+        Err(e) => {
+            let _ = conn.execute_batch("ROLLBACK");
+            Err(e)
+        }
+    }
+}
+
 // ── 파일 유틸 ────────────────────────────────────────────────
 
 #[tauri::command]
@@ -1013,6 +1156,9 @@ fn main() {
             bulk_import_records,
             write_text_file,
             write_bytes_file,
+            create_snapshot,
+            get_snapshots,
+            restore_snapshot,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

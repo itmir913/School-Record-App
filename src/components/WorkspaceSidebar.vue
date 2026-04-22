@@ -3,11 +3,11 @@ import {computed} from 'vue'
 import {revealItemInDir} from '@tauri-apps/plugin-opener'
 import {
   BookOpen,
-  CheckCircle,
   ChevronLeft,
   ChevronRight,
   Download,
   FolderOpen,
+  GitBranch,
   Layers,
   LayoutDashboard,
   PenLine,
@@ -21,7 +21,7 @@ const props = defineProps({
   filePath: String,
 })
 
-const emit = defineEmits(['update:collapsed', 'select'])
+const emit = defineEmits(['update:collapsed', 'select', 'openSnapshot'])
 
 const fileName = computed(() => {
   if (!props.filePath) return ''
@@ -112,10 +112,16 @@ const navGroups = [
         <span v-if="!collapsed" class="file-name">{{ fileName }}</span>
       </button>
 
-      <!-- 자동 저장 인디케이터 -->
-      <button v-if="fileName" class="autosave-indicator" :class="{ 'autosave-indicator--icon': collapsed }">
-        <CheckCircle :size="18" class="autosave-icon"/>
-        <span v-if="!collapsed" class="autosave-text">자동 저장 활성화됨</span>
+      <!-- 스냅샷 버튼 -->
+      <button
+          v-if="fileName"
+          class="autosave-indicator"
+          :class="{ 'autosave-indicator--icon': collapsed }"
+          @click="$emit('openSnapshot')"
+          title="스냅샷 관리"
+      >
+        <GitBranch :size="18" class="autosave-icon"/>
+        <span v-if="!collapsed" class="autosave-text">스냅샷</span>
       </button>
     </div>
   </aside>
@@ -327,7 +333,7 @@ const navGroups = [
 
 .autosave-icon {
   flex-shrink: 0;
-  color: #4ade80;
+  color: #8aaaf8;
   opacity: 0.6;
 }
 
