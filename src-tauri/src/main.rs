@@ -312,25 +312,34 @@ fn set_activity_areas(
         .as_ref()
         .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
 
-    // 이 활동의 기존 영역 매핑 전체 제거
-    conn.execute(
-        "DELETE FROM AreaActivity WHERE activity_id = ?1",
-        rusqlite::params![activity_id],
-    )
-        .map_err(|e| e.to_string())?;
-
-    // 각 영역에 활동 추가 (해당 영역의 마지막 순서로)
-    for area_id in area_ids.iter() {
+    conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
+    let result = (|| -> Result<(), String> {
+        // 이 활동의 기존 영역 매핑 전체 제거
         conn.execute(
-            "INSERT INTO AreaActivity (area_id, activity_id, default_order)
-             VALUES (?1, ?2,
-               COALESCE((SELECT MAX(default_order) FROM AreaActivity WHERE area_id = ?1), 0) + 1)",
-            rusqlite::params![area_id, activity_id],
+            "DELETE FROM AreaActivity WHERE activity_id = ?1",
+            rusqlite::params![activity_id],
         )
             .map_err(|e| e.to_string())?;
-    }
 
-    Ok(())
+        // 각 영역에 활동 추가 (해당 영역의 마지막 순서로)
+        for area_id in area_ids.iter() {
+            conn.execute(
+                "INSERT INTO AreaActivity (area_id, activity_id, default_order)
+                 VALUES (?1, ?2,
+                   COALESCE((SELECT MAX(default_order) FROM AreaActivity WHERE area_id = ?1), 0) + 1)",
+                rusqlite::params![area_id, activity_id],
+            )
+                .map_err(|e| e.to_string())?;
+        }
+        Ok(())
+    })();
+    match result {
+        Ok(_) => conn.execute_batch("COMMIT").map_err(|e| e.to_string()),
+        Err(e) => {
+            let _ = conn.execute_batch("ROLLBACK");
+            Err(e)
+        }
+    }
 }
 
 // ── Student 커맨드 ────────────────────────────────────────────
@@ -436,21 +445,30 @@ fn set_area_activities(
         .as_ref()
         .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
 
-    conn.execute(
-        "DELETE FROM AreaActivity WHERE area_id = ?1",
-        rusqlite::params![area_id],
-    )
-        .map_err(|e| e.to_string())?;
-
-    for (order, act_id) in activity_ids.iter().enumerate() {
+    conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
+    let result = (|| -> Result<(), String> {
         conn.execute(
-            "INSERT INTO AreaActivity (area_id, activity_id, default_order) VALUES (?1, ?2, ?3)",
-            rusqlite::params![area_id, act_id, (order + 1) as i64],
+            "DELETE FROM AreaActivity WHERE area_id = ?1",
+            rusqlite::params![area_id],
         )
             .map_err(|e| e.to_string())?;
-    }
 
-    Ok(())
+        for (order, act_id) in activity_ids.iter().enumerate() {
+            conn.execute(
+                "INSERT INTO AreaActivity (area_id, activity_id, default_order) VALUES (?1, ?2, ?3)",
+                rusqlite::params![area_id, act_id, (order + 1) as i64],
+            )
+                .map_err(|e| e.to_string())?;
+        }
+        Ok(())
+    })();
+    match result {
+        Ok(_) => conn.execute_batch("COMMIT").map_err(|e| e.to_string()),
+        Err(e) => {
+            let _ = conn.execute_batch("ROLLBACK");
+            Err(e)
+        }
+    }
 }
 
 #[derive(Deserialize)]
@@ -477,33 +495,46 @@ fn bulk_upsert_students(
         .as_ref()
         .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
 
-    let mut inserted: i64 = 0;
-    let mut updated: i64 = 0;
-    for s in students.iter() {
-        let exists: bool = conn
-            .query_row(
-                "SELECT COUNT(*) FROM Student WHERE grade=?1 AND class_num=?2 AND number=?3",
-                rusqlite::params![s.grade, s.class_num, s.number],
-                |row| row.get::<_, i32>(0),
+    conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
+    let result = (|| -> Result<BulkUpsertResult, String> {
+        let mut inserted: i64 = 0;
+        let mut updated: i64 = 0;
+        for s in students.iter() {
+            let exists: bool = conn
+                .query_row(
+                    "SELECT COUNT(*) FROM Student WHERE grade=?1 AND class_num=?2 AND number=?3",
+                    rusqlite::params![s.grade, s.class_num, s.number],
+                    |row| row.get::<_, i32>(0),
+                )
+                .map_err(|e| e.to_string())?
+                > 0;
+
+            conn.execute(
+                "INSERT INTO Student (grade, class_num, number, name)
+                 VALUES (?1, ?2, ?3, ?4)
+                 ON CONFLICT (grade, class_num, number) DO UPDATE SET name = excluded.name",
+                rusqlite::params![s.grade, s.class_num, s.number, s.name],
             )
-            .map_err(|e| e.to_string())?
-            > 0;
+                .map_err(|e| e.to_string())?;
 
-        conn.execute(
-            "INSERT INTO Student (grade, class_num, number, name)
-             VALUES (?1, ?2, ?3, ?4)
-             ON CONFLICT (grade, class_num, number) DO UPDATE SET name = excluded.name",
-            rusqlite::params![s.grade, s.class_num, s.number, s.name],
-        )
-            .map_err(|e| e.to_string())?;
-
-        if exists {
-            updated += 1;
-        } else {
-            inserted += 1;
+            if exists {
+                updated += 1;
+            } else {
+                inserted += 1;
+            }
+        }
+        Ok(BulkUpsertResult { inserted, updated })
+    })();
+    match result {
+        Ok(r) => {
+            conn.execute_batch("COMMIT").map_err(|e| e.to_string())?;
+            Ok(r)
+        }
+        Err(e) => {
+            let _ = conn.execute_batch("ROLLBACK");
+            Err(e)
         }
     }
-    Ok(BulkUpsertResult { inserted, updated })
 }
 
 // ── AreaStudent 커맨드 ────────────────────────────────────────
@@ -539,21 +570,30 @@ fn set_area_students(
         .as_ref()
         .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
 
-    conn.execute(
-        "DELETE FROM AreaStudent WHERE area_id = ?1",
-        rusqlite::params![area_id],
-    )
-        .map_err(|e| e.to_string())?;
-
-    for student_id in student_ids.iter() {
+    conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
+    let result = (|| -> Result<(), String> {
         conn.execute(
-            "INSERT INTO AreaStudent (area_id, student_id, is_order_customized) VALUES (?1, ?2, 0)",
-            rusqlite::params![area_id, student_id],
+            "DELETE FROM AreaStudent WHERE area_id = ?1",
+            rusqlite::params![area_id],
         )
             .map_err(|e| e.to_string())?;
-    }
 
-    Ok(())
+        for student_id in student_ids.iter() {
+            conn.execute(
+                "INSERT INTO AreaStudent (area_id, student_id, is_order_customized) VALUES (?1, ?2, 0)",
+                rusqlite::params![area_id, student_id],
+            )
+                .map_err(|e| e.to_string())?;
+        }
+        Ok(())
+    })();
+    match result {
+        Ok(_) => conn.execute_batch("COMMIT").map_err(|e| e.to_string()),
+        Err(e) => {
+            let _ = conn.execute_batch("ROLLBACK");
+            Err(e)
+        }
+    }
 }
 
 // ── 기록 그리드 커맨드 ────────────────────────────────────────
