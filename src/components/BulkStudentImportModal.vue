@@ -253,9 +253,9 @@ async function doImport() {
             <div class="mapping-panel">
               <div class="mapping-panel-head">
                 <p class="mapping-title">열 매핑 확인</p>
-                <button class="btn-change-file" @click="resetFile(); fileInputRef.click()">
+                <button class="btn-change-file" @click="resetFile();">
                   <FileSpreadsheet :size="13"/>
-                  파일 변경
+                  파일 초기화
                 </button>
               </div>
               <p class="mapping-desc">📄 {{ fileName }}</p>
