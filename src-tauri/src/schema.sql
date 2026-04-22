@@ -15,14 +15,14 @@ CREATE TABLE IF NOT EXISTS Student
 CREATE TABLE IF NOT EXISTS Area
 (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    name       TEXT    NOT NULL,
+    name       TEXT    NOT NULL UNIQUE,
     byte_limit INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Activity
 (
     id   INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL
+    name TEXT NOT NULL UNIQUE
 );
 
 -- ================================================================
@@ -106,24 +106,3 @@ CREATE INDEX IF NOT EXISTS idx_areaactivity_activity ON AreaActivity (activity_i
 CREATE INDEX IF NOT EXISTS idx_areastudent_order ON AreaStudent (area_id, is_order_customized);
 CREATE INDEX IF NOT EXISTS idx_displayorder_areaactivity ON ActivityDisplayOrder (activity_id, area_id);
 
--- ================================================================
--- 트리거
--- ================================================================
-
-CREATE TRIGGER IF NOT EXISTS trg_display_order_on_activity_add
-    AFTER INSERT
-    ON AreaActivity
-    FOR EACH ROW
-BEGIN
-    INSERT INTO ActivityDisplayOrder (area_id, student_id, activity_id, display_order)
-    SELECT NEW.area_id,
-           ars.student_id,
-           NEW.activity_id,
-           COALESCE((SELECT MAX(ado.display_order)
-                     FROM ActivityDisplayOrder ado
-                     WHERE ado.area_id = NEW.area_id
-                       AND ado.student_id = ars.student_id), 0) + 1
-    FROM AreaStudent ars
-    WHERE ars.area_id = NEW.area_id
-      AND ars.is_order_customized = 1;
-END;

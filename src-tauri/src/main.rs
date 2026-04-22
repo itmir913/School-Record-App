@@ -11,6 +11,14 @@ use tauri::State;
 
 struct DbState(Mutex<Option<Connection>>);
 
+fn unique_err(e: &rusqlite::Error, kind: &str, name: &str) -> String {
+    if e.to_string().contains("UNIQUE constraint failed") {
+        format!("이미 같은 이름의 {kind}이 있습니다: {name}")
+    } else {
+        e.to_string()
+    }
+}
+
 // ── 직렬화 구조체 ────────────────────────────────────────────
 
 /// AreaItem.activities 에서 사용하는 단순 항목
@@ -147,7 +155,7 @@ fn create_area(name: String, byte_limit: i64, state: State<DbState>) -> Result<i
         "INSERT INTO Area (name, byte_limit) VALUES (?1, ?2)",
         rusqlite::params![name, byte_limit],
     )
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| unique_err(&e, "영역", &name))?;
 
     Ok(conn.last_insert_rowid())
 }
@@ -163,7 +171,7 @@ fn update_area(id: i64, name: String, byte_limit: i64, state: State<DbState>) ->
         "UPDATE Area SET name = ?1, byte_limit = ?2 WHERE id = ?3",
         rusqlite::params![name, byte_limit, id],
     )
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| unique_err(&e, "영역", &name))?;
 
     Ok(())
 }
@@ -253,7 +261,7 @@ fn create_activity(name: String, state: State<DbState>) -> Result<i64, String> {
         "INSERT INTO Activity (name) VALUES (?1)",
         rusqlite::params![name],
     )
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| unique_err(&e, "활동", &name))?;
 
     Ok(conn.last_insert_rowid())
 }
@@ -269,7 +277,7 @@ fn update_activity(id: i64, name: String, state: State<DbState>) -> Result<(), S
         "UPDATE Activity SET name = ?1 WHERE id = ?2",
         rusqlite::params![name, id],
     )
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| unique_err(&e, "활동", &name))?;
 
     Ok(())
 }
