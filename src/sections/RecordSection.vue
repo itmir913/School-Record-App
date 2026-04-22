@@ -319,9 +319,9 @@ function isNewGroup(students, index) {
       <div v-else-if="!gridData || gridData.students.length === 0 || gridData.activities.length === 0"
            class="empty-state">
         <p class="empty-text">
-          <template v-if="gridData && gridData.students.length === 0">이 영역에 배정된 학생이 없습니다. 학생 관리에서 영역에 학생을 배정하세요.
+          <template v-if="gridData && gridData.students.length === 0">이 영역에 배정된 학생이 없습니다. 영역(Area) 관리에서 <strong><u>학생 배정</u></strong> 버튼을 눌러 학생을 배정하세요.
           </template>
-          <template v-else-if="gridData && gridData.activities.length === 0">이 영역에 등록된 활동이 없습니다. 영역 편집에서 활동을 추가하세요.
+          <template v-else-if="gridData && gridData.activities.length === 0">이 영역에 등록된 활동이 없습니다. 영역(Area) 관리에서 <strong><u>포함할 활동</u></strong>을 추가하세요.
           </template>
           <template v-else>데이터를 불러올 수 없습니다.</template>
         </p>
