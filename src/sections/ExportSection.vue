@@ -175,8 +175,8 @@ async function doExport() {
 
       <!-- Step 1: 내보내기 유형 선택 -->
       <div v-if="step === 1" class="step-content">
-        <h3 class="step-title">내보내기 유형 선택</h3>
-        <p class="step-desc">내보낼 파일의 구조를 선택하세요.</p>
+        <h3 class="step-title">내보내기(Export) 형식 선택</h3>
+        <p class="step-desc">내보낼 엑셀 파일의 유형을 선택하세요.</p>
 
         <div class="type-cards">
           <div class="type-card" :class="{ 'type-card--selected': exportType === 'A' }" @click="exportType = 'A'">
@@ -184,7 +184,7 @@ async function doExport() {
               <span class="type-badge type-badge--a">A 타입</span>
               <span class="type-name">행 단위 활동 형식</span>
             </div>
-            <p class="type-desc">한 행에 학생 1명의 활동 1개가 기재됩니다.<br>기록이 없는 활동도 빈 행으로 포함됩니다.</p>
+            <p class="type-desc">한 행에 학생 1명의 활동 1개를 기재합니다.<br>학생 1명의 활동은 여러 행에 걸쳐 기록됩니다(학생 1명 = 여러 행).</p>
             <div class="sample-table-wrap">
               <table class="sample-table">
                 <thead>
@@ -202,25 +202,25 @@ async function doExport() {
                   <td>3</td>
                   <td>1</td>
                   <td>1</td>
-                  <td>홍길동</td>
-                  <td>자율활동</td>
-                  <td>학급 회장으로...</td>
+                  <td>학생A</td>
+                  <td>현장체험학습</td>
+                  <td>지역 기관을 탐방...</td>
                 </tr>
                 <tr>
                   <td>3</td>
                   <td>1</td>
                   <td>1</td>
-                  <td>홍길동</td>
-                  <td>동아리</td>
-                  <td>로봇 동아리에서...</td>
+                  <td>학생A</td>
+                  <td>학급자치회</td>
+                  <td>회의에 적극 참여...</td>
                 </tr>
                 <tr>
                   <td>3</td>
                   <td>1</td>
                   <td>2</td>
-                  <td>김철수</td>
-                  <td>자율활동</td>
-                  <td></td>
+                  <td>학생B</td>
+                  <td>체육대회</td>
+                  <td>다양한 종목에 참여...</td>
                 </tr>
                 </tbody>
               </table>
@@ -232,7 +232,7 @@ async function doExport() {
               <span class="type-badge type-badge--b">B 타입</span>
               <span class="type-name">열 단위 활동 형식</span>
             </div>
-            <p class="type-desc">활동이 열(헤더)로 나뉜 형식입니다.<br>한 학생의 모든 활동이 한 행에 있습니다.</p>
+            <p class="type-desc">활동이 열(헤더)로 구분된 형식입니다.<br>학생 1명의 모든 활동이 한 행에 기록됩니다(학생 1명 = 1행).</p>
             <div class="sample-table-wrap">
               <table class="sample-table">
                 <thead>
@@ -241,8 +241,8 @@ async function doExport() {
                   <th>반</th>
                   <th>번호</th>
                   <th>이름</th>
-                  <th>자율활동</th>
-                  <th>동아리</th>
+                  <th>현장체험학습</th>
+                  <th>학급자치회</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -250,25 +250,25 @@ async function doExport() {
                   <td>3</td>
                   <td>1</td>
                   <td>1</td>
-                  <td>홍길동</td>
-                  <td>학급 회장으로...</td>
-                  <td>로봇 동아리에서...</td>
+                  <td>학생A</td>
+                  <td>지역 기관을...</td>
+                  <td>회의에 적극...</td>
                 </tr>
                 <tr>
                   <td>3</td>
                   <td>1</td>
                   <td>2</td>
-                  <td>김철수</td>
+                  <td>학생B</td>
                   <td></td>
-                  <td>독서 동아리에서...</td>
+                  <td></td>
                 </tr>
                 <tr>
                   <td>3</td>
                   <td>1</td>
-                  <td>3</td>
-                  <td>박영희</td>
-                  <td>부회장으로...</td>
+                  <td>5</td>
+                  <td>학생E</td>
                   <td></td>
+                  <td>학급 행사 준비...</td>
                 </tr>
                 </tbody>
               </table>
@@ -279,9 +279,10 @@ async function doExport() {
                @click="exportType = 'C'">
             <div class="type-card-top">
               <span class="type-badge type-badge--c">C 타입</span>
-              <span class="type-name">합본 형식 (추천)</span>
+              <span class="type-name">최종 나이스(NEIS) 문장 형식 (추천)</span>
             </div>
-            <p class="type-desc">모든 활동 기록을 공백으로 합쳐 영역명 열 하나에 담습니다.<br>생기부 작성용 합본 텍스트를 그대로 내보낼 때 사용합니다.</p>
+            <p class="type-desc">학생의 모든 활동 기록을 하나의 문장으로 결합해 내보냅니다.<br>
+              나이스(NEIS) 입력용 최종 문장 생성에 사용합니다.</p>
             <div class="sample-table-wrap">
               <table class="sample-table">
                 <thead>

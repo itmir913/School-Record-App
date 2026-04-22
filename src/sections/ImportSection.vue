@@ -1,7 +1,7 @@
 <script setup>
 import {computed, ref, watch} from 'vue'
 import {invoke} from '@tauri-apps/api/core'
-import {ArrowLeft, ArrowRight, FileSpreadsheet} from 'lucide-vue-next'
+import {ArrowLeft, ArrowRight, Download, FileSpreadsheet} from 'lucide-vue-next'
 import * as XLSX from 'xlsx'
 
 const COL_ALIASES = {
@@ -321,6 +321,103 @@ async function doImport() {
   }
 }
 
+// ── 예시 파일 다운로드 ─────────────────────────────────────────
+
+function downloadSampleA() {
+  const rows = [
+    {학년: 3, 반: 1, 번호: 1, 이름: '학생A', 활동명: '현장체험학습', 활동내용: '지역 기관을 탐방하며 사회적 기능을 이해하고 성실히 활동에 참여함.'},
+    {학년: 3, 반: 1, 번호: 1, 이름: '학생A', 활동명: '학급자치회', 활동내용: '회의에 적극 참여하여 의견을 제시하고 의사결정에 기여함.'},
+    {학년: 3, 반: 1, 번호: 1, 이름: '학생A', 활동명: '전교학생회', 활동내용: '학교 행사 기획에 참여하며 책임감 있는 태도를 보임.'},
+    {학년: 3, 반: 1, 번호: 1, 이름: '학생A', 활동명: '체육대회', 활동내용: '경기와 응원에 적극 참여하며 협동심을 발휘함.'},
+    {학년: 3, 반: 1, 번호: 1, 이름: '학생A', 활동명: '독서토론', 활동내용: '주제에 대해 논리적으로 의견을 제시하며 토론에 참여함.'},
+    {학년: 3, 반: 1, 번호: 1, 이름: '학생A', 활동명: '실험실 안전교육', 활동내용: '안전 수칙을 정확히 이해하고 이를 성실히 준수함.'},
+    {학년: 3, 반: 1, 번호: 1, 이름: '학생A', 활동명: '재난 대비 훈련', 활동내용: '재난 대비 훈련 절차를 숙지하고 신속하게 대응하는 태도를 보임.'},
+    {학년: 3, 반: 1, 번호: 2, 이름: '학생B', 활동명: '체육대회', 활동내용: '다양한 종목에 참여하며 규칙을 준수하는 태도를 보임.'},
+    {학년: 3, 반: 1, 번호: 3, 이름: '학생C', 활동명: '독서토론', 활동내용: '도서를 바탕으로 자신의 생각을 논리적으로 표현함.'},
+    {학년: 3, 반: 1, 번호: 3, 이름: '학생C', 활동명: '실험실 안전교육', 활동내용: '실험 전 안전 점검을 철저히 하며 책임감 있게 참여함.'},
+    {학년: 3, 반: 1, 번호: 4, 이름: '학생D', 활동명: '현장체험학습', 활동내용: '체험 활동을 통해 다양한 직업 세계를 이해함.'},
+    {학년: 3, 반: 1, 번호: 4, 이름: '학생D', 활동명: '재난 대비 훈련', 활동내용: '재난 상황별 행동 요령을 숙지하고 훈련에 참여함.'},
+    {학년: 3, 반: 1, 번호: 5, 이름: '학생E', 활동명: '학급자치회', 활동내용: '학급 행사 준비 과정에서 협력적인 태도를 보이며 역할을 수행함.'},
+    {학년: 3, 반: 1, 번호: 6, 이름: '학생F', 활동명: '체육대회', 활동내용: '팀원들과 협력하여 경기에 성실히 참여함.'},
+    {학년: 3, 반: 1, 번호: 6, 이름: '학생F', 활동명: '전교학생회', 활동내용: '학생 의견을 수렴하여 학교 운영에 기여함.'},
+    {학년: 3, 반: 1, 번호: 6, 이름: '학생F', 활동명: '재난 대비 훈련', 활동내용: '훈련에 적극 참여하며 위기 대응 능력을 기름.'},
+    {학년: 3, 반: 1, 번호: 7, 이름: '학생G', 활동명: '현장체험학습', 활동내용: '현장 경험을 통해 배운 내용을 바탕으로 이해를 심화함.'},
+    {학년: 3, 반: 1, 번호: 7, 이름: '학생G', 활동명: '독서토론', 활동내용: '다양한 관점에서 의견을 제시하며 토론에 참여함.'},
+    {학년: 3, 반: 1, 번호: 7, 이름: '학생G', 활동명: '실험실 안전교육', 활동내용: '안전 수칙을 준수하며 성실히 교육에 참여함.'},
+    {학년: 3, 반: 1, 번호: 8, 이름: '학생H', 활동명: '재난 대비 훈련', 활동내용: '훈련 절차를 성실히 따르며 안전 의식을 함양함.'},
+  ]
+  const wb = XLSX.utils.book_new()
+  const ws = XLSX.utils.json_to_sheet(rows)
+  XLSX.utils.book_append_sheet(wb, ws, '예시')
+  XLSX.writeFile(wb, 'A타입_예시.xlsx')
+}
+
+function downloadSampleB() {
+  const cols = ['학년', '반', '번호', '이름', '현장체험학습', '학급자치회', '전교학생회', '체육대회', '독서토론', '실험실 안전교육', '재난 대비 훈련']
+  const empty = () => Object.fromEntries(cols.map(c => [c, '']))
+  const rows = [
+    {
+      ...empty(),
+      학년: 3,
+      반: 1,
+      번호: 1,
+      이름: '학생A',
+      현장체험학습: '지역 기관을 탐방하며 사회적 기능을 이해하고 성실히 활동에 참여함.',
+      학급자치회: '회의에 적극 참여하여 의견을 제시하고 의사결정에 기여함.',
+      전교학생회: '학교 행사 기획에 참여하며 책임감 있는 태도를 보임.',
+      체육대회: '경기와 응원에 적극 참여하며 협동심을 발휘함.',
+      독서토론: '주제에 대해 논리적으로 의견을 제시하며 토론에 참여함.',
+      '실험실 안전교육': '안전 수칙을 정확히 이해하고 이를 성실히 준수함.',
+      '재난 대비 훈련': '재난 대비 훈련 절차를 숙지하고 신속하게 대응하는 태도를 보임.'
+    },
+    {...empty(), 학년: 3, 반: 1, 번호: 2, 이름: '학생B', 체육대회: '다양한 종목에 참여하며 규칙을 준수하는 태도를 보임.'},
+    {
+      ...empty(),
+      학년: 3,
+      반: 1,
+      번호: 3,
+      이름: '학생C',
+      독서토론: '도서를 바탕으로 자신의 생각을 논리적으로 표현함.',
+      '실험실 안전교육': '실험 전 안전 점검을 철저히 하며 책임감 있게 참여함.'
+    },
+    {
+      ...empty(),
+      학년: 3,
+      반: 1,
+      번호: 4,
+      이름: '학생D',
+      현장체험학습: '체험 활동을 통해 다양한 직업 세계를 이해함.',
+      '재난 대비 훈련': '재난 상황별 행동 요령을 숙지하고 훈련에 참여함.'
+    },
+    {...empty(), 학년: 3, 반: 1, 번호: 5, 이름: '학생E', 학급자치회: '학급 행사 준비 과정에서 협력적인 태도를 보이며 역할을 수행함.'},
+    {
+      ...empty(),
+      학년: 3,
+      반: 1,
+      번호: 6,
+      이름: '학생F',
+      전교학생회: '학생 의견을 수렴하여 학교 운영에 기여함.',
+      체육대회: '팀원들과 협력하여 경기에 성실히 참여함.',
+      '재난 대비 훈련': '훈련에 적극 참여하며 위기 대응 능력을 기름.'
+    },
+    {
+      ...empty(),
+      학년: 3,
+      반: 1,
+      번호: 7,
+      이름: '학생G',
+      현장체험학습: '현장 경험을 통해 배운 내용을 바탕으로 이해를 심화함.',
+      독서토론: '다양한 관점에서 의견을 제시하며 토론에 참여함.',
+      '실험실 안전교육': '안전 수칙을 준수하며 성실히 교육에 참여함.'
+    },
+    {...empty(), 학년: 3, 반: 1, 번호: 8, 이름: '학생H', '재난 대비 훈련': '훈련 절차를 성실히 따르며 안전 의식을 함양함.'},
+  ]
+  const wb = XLSX.utils.book_new()
+  const ws = XLSX.utils.json_to_sheet(rows, {header: cols})
+  XLSX.utils.book_append_sheet(wb, ws, '예시')
+  XLSX.writeFile(wb, 'B타입_예시.xlsx')
+}
+
 function resetWizard() {
   step.value = 1
   fileName.value = ''
@@ -367,6 +464,119 @@ function resetWizard() {
 
       <!-- Step 1: 파일 업로드 -->
       <div v-if="step === 1" class="step-content">
+
+        <!-- 예시 파일 다운로드 -->
+        <div class="sample-section">
+          <h3 class="step-title">가져오기(Import) 파일 유형 안내</h3>
+          <p class="step-desc">가져오기 가능한 파일은 두 가지 유형(행 단위, 열 단위)입니다. 예시 다운로드 버튼을 눌러 각 유형의 예시를 확인하세요.</p>
+
+          <div class="type-cards">
+            <div class="type-card sample-type-card">
+              <div class="type-card-top">
+                <span class="type-badge type-badge--a">A 타입</span>
+                <span class="type-name">행 단위 활동 형식</span>
+              </div>
+              <p class="type-desc">한 행에 학생 1명의 활동 1개를 기재합니다.<br>학생 1명의 활동은 여러 행에 걸쳐 기록됩니다(학생 1명 = 여러 행).</p>
+              <div class="sample-table-wrap">
+                <table class="sample-table">
+                  <thead>
+                  <tr>
+                    <th>학년</th>
+                    <th>반</th>
+                    <th>번호</th>
+                    <th>이름</th>
+                    <th>활동명</th>
+                    <th>활동내용</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td>3</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>학생A</td>
+                    <td>현장체험학습</td>
+                    <td>지역 기관을 탐방...</td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>학생A</td>
+                    <td>학급자치회</td>
+                    <td>회의에 적극 참여...</td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>학생B</td>
+                    <td>체육대회</td>
+                    <td>다양한 종목에 참여...</td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button class="btn-sample-dl" @click.stop="downloadSampleA">
+                <Download :size="13"/>
+                A타입 예시 다운로드
+              </button>
+            </div>
+
+            <div class="type-card sample-type-card">
+              <div class="type-card-top">
+                <span class="type-badge type-badge--b">B 타입</span>
+                <span class="type-name">열 단위 활동 형식</span>
+              </div>
+              <p class="type-desc">활동이 열(헤더)로 구분된 형식입니다.<br>학생 1명의 모든 활동이 한 행에 기록됩니다(학생 1명 = 1행).</p>
+              <div class="sample-table-wrap">
+                <table class="sample-table">
+                  <thead>
+                  <tr>
+                    <th>학년</th>
+                    <th>반</th>
+                    <th>번호</th>
+                    <th>이름</th>
+                    <th>현장체험학습</th>
+                    <th>학급자치회</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td>3</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>학생A</td>
+                    <td>지역 기관을...</td>
+                    <td>회의에 적극...</td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>학생B</td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td>1</td>
+                    <td>5</td>
+                    <td>학생E</td>
+                    <td></td>
+                    <td>학급 행사 준비...</td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button class="btn-sample-dl" @click.stop="downloadSampleB">
+                <Download :size="13"/>
+                B타입 예시 다운로드
+              </button>
+            </div>
+          </div>
+        </div>
+
         <h3 class="step-title">가져올 파일 선택</h3>
         <p class="step-desc">CSV 또는 XLSX 파일을 선택하거나 드래그하세요.</p>
 
@@ -409,8 +619,8 @@ function resetWizard() {
 
       <!-- Step 2: 양식 선택 -->
       <div v-else-if="step === 2" class="step-content">
-        <h3 class="step-title">파일 양식 선택</h3>
-        <p class="step-desc">파일의 구조에 맞는 양식을 선택하세요.</p>
+        <h3 class="step-title">엑셀 파일 양식 선택</h3>
+        <p class="step-desc">가져올 엑셀 파일 양식에 맞는 타입을 선택하세요.</p>
 
         <div class="type-cards">
           <div
@@ -422,7 +632,7 @@ function resetWizard() {
               <span class="type-badge type-badge--a">A 타입</span>
               <span class="type-name">행 단위 활동 형식</span>
             </div>
-            <p class="type-desc">한 행에 학생 1명의 활동 1개가 기재됩니다.<br>여러 활동을 한 파일에서 동시에 가져올 수 있습니다.</p>
+            <p class="type-desc">한 행에 학생 1명의 활동 1개를 기재합니다.<br>학생 1명의 활동은 여러 행에 걸쳐 기록됩니다(학생 1명 = 여러 행).</p>
             <div class="sample-table-wrap">
               <table class="sample-table">
                 <thead>
@@ -440,25 +650,25 @@ function resetWizard() {
                   <td>3</td>
                   <td>1</td>
                   <td>1</td>
-                  <td>홍길동</td>
-                  <td>자율활동</td>
-                  <td>학급 회장으로...</td>
+                  <td>학생A</td>
+                  <td>현장체험학습</td>
+                  <td>지역 기관을 탐방...</td>
                 </tr>
                 <tr>
                   <td>3</td>
                   <td>1</td>
                   <td>1</td>
-                  <td>홍길동</td>
-                  <td>동아리</td>
-                  <td>로봇 동아리에서...</td>
+                  <td>학생A</td>
+                  <td>학급자치회</td>
+                  <td>회의에 적극 참여...</td>
                 </tr>
                 <tr>
                   <td>3</td>
                   <td>1</td>
                   <td>2</td>
-                  <td>김철수</td>
-                  <td>자율활동</td>
-                  <td>환경부원으로...</td>
+                  <td>학생B</td>
+                  <td>체육대회</td>
+                  <td>다양한 종목에 참여...</td>
                 </tr>
                 </tbody>
               </table>
@@ -474,7 +684,7 @@ function resetWizard() {
               <span class="type-badge type-badge--b">B 타입</span>
               <span class="type-name">열 단위 활동 형식</span>
             </div>
-            <p class="type-desc">활동이 열(헤더)로 나뉜 형식입니다.<br>한 학생의 여러 활동이 한 행에 있습니다.</p>
+            <p class="type-desc">활동이 열(헤더)로 구분된 형식입니다.<br>학생 1명의 모든 활동이 한 행에 기록됩니다(학생 1명 = 1행).</p>
             <div class="sample-table-wrap">
               <table class="sample-table">
                 <thead>
@@ -483,8 +693,8 @@ function resetWizard() {
                   <th>반</th>
                   <th>번호</th>
                   <th>이름</th>
+                  <th>현장체험학습</th>
                   <th>학급자치회</th>
-                  <th>동아리</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -492,25 +702,25 @@ function resetWizard() {
                   <td>3</td>
                   <td>1</td>
                   <td>1</td>
-                  <td>홍길동</td>
-                  <td>학급 회장으로...</td>
-                  <td>로봇 동아리에서...</td>
+                  <td>학생A</td>
+                  <td>지역 기관을...</td>
+                  <td>회의에 적극...</td>
                 </tr>
                 <tr>
                   <td>3</td>
                   <td>1</td>
                   <td>2</td>
-                  <td>김철수</td>
-                  <td>환경부장으로...</td>
-                  <td>독서 동아리에서...</td>
+                  <td>학생B</td>
+                  <td></td>
+                  <td></td>
                 </tr>
                 <tr>
                   <td>3</td>
                   <td>1</td>
-                  <td>3</td>
-                  <td>박영희</td>
-                  <td>부회장으로...</td>
-                  <td>컴퓨터 동아리에서...</td>
+                  <td>5</td>
+                  <td>학생E</td>
+                  <td></td>
+                  <td>학급 행사 준비...</td>
                 </tr>
                 </tbody>
               </table>
@@ -971,6 +1181,42 @@ function resetWizard() {
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 예시 파일 다운로드 */
+.sample-section {
+  margin-bottom: 32px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid #1a2035;
+}
+
+.sample-type-card {
+  cursor: default;
+}
+
+.sample-type-card:hover {
+  border-color: #1a2035;
+  background-color: transparent;
+}
+
+.btn-sample-dl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 7px 14px;
+  background: rgba(59, 91, 219, 0.08);
+  border: 1px solid rgba(59, 91, 219, 0.25);
+  border-radius: 7px;
+  color: #7ba8f0;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.btn-sample-dl:hover {
+  background: rgba(59, 91, 219, 0.18);
+  color: #93c5fd;
 }
 
 /* Step 2: 타입 카드 */
