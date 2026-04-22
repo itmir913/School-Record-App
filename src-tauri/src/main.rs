@@ -663,26 +663,35 @@ fn get_area_grid(area_id: i64, state: State<DbState>) -> Result<AreaGridData, St
         .collect::<Result<Vec<_>, _>>()
         .map_err(|e| e.to_string())?;
 
-    // 해당 활동들의 기록
+    // 해당 활동들의 기록 (이 영역에 배정된 학생으로만 필터링)
     let activity_ids: Vec<i64> = activities.iter().map(|a| a.id).collect();
-    let records = if activity_ids.is_empty() {
+    let student_ids: Vec<i64> = students.iter().map(|s| s.id).collect();
+    let records = if activity_ids.is_empty() || student_ids.is_empty() {
         vec![]
     } else {
-        let placeholders = activity_ids
+        let act_placeholders = activity_ids
             .iter()
             .enumerate()
             .map(|(i, _)| format!("?{}", i + 1))
             .collect::<Vec<_>>()
             .join(", ");
+        let stu_placeholders = student_ids
+            .iter()
+            .enumerate()
+            .map(|(i, _)| format!("?{}", activity_ids.len() + i + 1))
+            .collect::<Vec<_>>()
+            .join(", ");
         let sql = format!(
             "SELECT activity_id, student_id, content
              FROM ActivityRecord
-             WHERE activity_id IN ({})",
-            placeholders
+             WHERE activity_id IN ({})
+               AND student_id IN ({})",
+            act_placeholders, stu_placeholders
         );
+        let params: Vec<i64> = activity_ids.iter().chain(student_ids.iter()).copied().collect();
         let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
         let rows = stmt
-            .query_map(rusqlite::params_from_iter(activity_ids.iter()), |row| {
+            .query_map(rusqlite::params_from_iter(params.iter()), |row| {
                 Ok(RecordCell {
                     activity_id: row.get(0)?,
                     student_id: row.get(1)?,
