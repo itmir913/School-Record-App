@@ -19,6 +19,7 @@ const areas = ref([])
 const selectedAreaId = ref(null)
 const gridData = ref(null)
 const previewEnabled = ref(false)
+const previewRows = ref([])  // { studentId, grade, classNum, number, name, activityId, activityName, hasContent, topic }
 
 const exporting = ref(false)
 const exportResult = ref(null)
@@ -34,12 +35,55 @@ onMounted(async () => {
 
 const selectedArea = computed(() => areas.value.find(a => a.id === selectedAreaId.value))
 
-const canGoNext = computed(() => selectedAreaId.value !== null)
+const canGoNext = computed(() => {
+  if (step.value === 1) return selectedAreaId.value !== null
+  if (step.value === 2) return true
+  return false
+})
+
+// previewRows를 학생 단위로 그룹핑
+const previewGroups = computed(() => {
+  const map = new Map()
+  for (const row of previewRows.value) {
+    if (!map.has(row.studentId)) {
+      map.set(row.studentId, {
+        studentId: row.studentId,
+        grade: row.grade,
+        classNum: row.classNum,
+        number: row.number,
+        name: row.name,
+        rows: [],
+      })
+    }
+    map.get(row.studentId).rows.push(row)
+  }
+  return [...map.values()]
+})
 
 // ── 네비게이션 ────────────────────────────────────────────────
 
 async function goNext() {
-  gridData.value = await invoke('get_area_grid', {areaId: selectedAreaId.value})
+  if (step.value === 1) {
+    gridData.value = await invoke('get_area_grid', {areaId: selectedAreaId.value})
+    const {activities, students, records} = gridData.value
+    previewRows.value = students.flatMap(student =>
+      activities.map(activity => {
+        const rec = records.find(r => r.student_id === student.id && r.activity_id === activity.id)
+        const content = rec?.content?.trim() ?? ''
+        return {
+          studentId: student.id,
+          grade: student.grade,
+          classNum: student.class_num,
+          number: student.number,
+          name: student.name,
+          activityId: activity.id,
+          activityName: activity.name,
+          hasContent: !!content,
+          topic: content ? extractTopic(content) : '',
+        }
+      })
+    )
+  }
   step.value++
 }
 
@@ -51,6 +95,7 @@ function resetWizard() {
   step.value = 1
   selectedAreaId.value = null
   gridData.value = null
+  previewRows.value = []
   exportResult.value = null
   exportError.value = ''
 }
@@ -65,13 +110,13 @@ function extractTopic(content) {
   const firstSentence = dotIdx >= 0 ? content.slice(0, dotIdx).trim() : null
 
   if (firstSentence) {
-    // 큰/작은따옴표(직선·곡선 모두) 로 감싸진 부분 추출
+    // 큰/작은따옴표(직선·곡선·한국어 꺾쇠) 로 감싸진 부분 추출
     const m = firstSentence.match(/["""''「『]([^"""''」』]+)["""''」』]/u)
     if (m) return m[1]
     return firstSentence
   }
 
-  // 점이 없는 경우: 100자 이내 일부만
+  // 점이 없는 경우: 100자 이내
   return content.trim().slice(0, 100)
 }
 
@@ -80,24 +125,25 @@ function extractTopic(content) {
 const THIN = {style: 'thin'}
 const BORDER_ALL = {top: THIN, left: THIN, bottom: THIN, right: THIN}
 
-function styleCell(cell, {size = 12, bold = false, fill = null} = {}) {
+function styleCell(cell, {size = 12, bold = false, fill = null, wrapText = false} = {}) {
   cell.font = {name: '맑은 고딕', size, bold}
-  cell.alignment = {vertical: 'middle', horizontal: 'left'}
+  cell.alignment = {vertical: 'middle', horizontal: 'left', wrapText}
   if (fill) cell.fill = {type: 'pattern', pattern: 'solid', fgColor: {argb: fill}}
   cell.border = BORDER_ALL
 }
 
-function addStudentBlock(worksheet, student, activities, records, rowHeight, showPreview) {
+// studentRows: 해당 학생의 previewRow 배열
+function addStudentBlock(worksheet, student, studentRows, showPreview) {
   // ── 학생 정보 4행 ──────────────────────────────────────────
-  const infoRows = [
+  const infoData = [
     ['학년', student.grade],
     ['반', student.class_num],
     ['번호', student.number],
     ['이름', student.name],
   ]
-  for (const [label, value] of infoRows) {
+  for (const [label, value] of infoData) {
     const row = worksheet.addRow([label, value])
-    row.height = rowHeight
+    row.height = 24
     styleCell(row.getCell(1))
     styleCell(row.getCell(2))
   }
@@ -110,27 +156,28 @@ function addStudentBlock(worksheet, student, activities, records, rowHeight, sho
   const headerRow = worksheet.addRow(
     showPreview ? ['활동명', '참여여부', '활동주제'] : ['활동명', '참여여부'],
   )
-  headerRow.height = rowHeight
+  headerRow.height = 24
   styleCell(headerRow.getCell(1), {size: 13, bold: true, fill: 'FFD9D9D9'})
   styleCell(headerRow.getCell(2), {size: 13, bold: true, fill: 'FFD9D9D9'})
   if (showPreview) styleCell(headerRow.getCell(3), {size: 13, bold: true, fill: 'FFD9D9D9'})
 
-  // ── 활동 데이터 행 ────────────────────────────────────────
-  for (const activity of activities) {
-    const rec = records.find(r => r.student_id === student.id && r.activity_id === activity.id)
-    const content = rec?.content?.trim()
-    const ox = content ? 'O' : 'X'
-    const topic = showPreview && content ? extractTopic(rec.content) : ''
-    const row = worksheet.addRow(showPreview ? [activity.name, ox, topic] : [activity.name, ox])
-    row.height = rowHeight
-    styleCell(row.getCell(1))
+  // ── 활동 데이터 행 (행 높이 미지정 → Excel 자동 조절) ─────
+  for (const pr of studentRows) {
+    const ox = pr.hasContent ? 'O' : 'X'
+    const topic = showPreview ? (pr.topic ?? '') : ''
+    const row = worksheet.addRow(
+      showPreview ? [pr.activityName, ox, topic] : [pr.activityName, ox],
+    )
+    styleCell(row.getCell(1), {wrapText: true})       // 활동명: 줄 바꿈
     styleCell(row.getCell(2))
-    if (showPreview) styleCell(row.getCell(3))
+    if (showPreview) styleCell(row.getCell(3), {wrapText: true}) // 활동주제: 줄 바꿈
   }
 
-  // ── 서명 행 (마지막 행, pageBreak 기준) ────────────────────
-  const signRow = worksheet.addRow(showPreview ? ['학생 서명', '', ''] : ['학생 서명', ''])
-  signRow.height = rowHeight
+  // ── 서명 행 (페이지 나누기 기준점) ────────────────────────
+  const signRow = worksheet.addRow(
+    showPreview ? ['학생 서명', '', ''] : ['학생 서명', ''],
+  )
+  signRow.height = 30
   styleCell(signRow.getCell(1), {bold: true})
   styleCell(signRow.getCell(2))
   if (showPreview) styleCell(signRow.getCell(3))
@@ -146,12 +193,13 @@ async function doExport() {
   exporting.value = true
 
   try {
-    const {activities, students, records} = gridData.value
+    const {students} = gridData.value
+    const showPreview = previewEnabled.value
 
     const workbook = new Workbook()
     const worksheet = workbook.addWorksheet('체크리스트')
 
-    if (previewEnabled.value) {
+    if (showPreview) {
       worksheet.getColumn(1).width = 26
       worksheet.getColumn(2).width = 12
       worksheet.getColumn(3).width = 40
@@ -165,20 +213,14 @@ async function doExport() {
       orientation: 'portrait',
       fitToPage: true,
       fitToWidth: 1,
-      fitToHeight: 0,   // 높이 제한 없음 — 수동 페이지 나누기로 학생 단위 분리
+      fitToHeight: 0,   // 수동 페이지 나누기로 학생 단위 분리
       margins: {left: 0.5, right: 0.5, top: 0.5, bottom: 0.5, header: 0, footer: 0},
     }
 
-    // A4 세로 0.5인치 여백 기준 사용 가능 높이 ≈ 770pt
-    // 비구분자 행 수: 정보(4) + 활동헤더(1) + 활동(N) + 서명(1) = N+6
-    // 구분 행: 6pt 고정 → 나머지를 균등 분배
-    const USABLE_PTS = 770
-    const SEP_PTS = 6
-    const nonSepRows = 4 + 1 + activities.length + 1
-    const rowHeight = Math.max(16, Math.floor((USABLE_PTS - SEP_PTS) / nonSepRows))
-
     for (let i = 0; i < students.length; i++) {
-      const lastRow = addStudentBlock(worksheet, students[i], activities, records, rowHeight, previewEnabled.value)
+      const student = students[i]
+      const studentRows = previewRows.value.filter(r => r.studentId === student.id)
+      const lastRow = addStudentBlock(worksheet, student, studentRows, showPreview)
       if (i < students.length - 1) {
         lastRow.addPageBreak()
       }
@@ -225,7 +267,7 @@ async function doExport() {
     <div class="toolbar">
       <h2 class="section-title">체크리스트 내보내기</h2>
       <div class="step-indicator">
-        <div v-for="n in 2" :key="n" class="step-dot"
+        <div v-for="n in 3" :key="n" class="step-dot"
              :class="{ 'step-dot--active': step === n, 'step-dot--done': step > n }">
           {{ step > n ? '✓' : n }}
         </div>
@@ -272,8 +314,55 @@ async function doExport() {
         </div>
       </div>
 
-      <!-- Step 2: 확인 및 내보내기 -->
+      <!-- Step 2: 미리보기 & 편집 -->
       <div v-else-if="step === 2" class="step-content">
+        <h3 class="step-title">미리보기 & 편집</h3>
+        <p class="step-desc">
+          활동 참여 여부를 확인하고
+          <template v-if="previewEnabled">추출된 활동주제를 직접 수정한 뒤 </template>
+          내보내기 단계로 이동하세요.
+        </p>
+
+        <div class="preview-table-wrap">
+          <table class="preview-table">
+            <thead>
+            <tr>
+              <th>활동명</th>
+              <th>참여여부</th>
+              <th v-if="previewEnabled">활동주제</th>
+            </tr>
+            </thead>
+            <tbody>
+            <template v-for="group in previewGroups" :key="group.studentId">
+              <tr class="group-header-row">
+                <td :colspan="previewEnabled ? 3 : 2" class="group-header-cell">
+                  {{ group.grade }}학년 {{ group.classNum }}반 {{ group.number }}번 &nbsp;
+                  <strong>{{ group.name }}</strong>
+                </td>
+              </tr>
+              <tr v-for="row in group.rows" :key="row.activityId"
+                  :class="{ 'row--x': !row.hasContent }">
+                <td class="cell-activity">{{ row.activityName }}</td>
+                <td class="cell-ox" :class="row.hasContent ? 'cell-ox--o' : 'cell-ox--x'">
+                  {{ row.hasContent ? 'O' : 'X' }}
+                </td>
+                <td v-if="previewEnabled" class="cell-topic">
+                  <input
+                      v-if="row.hasContent"
+                      v-model="row.topic"
+                      class="topic-input"
+                      placeholder="활동주제 입력…"
+                  />
+                </td>
+              </tr>
+            </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Step 3: 내보내기 실행 -->
+      <div v-else-if="step === 3" class="step-content">
         <h3 class="step-title">내보내기 실행</h3>
 
         <div v-if="!exportResult">
@@ -293,6 +382,10 @@ async function doExport() {
             <div class="summary-row">
               <span class="summary-key">예상 페이지 수</span>
               <span class="summary-val">{{ gridData?.students.length ?? 0 }}페이지 (학생 1명 = 1페이지)</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-key">한 줄 미리보기</span>
+              <span class="summary-val">{{ previewEnabled ? '활성화 (활동주제 포함)' : '비활성화' }}</span>
             </div>
           </div>
 
@@ -328,7 +421,7 @@ async function doExport() {
         <ArrowLeft :size="15"/>
         이전
       </button>
-      <button v-if="step < 2" class="btn-next" :disabled="!canGoNext" @click="goNext">
+      <button v-if="step < 3" class="btn-next" :disabled="!canGoNext" @click="goNext">
         다음
         <ArrowRight :size="15"/>
       </button>
@@ -558,6 +651,98 @@ async function doExport() {
 
 .info-text strong {
   color: #34d399;
+}
+
+/* 미리보기 테이블 */
+.preview-table-wrap {
+  border: 1px solid #1a2035;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.preview-table thead th {
+  padding: 10px 14px;
+  background: #0a0f1e;
+  color: var(--clr-text-hint);
+  font-weight: 600;
+  text-align: left;
+  border-bottom: 1px solid #1a2035;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.group-header-row {
+  background: rgba(59, 91, 219, 0.07);
+}
+
+.group-header-cell {
+  padding: 8px 14px;
+  font-size: 13px;
+  color: #7ba8f0;
+  border-top: 1px solid rgba(59, 91, 219, 0.2);
+  border-bottom: 1px solid rgba(59, 91, 219, 0.12);
+}
+
+.group-header-cell strong {
+  font-weight: 700;
+  color: #93c5fd;
+}
+
+.preview-table tbody tr:not(.group-header-row) td {
+  padding: 7px 14px;
+  border-bottom: 1px solid rgba(26, 32, 53, 0.6);
+  color: #c8d8f0;
+  vertical-align: middle;
+}
+
+.row--x td {
+  opacity: 0.45;
+}
+
+.cell-activity {
+  color: #e2e8f0;
+  min-width: 100px;
+}
+
+.cell-ox {
+  text-align: center;
+  font-weight: 700;
+  width: 60px;
+}
+
+.cell-ox--o { color: #34d399; }
+.cell-ox--x { color: #64748b; }
+
+.cell-topic {
+  min-width: 180px;
+}
+
+.topic-input {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid #263246;
+  border-radius: 6px;
+  padding: 5px 10px;
+  color: #e2e8f0;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.topic-input:focus {
+  border-color: rgba(59, 91, 219, 0.6);
+}
+
+.topic-input::placeholder {
+  color: var(--clr-text-hint);
 }
 
 /* 요약 & 결과 */
