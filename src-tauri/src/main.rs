@@ -99,7 +99,7 @@ fn get_areas(state: State<DbState>) -> Result<Vec<AreaItem>, String> {
              FROM Area a
              LEFT JOIN AreaActivity aa ON a.id = aa.area_id
              LEFT JOIN Activity act ON aa.activity_id = act.id
-             ORDER BY a.id, aa.default_order",
+             ORDER BY a.id",
         )
         .map_err(|e| e.to_string())?;
 
@@ -318,12 +318,9 @@ fn set_activity_areas(
         )
             .map_err(|e| e.to_string())?;
 
-        // 각 영역에 활동 추가 (해당 영역의 마지막 순서로)
         for area_id in area_ids.iter() {
             conn.execute(
-                "INSERT INTO AreaActivity (area_id, activity_id, default_order)
-                 VALUES (?1, ?2,
-                   COALESCE((SELECT MAX(default_order) FROM AreaActivity WHERE area_id = ?1), 0) + 1)",
+                "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
                 rusqlite::params![area_id, activity_id],
             )
                 .map_err(|e| e.to_string())?;
@@ -450,10 +447,10 @@ fn set_area_activities(
         )
             .map_err(|e| e.to_string())?;
 
-        for (order, act_id) in activity_ids.iter().enumerate() {
+        for act_id in activity_ids.iter() {
             conn.execute(
-                "INSERT INTO AreaActivity (area_id, activity_id, default_order) VALUES (?1, ?2, ?3)",
-                rusqlite::params![area_id, act_id, (order + 1) as i64],
+                "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
+                rusqlite::params![area_id, act_id],
             )
                 .map_err(|e| e.to_string())?;
         }
@@ -577,7 +574,7 @@ fn set_area_students(
 
         for student_id in student_ids.iter() {
             conn.execute(
-                "INSERT INTO AreaStudent (area_id, student_id, is_order_customized) VALUES (?1, ?2, 0)",
+                "INSERT INTO AreaStudent (area_id, student_id) VALUES (?1, ?2)",
                 rusqlite::params![area_id, student_id],
             )
                 .map_err(|e| e.to_string())?;
@@ -622,8 +619,7 @@ fn get_area_grid(area_id: i64, state: State<DbState>) -> Result<AreaGridData, St
             "SELECT act.id, act.name
              FROM Activity act
              JOIN AreaActivity aa ON act.id = aa.activity_id
-             WHERE aa.area_id = ?1
-             ORDER BY aa.default_order",
+             WHERE aa.area_id = ?1",
         )
         .map_err(|e| e.to_string())?;
 
