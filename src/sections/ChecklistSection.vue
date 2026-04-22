@@ -18,6 +18,7 @@ watch(step, () => {
 const areas = ref([])
 const selectedAreaId = ref(null)
 const gridData = ref(null)
+const previewEnabled = ref(false)
 
 const exporting = ref(false)
 const exportResult = ref(null)
@@ -54,6 +55,26 @@ function resetWizard() {
   exportError.value = ''
 }
 
+// ── 활동주제 추출 ─────────────────────────────────────────────
+
+function extractTopic(content) {
+  if (!content?.trim()) return ''
+
+  // 첫 문장 추출: 점(.) 기준
+  const dotIdx = content.indexOf('.')
+  const firstSentence = dotIdx >= 0 ? content.slice(0, dotIdx).trim() : null
+
+  if (firstSentence) {
+    // 큰/작은따옴표(직선·곡선 모두) 로 감싸진 부분 추출
+    const m = firstSentence.match(/["""''「『]([^"""''」』]+)["""''」』]/u)
+    if (m) return m[1]
+    return firstSentence
+  }
+
+  // 점이 없는 경우: 100자 이내 일부만
+  return content.trim().slice(0, 100)
+}
+
 // ── 내보내기 헬퍼 ────────────────────────────────────────────
 
 const THIN = {style: 'thin'}
@@ -66,7 +87,7 @@ function styleCell(cell, {size = 12, bold = false, fill = null} = {}) {
   cell.border = BORDER_ALL
 }
 
-function addStudentBlock(worksheet, student, activities, records, rowHeight) {
+function addStudentBlock(worksheet, student, activities, records, rowHeight, showPreview) {
   // ── 학생 정보 4행 ──────────────────────────────────────────
   const infoRows = [
     ['학년', student.grade],
@@ -86,26 +107,33 @@ function addStudentBlock(worksheet, student, activities, records, rowHeight) {
   sepRow.height = 6
 
   // ── 활동 헤더 행 ──────────────────────────────────────────
-  const headerRow = worksheet.addRow(['활동명', '참여여부'])
+  const headerRow = worksheet.addRow(
+    showPreview ? ['활동명', '참여여부', '활동주제'] : ['활동명', '참여여부'],
+  )
   headerRow.height = rowHeight
   styleCell(headerRow.getCell(1), {size: 13, bold: true, fill: 'FFD9D9D9'})
   styleCell(headerRow.getCell(2), {size: 13, bold: true, fill: 'FFD9D9D9'})
+  if (showPreview) styleCell(headerRow.getCell(3), {size: 13, bold: true, fill: 'FFD9D9D9'})
 
   // ── 활동 데이터 행 ────────────────────────────────────────
   for (const activity of activities) {
     const rec = records.find(r => r.student_id === student.id && r.activity_id === activity.id)
-    const ox = rec?.content?.trim() ? 'O' : 'X'
-    const row = worksheet.addRow([activity.name, ox])
+    const content = rec?.content?.trim()
+    const ox = content ? 'O' : 'X'
+    const topic = showPreview && content ? extractTopic(rec.content) : ''
+    const row = worksheet.addRow(showPreview ? [activity.name, ox, topic] : [activity.name, ox])
     row.height = rowHeight
     styleCell(row.getCell(1))
     styleCell(row.getCell(2))
+    if (showPreview) styleCell(row.getCell(3))
   }
 
   // ── 서명 행 (마지막 행, pageBreak 기준) ────────────────────
-  const signRow = worksheet.addRow(['학생 서명', ''])
+  const signRow = worksheet.addRow(showPreview ? ['학생 서명', '', ''] : ['학생 서명', ''])
   signRow.height = rowHeight
   styleCell(signRow.getCell(1), {bold: true})
   styleCell(signRow.getCell(2))
+  if (showPreview) styleCell(signRow.getCell(3))
 
   return signRow
 }
@@ -123,8 +151,14 @@ async function doExport() {
     const workbook = new Workbook()
     const worksheet = workbook.addWorksheet('체크리스트')
 
-    worksheet.getColumn(1).width = 38
-    worksheet.getColumn(2).width = 16
+    if (previewEnabled.value) {
+      worksheet.getColumn(1).width = 26
+      worksheet.getColumn(2).width = 12
+      worksheet.getColumn(3).width = 40
+    } else {
+      worksheet.getColumn(1).width = 38
+      worksheet.getColumn(2).width = 16
+    }
 
     worksheet.pageSetup = {
       paperSize: 9,
@@ -144,7 +178,7 @@ async function doExport() {
     const rowHeight = Math.max(16, Math.floor((USABLE_PTS - SEP_PTS) / nonSepRows))
 
     for (let i = 0; i < students.length; i++) {
-      const lastRow = addStudentBlock(worksheet, students[i], activities, records, rowHeight)
+      const lastRow = addStudentBlock(worksheet, students[i], activities, records, rowHeight, previewEnabled.value)
       if (i < students.length - 1) {
         lastRow.addPageBreak()
       }
@@ -221,9 +255,20 @@ async function doExport() {
           </div>
         </div>
 
+        <!-- 한 줄 미리보기 토글 -->
+        <div class="toggle-row" @click="previewEnabled = !previewEnabled">
+          <div class="toggle-label">
+            <span class="toggle-title">한 줄 미리보기</span>
+            <span class="toggle-desc">O(참여함)인 활동에 한해 생기부 첫 문장의 활동주제를 추출해 C열에 표시합니다.</span>
+          </div>
+          <div class="toggle-switch" :class="{ 'toggle-switch--on': previewEnabled }">
+            <div class="toggle-knob"/>
+          </div>
+        </div>
+
         <div class="info-box">
           <p class="info-text">기재 내용이 있으면 <strong>O(참여함)</strong>, 없으면 <strong>X(참여하지 않음)</strong>으로 표시됩니다.</p>
-          <p class="info-text">학생 1명당 1페이지(A4 가로)로 페이지 나누기가 설정됩니다.</p>
+          <p class="info-text">학생 1명당 1페이지(A4 세로)로 페이지 나누기가 설정됩니다.</p>
         </div>
       </div>
 
@@ -422,6 +467,75 @@ async function doExport() {
 .area-card-meta {
   font-size: 13px;
   color: var(--clr-text-subtle);
+}
+
+/* 한 줄 미리보기 토글 */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid #1a2035;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.toggle-row:hover {
+  border-color: rgba(59, 91, 219, 0.4);
+  background-color: rgba(59, 91, 219, 0.03);
+}
+
+.toggle-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.toggle-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.toggle-desc {
+  font-size: 13px;
+  color: var(--clr-text-subtle);
+  line-height: 1.5;
+}
+
+.toggle-switch {
+  flex-shrink: 0;
+  width: 42px;
+  height: 24px;
+  border-radius: 12px;
+  background: #1a2035;
+  border: 1px solid #263246;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.toggle-switch--on {
+  background: rgba(59, 91, 219, 0.6);
+  border-color: rgba(59, 91, 219, 0.8);
+}
+
+.toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #4a5568;
+  transition: left 0.2s, background-color 0.2s;
+}
+
+.toggle-switch--on .toggle-knob {
+  left: 21px;
+  background: #93c5fd;
 }
 
 /* 안내 박스 */
