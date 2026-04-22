@@ -1,6 +1,6 @@
 [package]
 name = "school-record-app"
-version = "0.1.3"
+version = "0.0.0"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"

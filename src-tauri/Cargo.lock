@@ -3183,7 +3183,7 @@ dependencies = [
 
 [[package]]
 name = "school-record-app"
-version = "0.1.2"
+version = "0.0.0"
 dependencies = [
  "base64 0.22.1",
  "rusqlite",
