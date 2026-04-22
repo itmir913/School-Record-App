@@ -156,6 +156,9 @@ function processFile(file) {
   }
 
   const reader = new FileReader()
+  reader.onerror = () => {
+    parseError.value = '파일을 읽을 수 없습니다. 파일 권한을 확인해주세요.'
+  }
   reader.onload = (ev) => {
     try {
       const data = new Uint8Array(ev.target.result)
