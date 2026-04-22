@@ -775,7 +775,7 @@ fn get_record_history(
 }
 
 /// 현재 DB content를 히스토리에 스냅샷으로 기록.
-/// note = null → 자동 저장, note = Some(text) → 수동 저장.
+/// 같은 버전(changed_at = updated_at)의 항목이 이미 존재하면 note만 갱신한다.
 /// ActivityRecord가 없거나 content가 비어 있으면 아무 것도 하지 않음.
 fn save_snapshot_internal(
     conn: &Connection,
@@ -783,15 +783,37 @@ fn save_snapshot_internal(
     student_id: i64,
     note: Option<&str>,
 ) -> Result<(), String> {
+    // 해당 버전 항목이 없을 때만 INSERT
     conn.execute(
         "INSERT INTO ActivityRecordHistory (activity_record_id, content, changed_at, note)
-         SELECT r.id, r.content, datetime('now'), ?3
+         SELECT r.id, r.content, r.updated_at, ?3
          FROM ActivityRecord r
          WHERE r.activity_id = ?1 AND r.student_id = ?2
-           AND r.content != ''",
+           AND r.content != ''
+           AND NOT EXISTS (
+               SELECT 1 FROM ActivityRecordHistory h
+               WHERE h.activity_record_id = r.id
+                 AND h.changed_at = r.updated_at
+           )",
         rusqlite::params![activity_id, student_id, note],
     )
     .map_err(|e| e.to_string())?;
+
+    // 이미 존재하면 note만 갱신
+    conn.execute(
+        "UPDATE ActivityRecordHistory SET note = ?3
+         WHERE activity_record_id = (
+             SELECT r.id FROM ActivityRecord r
+             WHERE r.activity_id = ?1 AND r.student_id = ?2
+         )
+         AND changed_at = (
+             SELECT r.updated_at FROM ActivityRecord r
+             WHERE r.activity_id = ?1 AND r.student_id = ?2
+         )",
+        rusqlite::params![activity_id, student_id, note],
+    )
+    .map_err(|e| e.to_string())?;
+
     Ok(())
 }
 
@@ -903,8 +925,6 @@ fn bulk_import_records(
 
             let &student_id = student_cache.get(&key).ok_or_else(|| "캐시 오류".to_string())?;
 
-            save_snapshot_internal(conn, r.activity_id, student_id, Some("import"))?;
-
             conn.execute(
                 "INSERT INTO ActivityRecord (activity_id, student_id, content, updated_at)
                  VALUES (?1, ?2, ?3, datetime('now'))
@@ -914,6 +934,17 @@ fn bulk_import_records(
                 rusqlite::params![r.activity_id, student_id, r.content],
             )
                 .map_err(|e| e.to_string())?;
+
+            if !r.content.is_empty() {
+                conn.execute(
+                    "INSERT INTO ActivityRecordHistory (activity_record_id, content, changed_at, note)
+                     SELECT r.id, r.content, r.updated_at, 'import'
+                     FROM ActivityRecord r
+                     WHERE r.activity_id = ?1 AND r.student_id = ?2",
+                    rusqlite::params![r.activity_id, student_id],
+                )
+                    .map_err(|e| e.to_string())?;
+            }
             records_saved += 1;
         }
 
