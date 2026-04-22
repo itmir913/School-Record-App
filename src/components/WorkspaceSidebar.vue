@@ -54,6 +54,10 @@ const navGroups = [
       {id: 'student', label: '학생(Students)', icon: Users},
       {id: 'area', label: '영역(Area)', icon: Layers},
       {id: 'activity', label: '활동(Activity)', icon: BookOpen},
+    ],
+  },
+  {
+    items: [
       {id: 'record', label: '생기부 작성(Write)', icon: PenLine},
     ],
   },
