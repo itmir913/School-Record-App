@@ -260,7 +260,10 @@ function isNewGroup(students, index) {
       <!-- 상단 컨트롤 -->
       <div class="toolbar">
         <div class="toolbar-row-primary">
-          <h2 class="section-title">생기부 작성</h2>
+          <div class="section-title-group">
+            <h2 class="section-title">생기부 작성</h2>
+            <p class="section-desc">영역(Area)을 선택하고 학생별 생기부 문장을 입력합니다.</p>
+          </div>
           <select
               v-model="selectedAreaId"
               class="area-select"
@@ -491,16 +494,18 @@ function isNewGroup(students, index) {
 .toolbar {
   display: flex;
   flex-direction: column;
-  padding: 28px 40px 20px;
+  padding: 36px 40px 24px 40px; /* 위 | 오른쪽 | 아래 | 왼쪽 */
   border-bottom: 1px solid #1a2035;
   flex-shrink: 0;
   gap: 10px;
 }
 
 .toolbar-row-primary {
+  container-type: inline-size;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
 }
 
 .toolbar-row-secondary {
@@ -511,12 +516,29 @@ function isNewGroup(students, index) {
   gap: 8px;
 }
 
+.section-title-group {
+  min-width: 0;
+}
+
 .section-title {
   font-size: 22px;
   font-weight: 700;
   color: #e2e8f0;
+  margin: 0 0 6px;
+  white-space: nowrap;
+}
+
+.section-desc {
+  font-size: 16px;
+  color: #7ba3d4;
   margin: 0;
   white-space: nowrap;
+}
+
+@container (max-width: 540px) {
+  .section-desc {
+    display: none;
+  }
 }
 
 .area-select {
