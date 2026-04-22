@@ -5,6 +5,7 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
+  ClipboardList,
   Download,
   FolderOpen,
   GitBranch,
@@ -60,6 +61,7 @@ const navGroups = [
     items: [
       {id: 'import', label: '가져오기(Import)', icon: Download},
       {id: 'export', label: '내보내기(Export)', icon: Upload},
+      {id: 'checklist', label: '체크리스트(Checklist)', icon: ClipboardList},
     ],
   },
 ]

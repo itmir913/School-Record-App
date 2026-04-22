@@ -11,6 +11,7 @@ import StudentSection from '../sections/StudentSection.vue'
 import RecordSection from '../sections/RecordSection.vue'
 import ImportSection from '../sections/ImportSection.vue'
 import ExportSection from '../sections/ExportSection.vue'
+import ChecklistSection from '../sections/ChecklistSection.vue'
 import SnapshotModal from '../components/SnapshotModal.vue'
 
 const project = useProjectStore()
@@ -27,6 +28,7 @@ const sectionMap = {
   record: RecordSection,
   import: ImportSection,
   export: ExportSection,
+  checklist: ChecklistSection,
 }
 
 const currentSection = computed(() => sectionMap[activeSection.value])
