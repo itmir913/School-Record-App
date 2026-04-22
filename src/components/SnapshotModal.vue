@@ -25,6 +25,7 @@ async function loadSnapshots() {
 }
 
 async function handleCreate() {
+  if (creating.value) return
   creating.value = true
   try {
     const newSnap = await invoke('create_snapshot', {
