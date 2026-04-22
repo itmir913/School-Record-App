@@ -187,9 +187,18 @@ async function saveCell(activityId, studentId, content) {
   }
 }
 
-// 바이트 길이 계산 (UTF-8) TODO 나이스 형식의 바이트 계산으로 변경해야 함.
+// 바이트 길이 계산 (UTF-8 기준, 엔터 2바이트)
 function byteLength(str) {
-  return new TextEncoder().encode(str).length
+  if (!str) return 0;
+
+  // 인자가 숫자인 경우를 대비해 확실하게 문자열로 변환 (방어 코드)
+  const safeStr = String(str);
+
+  // 1. 기존 \r 제거 후 모든 \n을 \r\n으로 변환하여 엔터를 2바이트로 처리
+  const normalizedStr = safeStr.replace(/\r/g, '').replace(/\n/g, '\r\n');
+
+  // 2. TextEncoder를 통해 바이트 수 계산 (한글 3, 영/숫자/공백 1 자동 적용)
+  return new TextEncoder().encode(normalizedStr).length;
 }
 
 const byteLimit = computed(() => {
@@ -319,9 +328,11 @@ function isNewGroup(students, index) {
       <div v-else-if="!gridData || gridData.students.length === 0 || gridData.activities.length === 0"
            class="empty-state">
         <p class="empty-text">
-          <template v-if="gridData && gridData.students.length === 0">이 영역에 배정된 학생이 없습니다. 영역(Area) 관리에서 <strong><u>학생 배정</u></strong> 버튼을 눌러 학생을 배정하세요.
+          <template v-if="gridData && gridData.students.length === 0">이 영역에 배정된 학생이 없습니다. 영역(Area) 관리에서 <strong><u>학생
+            배정</u></strong> 버튼을 눌러 학생을 배정하세요.
           </template>
-          <template v-else-if="gridData && gridData.activities.length === 0">이 영역에 등록된 활동이 없습니다. 영역(Area) 관리에서 <strong><u>포함할 활동</u></strong>을 추가하세요.
+          <template v-else-if="gridData && gridData.activities.length === 0">이 영역에 등록된 활동이 없습니다. 영역(Area) 관리에서
+            <strong><u>포함할 활동</u></strong>을 추가하세요.
           </template>
           <template v-else>데이터를 불러올 수 없습니다.</template>
         </p>
