@@ -29,10 +29,6 @@ const savingState = ref(new Map())
 const cellContent = ref(new Map())
 // 1초 auto-save debounce 타이머
 const debounceTimers = new Map()
-// 5분 히스토리 스냅샷 debounce 타이머 (main save 성공 후에만 시작)
-const historyTimers = new Map()
-// TODO: SettingSection 구현 시 DB 설정값으로 교체
-const HISTORY_DEBOUNCE_MS = 5 * 60 * 1000
 
 onMounted(async () => {
   await areaStore.fetchAreas()
@@ -41,8 +37,6 @@ onMounted(async () => {
 function clearAllTimers() {
   debounceTimers.forEach(t => clearTimeout(t))
   debounceTimers.clear()
-  historyTimers.forEach(t => clearTimeout(t))
-  historyTimers.clear()
 }
 
 onBeforeUnmount(clearAllTimers)
@@ -145,19 +139,6 @@ function onGridWheel(event) {
   el.scrollLeft += event.deltaY
 }
 
-function scheduleHistorySnapshot(activityId, studentId) {
-  const key = cellKey(activityId, studentId)
-  if (historyTimers.has(key)) clearTimeout(historyTimers.get(key))
-  const timer = setTimeout(async () => {
-    try {
-      await invoke('save_history_snapshot', {activityId, studentId, note: null})
-    } catch (e) {
-      console.error('history snapshot failed:', e)
-    }
-    historyTimers.delete(key)
-  }, HISTORY_DEBOUNCE_MS)
-  historyTimers.set(key, timer)
-}
 
 async function saveCell(activityId, studentId, content) {
   const key = cellKey(activityId, studentId)
@@ -174,7 +155,6 @@ async function saveCell(activityId, studentId, content) {
       clear.delete(key)
       savingState.value = clear
     }, 500)
-    scheduleHistorySnapshot(activityId, studentId)
   } catch (e) {
     console.error(e)
     const next = new Map(savingState.value)
