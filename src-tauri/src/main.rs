@@ -901,7 +901,7 @@ fn bulk_import_records(
                 student_cache.insert(key, student_id);
             }
 
-            let &student_id = student_cache.get(&key).unwrap();
+            let &student_id = student_cache.get(&key).ok_or_else(|| "캐시 오류".to_string())?;
 
             save_snapshot_internal(conn, r.activity_id, student_id, Some("import"))?;
 
