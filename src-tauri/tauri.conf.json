@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "School Record App (by luminousky.com)",
+        "title": "생기부 에디터 (School Record Editor)",
         "width": 580,
         "height": 580,
         "resizable": false,
