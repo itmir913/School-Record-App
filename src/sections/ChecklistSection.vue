@@ -54,6 +54,62 @@ function resetWizard() {
   exportError.value = ''
 }
 
+// ── 내보내기 헬퍼 ────────────────────────────────────────────
+
+const THIN = {style: 'thin'}
+const BORDER_ALL = {top: THIN, left: THIN, bottom: THIN, right: THIN}
+
+function styleCell(cell, {size = 12, bold = false, fill = null} = {}) {
+  cell.font = {name: '맑은 고딕', size, bold}
+  cell.alignment = {vertical: 'middle', horizontal: 'left'}
+  if (fill) cell.fill = {type: 'pattern', pattern: 'solid', fgColor: {argb: fill}}
+  cell.border = BORDER_ALL
+}
+
+function addStudentBlock(worksheet, student, activities, records, rowHeight) {
+  // ── 학생 정보 4행 ──────────────────────────────────────────
+  const infoRows = [
+    ['학년', student.grade],
+    ['반', student.class_num],
+    ['번호', student.number],
+    ['이름', student.name],
+  ]
+  for (const [label, value] of infoRows) {
+    const row = worksheet.addRow([label, value])
+    row.height = rowHeight
+    styleCell(row.getCell(1))
+    styleCell(row.getCell(2))
+  }
+
+  // ── 빈 구분 행 ────────────────────────────────────────────
+  const sepRow = worksheet.addRow([])
+  sepRow.height = 6
+
+  // ── 활동 헤더 행 ──────────────────────────────────────────
+  const headerRow = worksheet.addRow(['활동명', '참여여부'])
+  headerRow.height = rowHeight
+  styleCell(headerRow.getCell(1), {size: 13, bold: true, fill: 'FFD9D9D9'})
+  styleCell(headerRow.getCell(2), {size: 13, bold: true, fill: 'FFD9D9D9'})
+
+  // ── 활동 데이터 행 ────────────────────────────────────────
+  for (const activity of activities) {
+    const rec = records.find(r => r.student_id === student.id && r.activity_id === activity.id)
+    const ox = rec?.content?.trim() ? 'O' : 'X'
+    const row = worksheet.addRow([activity.name, ox])
+    row.height = rowHeight
+    styleCell(row.getCell(1))
+    styleCell(row.getCell(2))
+  }
+
+  // ── 서명 행 (마지막 행, pageBreak 기준) ────────────────────
+  const signRow = worksheet.addRow(['학생 서명', ''])
+  signRow.height = rowHeight
+  styleCell(signRow.getCell(1), {bold: true})
+  styleCell(signRow.getCell(2))
+
+  return signRow
+}
+
 // ── 내보내기 실행 ─────────────────────────────────────────────
 
 async function doExport() {
@@ -67,42 +123,33 @@ async function doExport() {
     const workbook = new Workbook()
     const worksheet = workbook.addWorksheet('체크리스트')
 
-    // A4 가로 레이아웃, 가로 1페이지 맞춤
+    worksheet.getColumn(1).width = 38
+    worksheet.getColumn(2).width = 16
+
     worksheet.pageSetup = {
       paperSize: 9,
-      orientation: 'landscape',
+      orientation: 'portrait',
       fitToPage: true,
       fitToWidth: 1,
-      fitToHeight: 0,
+      fitToHeight: 0,   // 높이 제한 없음 — 수동 페이지 나누기로 학생 단위 분리
+      margins: {left: 0.5, right: 0.5, top: 0.5, bottom: 0.5, header: 0, footer: 0},
     }
 
-    const activityNames = activities.map(a => a.name)
+    // A4 세로 0.5인치 여백 기준 사용 가능 높이 ≈ 770pt
+    // 비구분자 행 수: 정보(4) + 활동헤더(1) + 활동(N) + 서명(1) = N+6
+    // 구분 행: 6pt 고정 → 나머지를 균등 분배
+    const USABLE_PTS = 770
+    const SEP_PTS = 6
+    const nonSepRows = 4 + 1 + activities.length + 1
+    const rowHeight = Math.max(16, Math.floor((USABLE_PTS - SEP_PTS) / nonSepRows))
 
     for (let i = 0; i < students.length; i++) {
-      const s = students[i]
-
-      // 헤더 행: 학년/반/번호/이름 + 활동명 목록
-      worksheet.addRow(['학년', '반', '번호', '이름', ...activityNames])
-
-      // 데이터 행: 학생 정보 + O/X
-      const dataRow = worksheet.addRow([
-        s.grade,
-        s.class_num,
-        s.number,
-        s.name,
-        ...activities.map(a => {
-          const rec = records.find(r => r.student_id === s.id && r.activity_id === a.id)
-          return rec?.content?.trim() ? 'O' : 'X'
-        }),
-      ])
-
-      // 마지막 학생 제외, 데이터 행 아래에 페이지 나누기 삽입
+      const lastRow = addStudentBlock(worksheet, students[i], activities, records, rowHeight)
       if (i < students.length - 1) {
-        dataRow.addPageBreak()
+        lastRow.addPageBreak()
       }
     }
 
-    // ArrayBuffer → base64 변환
     const buffer = await workbook.xlsx.writeBuffer()
     const bytes = new Uint8Array(buffer)
     let binary = ''
