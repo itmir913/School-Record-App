@@ -64,7 +64,7 @@ const exampleActivities = [
 ]
 
 const homeroomAreas = [
-  {name: '자율활동', activities: ['체육대회', '현장체험학습', '학급자치 활동', '1학기 진로의 날']},
+  {name: '자율활동', activities: ['체육대회', '현장체험학습', '학급자치 활동', '1학기 독서 토론의 날']},
   {name: '동아리활동', activities: ['○○ 동아리 활동 내용', '자율동아리 참여', '동아리 발표회']},
   {name: '진로활동', activities: ['진로상담 프로그램', '직업인 특강', '전공탐색 캠프']},
 ]
