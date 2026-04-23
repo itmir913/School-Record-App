@@ -105,7 +105,7 @@ function resetWizard() {
 function extractTopic(content) {
   if (!content?.trim()) return ''
 
-  // 1) 첫 문장 추출 (오탐 완화)
+  // 1) 첫 문장 추출
   const sentenceMatch = content.match(
       /(.+?[.!?]["”’]?)(?=\s+[A-Z가-힣]|$)/s
   )
@@ -114,26 +114,31 @@ function extractTopic(content) {
       ? sentenceMatch[1].trim()
       : content.split(/\r?\n/)[0].slice(0, 100).trim()
 
-  // 2) 바깥쪽 따옴표 추출 (길이 제한 포함)
-  const quotePatterns = [
-    /"([^"]{1,120})"/,
-    /“([^”]{1,120})”/,
-    /'([^']{1,120})'/,
-    /‘([^’]{1,120})’/,
-    /「([^」]{1,120})」/,
-    /『([^』]{1,120})』/
+  // 2) 따옴표 내용 전부 수집
+  const matches = [
+    ...firstSentence.matchAll(/["“‘「『]([^"”’」』]{1,120})["”’」』]/g)
   ]
 
-  for (const p of quotePatterns) {
-    const m = firstSentence.match(p)
-    if (m) return m[1].trim()
+  const values = matches
+      .map(m => m[1].trim())
+      .filter(Boolean)
+
+  // 3) 중첩 제거 (부분 포함 제거)
+  const filtered = values.filter((val, i, arr) =>
+      !arr.some((other, j) =>
+          i !== j && other.includes(val)
+      )
+  )
+
+  // 4) 결과 반환
+  if (filtered.length > 0) {
+    return filtered.slice(0, 5).join(', ')
   }
 
-  // 3) fallback (길이 제한 + 말줄임)
+  // 5) fallback
   const trimmed = firstSentence.slice(0, 100).trim()
   return trimmed + (firstSentence.length > 100 ? '…' : '')
 }
-
 
 // ── 내보내기 헬퍼 ────────────────────────────────────────────
 
