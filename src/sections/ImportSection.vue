@@ -330,6 +330,11 @@ function autoDetectColumns() {
 
 async function goNext() {
   if (!canGoNext.value) return
+
+  parseError.value = ''
+  previewError.value = ''
+  importError.value = ''
+
   if (step.value === 3) {
     await loadDbActivities()
     initActivityMatchMap()
@@ -838,6 +843,8 @@ function resetWizard() {
           </div>
         </div>
 
+        <div class="border-hr"></div>
+
         <h3 class="step-title">가져올 파일 선택</h3>
         <p class="step-desc">CSV 또는 XLSX 파일을 선택하거나 드래그하세요.</p>
 
@@ -860,6 +867,9 @@ function resetWizard() {
         <p v-if="parseError" class="error-text">{{ parseError }}</p>
 
         <div v-if="rawHeaders.length > 0" class="preview-block">
+
+          <div class="border-hr"></div>
+
           <p class="preview-label">미리보기 (첫 {{ Math.min(rawData.length, 5) }}행)</p>
           <div class="preview-table-wrap">
             <table class="preview-table">
@@ -1290,27 +1300,33 @@ function resetWizard() {
         </div>
       </div>
 
-      <!-- 파일 미리보기 (Step 2 이후 하단 표시) -->
-      <div v-if="step > 1 && step < 5 && rawHeaders.length > 0" class="persistent-preview">
-        <div class="persistent-preview-header" @click="previewCollapsed = !previewCollapsed">
-          <span class="persistent-preview-label">{{ fileName }} · {{ rawData.length }}행</span>
-          <span class="persistent-preview-toggle">{{ previewCollapsed ? '펼치기 ▾' : '접기 ▴' }}</span>
-        </div>
-        <div v-if="!previewCollapsed" class="preview-table-wrap">
-          <table class="preview-table">
-            <thead>
-            <tr>
-              <th v-for="h in rawHeaders" :key="h">{{ h }}</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="(row, i) in previewRows" :key="i">
-              <td v-for="(cell, j) in row" :key="j">{{ cell }}</td>
-            </tr>
-            </tbody>
-          </table>
+      <!-- 파일 미리보기 (Step 2 ~ 4 하단 표시) -->
+      <div v-if="step > 1 && step < 4 && rawHeaders.length > 0">
+        <div class="border-hr"></div>
+
+        <div class="persistent-preview">
+
+          <div class="persistent-preview-header" @click="previewCollapsed = !previewCollapsed">
+            <span class="persistent-preview-label">{{ fileName }} · {{ rawData.length }}행</span>
+            <span class="persistent-preview-toggle">{{ previewCollapsed ? '펼치기 ▾' : '접기 ▴' }}</span>
+          </div>
+          <div v-if="!previewCollapsed" class="preview-table-wrap">
+            <table class="preview-table">
+              <thead>
+              <tr>
+                <th v-for="h in rawHeaders" :key="h">{{ h }}</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="(row, i) in previewRows" :key="i">
+                <td v-for="(cell, j) in row" :key="j">{{ cell }}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
+
 
     </div>
 
@@ -1420,7 +1436,7 @@ function resetWizard() {
 .error-text {
   font-size: 14px;
   color: #f87171;
-  margin: 12px 0 0;
+  margin: 12px 0 24px;
 }
 
 .col-map-error {
@@ -1440,7 +1456,7 @@ function resetWizard() {
   border: 1px solid #1a2035;
   border-radius: 10px;
   overflow: hidden;
-  margin-top: 40px;
+  margin-top: 32px;
   margin-bottom: 8px;
 }
 
@@ -1473,7 +1489,7 @@ function resetWizard() {
 .drop-zone {
   border: 2px dashed #1a2035;
   border-radius: 12px;
-  padding: 40px 24px;
+  padding: 48px 24px;
   text-align: center;
   cursor: pointer;
   transition: border-color 0.2s, background-color 0.2s;
@@ -1517,7 +1533,6 @@ function resetWizard() {
 
 /* 미리보기 테이블 */
 .preview-block {
-  margin-top: 24px;
 }
 
 .preview-label {
@@ -1560,8 +1575,11 @@ function resetWizard() {
 
 /* 예시 파일 다운로드 */
 .sample-section {
+}
+
+.border-hr {
   margin-bottom: 32px;
-  padding-bottom: 28px;
+  padding-bottom: 32px;
   border-bottom: 1px solid #1a2035;
 }
 
