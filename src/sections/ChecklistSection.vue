@@ -18,7 +18,7 @@ watch(step, () => {
 const areas = ref([])
 const selectedAreaId = ref(null)
 const gridData = ref(null)
-const previewEnabled = ref(false)
+const previewEnabled = ref(true)
 const previewRows = ref([])  // { studentId, grade, classNum, number, name, activityId, activityName, hasContent, topic }
 
 const exporting = ref(false)
