@@ -4,7 +4,7 @@ import {invoke} from '@tauri-apps/api/core'
 import {save} from '@tauri-apps/plugin-dialog'
 import {revealItemInDir} from '@tauri-apps/plugin-opener'
 import {ArrowLeft, ArrowRight} from 'lucide-vue-next'
-import * as XLSX from 'xlsx'
+import {Workbook} from 'exceljs'
 
 // ── 상태 ──────────────────────────────────────────────────────
 
@@ -76,6 +76,18 @@ function resetWizard() {
   exportError.value = ''
 }
 
+// ── 유틸 ──────────────────────────────────────────────────────
+
+function bufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer)
+  let binary = ''
+  const chunk = 8192
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk))
+  }
+  return btoa(binary)
+}
+
 // ── 내보내기 실행 ─────────────────────────────────────────────
 
 async function doExport() {
@@ -125,10 +137,6 @@ async function doExport() {
       }))
     }
 
-    const wb = XLSX.utils.book_new()
-    const ws = XLSX.utils.json_to_sheet(rows)
-    XLSX.utils.book_append_sheet(wb, ws, '기록')
-
     const areaName = selectedArea.value?.name ?? '내보내기'
     const filePath = await save({
       defaultPath: `${areaName}_내보내기.xlsx`,
@@ -140,7 +148,17 @@ async function doExport() {
       return
     }
 
-    const data = XLSX.write(wb, {type: 'base64', bookType: 'xlsx'})
+    const workbook = new Workbook()
+    const worksheet = workbook.addWorksheet('기록')
+    if (rows.length > 0) {
+      const headers = Object.keys(rows[0])
+      worksheet.addRow(headers)
+      for (const row of rows) {
+        worksheet.addRow(headers.map(h => row[h]))
+      }
+    }
+    const buffer = await workbook.xlsx.writeBuffer()
+    const data = bufferToBase64(buffer)
     await invoke('write_bytes_file', {path: filePath, data})
 
     exportResult.value = {

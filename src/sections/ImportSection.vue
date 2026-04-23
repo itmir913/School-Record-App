@@ -3,7 +3,7 @@ import {computed, ref, watch} from 'vue'
 import {invoke} from '@tauri-apps/api/core'
 import {save} from '@tauri-apps/plugin-dialog'
 import {ArrowLeft, ArrowRight, Download, FileSpreadsheet} from 'lucide-vue-next'
-import * as XLSX from 'xlsx'
+import {Workbook} from 'exceljs'
 
 const COL_ALIASES = {
   grade: ['학년', 'grade'],
@@ -150,6 +150,52 @@ function onFileChange(e) {
   e.target.value = ''
 }
 
+function parseCsv(text) {
+  const rows = []
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
+  for (const line of lines) {
+    if (!line.trim()) continue
+    const row = []
+    let field = ''
+    let inQuotes = false
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i]
+      if (inQuotes) {
+        if (ch === '"' && line[i + 1] === '"') { field += '"'; i++ }
+        else if (ch === '"') inQuotes = false
+        else field += ch
+      } else {
+        if (ch === '"') inQuotes = true
+        else if (ch === ',') { row.push(field); field = '' }
+        else field += ch
+      }
+    }
+    row.push(field)
+    rows.push(row)
+  }
+  return rows
+}
+
+function cellValue(v) {
+  if (v === null || v === undefined) return ''
+  if (typeof v === 'object') {
+    if (v.richText) return v.richText.map(r => r.text).join('')
+    if (v.text !== undefined) return String(v.text)
+    if (v instanceof Date) return v.toLocaleDateString()
+  }
+  return String(v)
+}
+
+function bufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer)
+  let binary = ''
+  const chunk = 8192
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk))
+  }
+  return btoa(binary)
+}
+
 function processFile(file) {
   fileName.value = file.name
   parseError.value = ''
@@ -161,17 +207,35 @@ function processFile(file) {
     parseError.value = 'CSV(.csv) 또는 엑셀(.xlsx, .xls) 파일만 지원합니다.'
     return
   }
+  if (ext === 'xls') {
+    parseError.value = 'XLS 형식은 지원되지 않습니다. XLSX 형식으로 변환 후 다시 시도해주세요.'
+    return
+  }
 
   const reader = new FileReader()
   reader.onerror = () => {
     parseError.value = '파일을 읽을 수 없습니다. 파일 권한을 확인해주세요.'
   }
-  reader.onload = (ev) => {
+  reader.onload = async (ev) => {
     try {
-      const data = new Uint8Array(ev.target.result)
-      const wb = XLSX.read(data, {type: 'array'})
-      const ws = wb.Sheets[wb.SheetNames[0]]
-      const rows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''})
+      let rows
+      if (ext === 'csv') {
+        rows = parseCsv(new TextDecoder('utf-8').decode(new Uint8Array(ev.target.result)))
+      } else {
+        const workbook = new Workbook()
+        await workbook.xlsx.load(ev.target.result)
+        const worksheet = workbook.worksheets[0]
+        rows = []
+        worksheet.eachRow((row) => {
+          rows.push(row.values.slice(1).map(cellValue))
+        })
+        if (rows.length > 1) {
+          const headerLen = rows[0].length
+          for (let i = 1; i < rows.length; i++) {
+            while (rows[i].length < headerLen) rows[i].push('')
+          }
+        }
+      }
       if (rows.length < 2) {
         parseError.value = '데이터가 없습니다. 헤더 포함 최소 2행이 필요합니다.'
         return
@@ -348,10 +412,6 @@ async function downloadSampleA() {
     {학년: 3, 반: 1, 번호: 7, 이름: '학생G', 활동명: '실험실 안전교육', 활동내용: '안전 수칙을 준수하며 성실히 교육에 참여함.'},
     {학년: 3, 반: 1, 번호: 8, 이름: '학생H', 활동명: '재난 대비 훈련', 활동내용: '훈련 절차를 성실히 따르며 안전 의식을 함양함.'},
   ]
-  const wb = XLSX.utils.book_new()
-  const ws = XLSX.utils.json_to_sheet(rows)
-  XLSX.utils.book_append_sheet(wb, ws, '예시')
-
   const filePath = await save({
     title: 'A타입 예시 파일 저장',
     defaultPath: 'A타입_예시.xlsx',
@@ -359,7 +419,15 @@ async function downloadSampleA() {
   })
   if (!filePath) return
 
-  const data = XLSX.write(wb, {type: 'base64', bookType: 'xlsx'})
+  const headers = ['학년', '반', '번호', '이름', '활동명', '활동내용']
+  const workbook = new Workbook()
+  const worksheet = workbook.addWorksheet('예시')
+  worksheet.addRow(headers)
+  for (const row of rows) {
+    worksheet.addRow(headers.map(h => row[h]))
+  }
+  const buffer = await workbook.xlsx.writeBuffer()
+  const data = bufferToBase64(buffer)
   await invoke('write_bytes_file', {path: filePath, data})
 }
 
@@ -423,10 +491,6 @@ async function downloadSampleB() {
     },
     {...empty(), 학년: 3, 반: 1, 번호: 8, 이름: '학생H', '재난 대비 훈련': '훈련 절차를 성실히 따르며 안전 의식을 함양함.'},
   ]
-  const wb = XLSX.utils.book_new()
-  const ws = XLSX.utils.json_to_sheet(rows, {header: cols})
-  XLSX.utils.book_append_sheet(wb, ws, '예시')
-
   const filePath = await save({
     title: 'B타입 예시 파일 저장',
     defaultPath: 'B타입_예시.xlsx',
@@ -434,7 +498,14 @@ async function downloadSampleB() {
   })
   if (!filePath) return
 
-  const data = XLSX.write(wb, {type: 'base64', bookType: 'xlsx'})
+  const workbook = new Workbook()
+  const worksheet = workbook.addWorksheet('예시')
+  worksheet.addRow(cols)
+  for (const row of rows) {
+    worksheet.addRow(cols.map(c => row[c]))
+  }
+  const buffer = await workbook.xlsx.writeBuffer()
+  const data = bufferToBase64(buffer)
   await invoke('write_bytes_file', {path: filePath, data})
 }
 

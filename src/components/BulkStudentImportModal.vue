@@ -1,7 +1,7 @@
 <script setup>
 import {computed, ref} from 'vue'
 import {AlertCircle, CheckCircle2, Download, FileSpreadsheet, Upload, X} from 'lucide-vue-next'
-import * as XLSX from 'xlsx'
+import {Workbook} from 'exceljs'
 import {invoke} from '@tauri-apps/api/core'
 import {save} from '@tauri-apps/plugin-dialog'
 
@@ -111,6 +111,42 @@ function onFileChange(e) {
   e.target.value = ''
 }
 
+function parseCsv(text) {
+  const rows = []
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
+  for (const line of lines) {
+    if (!line.trim()) continue
+    const row = []
+    let field = ''
+    let inQuotes = false
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i]
+      if (inQuotes) {
+        if (ch === '"' && line[i + 1] === '"') { field += '"'; i++ }
+        else if (ch === '"') inQuotes = false
+        else field += ch
+      } else {
+        if (ch === '"') inQuotes = true
+        else if (ch === ',') { row.push(field); field = '' }
+        else field += ch
+      }
+    }
+    row.push(field)
+    rows.push(row)
+  }
+  return rows
+}
+
+function cellValue(v) {
+  if (v === null || v === undefined) return ''
+  if (typeof v === 'object') {
+    if (v.richText) return v.richText.map(r => r.text).join('')
+    if (v.text !== undefined) return String(v.text)
+    if (v instanceof Date) return v.toLocaleDateString()
+  }
+  return String(v)
+}
+
 function processFile(file) {
   fileName.value = file.name
   parseError.value = ''
@@ -123,14 +159,32 @@ function processFile(file) {
     parseError.value = 'CSV(.csv) 또는 엑셀(.xlsx, .xls) 파일만 지원합니다.'
     return
   }
+  if (ext === 'xls') {
+    parseError.value = 'XLS 형식은 지원되지 않습니다. XLSX 형식으로 변환 후 다시 시도해주세요.'
+    return
+  }
 
   const reader = new FileReader()
-  reader.onload = (ev) => {
+  reader.onload = async (ev) => {
     try {
-      const data = new Uint8Array(ev.target.result)
-      const wb = XLSX.read(data, {type: 'array'})
-      const ws = wb.Sheets[wb.SheetNames[0]]
-      const rows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''})
+      let rows
+      if (ext === 'csv') {
+        rows = parseCsv(new TextDecoder('utf-8').decode(new Uint8Array(ev.target.result)))
+      } else {
+        const workbook = new Workbook()
+        await workbook.xlsx.load(ev.target.result)
+        const worksheet = workbook.worksheets[0]
+        rows = []
+        worksheet.eachRow((row) => {
+          rows.push(row.values.slice(1).map(cellValue))
+        })
+        if (rows.length > 1) {
+          const headerLen = rows[0].length
+          for (let i = 1; i < rows.length; i++) {
+            while (rows[i].length < headerLen) rows[i].push('')
+          }
+        }
+      }
 
       if (rows.length < 2) {
         parseError.value = '데이터가 없습니다. 헤더 행 포함 최소 2행이 필요합니다.'
