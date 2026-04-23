@@ -152,9 +152,24 @@ async function doExport() {
     const worksheet = workbook.addWorksheet('기록')
     if (rows.length > 0) {
       const headers = Object.keys(rows[0])
-      worksheet.addRow(headers)
+
+      // A~D열: 학년/반/번호/이름 (좁게), E열~: 내용 열 (넓게 + wrapText)
+      const fixedWidths = [8, 8, 8, 12]
+      fixedWidths.forEach((w, i) => { worksheet.getColumn(i + 1).width = w })
+      for (let i = fixedWidths.length; i < headers.length; i++) {
+        worksheet.getColumn(i + 1).width = exportType.value === 'A' && i === fixedWidths.length ? 22 : 60
+      }
+
+      const headerRow = worksheet.addRow(headers)
+      headerRow.font = {name: '맑은 고딕', bold: true}
+      headerRow.alignment = {vertical: 'middle', horizontal: 'center', wrapText: false}
+
       for (const row of rows) {
-        worksheet.addRow(headers.map(h => row[h]))
+        const excelRow = worksheet.addRow(headers.map(h => row[h]))
+        excelRow.alignment = {vertical: 'top'}
+        for (let col = fixedWidths.length + 1; col <= headers.length; col++) {
+          excelRow.getCell(col).alignment = {vertical: 'top', wrapText: true}
+        }
       }
     }
     const buffer = await workbook.xlsx.writeBuffer()
