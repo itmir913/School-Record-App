@@ -259,7 +259,7 @@ function isNewGroup(students, index) {
               v-model="selectedAreaId"
               class="area-select"
           >
-            <option :value="null" disabled>영역(Area) 선택...</option>
+            <option :value="null" disabled>영역(Area) 선택</option>
             <option
                 v-for="area in areaStore.areas"
                 :key="area.id"

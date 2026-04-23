@@ -22,8 +22,8 @@ const hiddenCount = computed(() =>
 <template>
   <div class="card" @click="emit('edit', area)">
     <div class="card-top">
-      <span class="byte-badge">최대 {{ area.byte_limit.toLocaleString() }} Bytes</span>
       <h3 class="area-name">{{ area.name }}</h3>
+      <span class="byte-badge">최대 {{ area.byte_limit.toLocaleString() }} Bytes</span>
       <div class="name-divider"></div>
       <div class="chip-row" v-if="area.activities.length > 0">
         <span v-for="act in visibleActivities" :key="act.id" class="chip">{{ act.name }}</span>

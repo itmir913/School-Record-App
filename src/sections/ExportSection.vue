@@ -194,7 +194,7 @@ async function doExport() {
 
     <!-- 헤더 -->
     <div class="toolbar">
-      <h2 class="section-title">데이터 내보내기</h2>
+      <h2 class="section-title">데이터 내보내기(Export)</h2>
       <div class="step-indicator">
         <div v-for="n in 3" :key="n" class="step-dot"
              :class="{ 'step-dot--active': step === n, 'step-dot--done': step > n }">
@@ -208,7 +208,7 @@ async function doExport() {
 
       <!-- Step 1: 내보내기 유형 선택 -->
       <div v-if="step === 1" class="step-content">
-        <h3 class="step-title">내보내기(Export) 형식 선택</h3>
+        <h3 class="step-title">Step 1. 내보내기(Export) 형식 선택</h3>
         <p class="step-desc">내보낼 엑셀 파일의 유형을 선택하세요.</p>
 
         <div class="type-cards">
@@ -372,7 +372,7 @@ async function doExport() {
 
       <!-- Step 2: 영역 선택 -->
       <div v-else-if="step === 2" class="step-content">
-        <h3 class="step-title">영역 선택</h3>
+        <h3 class="step-title">Step 2. 영역(Area) 선택</h3>
         <p class="step-desc">내보낼 영역을 선택하세요.</p>
 
         <p v-if="areas.length === 0" class="empty-hint">등록된 영역이 없습니다.</p>
@@ -393,7 +393,7 @@ async function doExport() {
 
       <!-- Step 3: 확인 및 내보내기 -->
       <div v-else-if="step === 3" class="step-content">
-        <h3 class="step-title">내보내기 실행</h3>
+        <h3 class="step-title">Step 3. 내보내기 실행</h3>
 
         <div v-if="!exportResult">
           <div class="summary-box">

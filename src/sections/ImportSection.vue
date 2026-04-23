@@ -714,7 +714,7 @@ function resetWizard() {
 
     <!-- 툴바 -->
     <div class="toolbar">
-      <h2 class="section-title">데이터 가져오기</h2>
+      <h2 class="section-title">데이터 가져오기(Import)</h2>
       <div class="step-indicator">
         <span
             v-for="n in 6"
@@ -733,7 +733,7 @@ function resetWizard() {
 
         <!-- 예시 파일 다운로드 -->
         <div class="sample-section">
-          <h3 class="step-title">가져오기(Import) 파일 유형 안내</h3>
+          <h3 class="step-title">Step 0. 가져오기(Import) 가능한 파일 안내</h3>
           <p class="step-desc">가져오기 가능한 파일은 두 가지 유형(행 단위, 열 단위)입니다. 예시 다운로드 버튼을 눌러 각 유형의 예시를 확인하세요.</p>
 
           <div class="type-cards">
@@ -845,7 +845,7 @@ function resetWizard() {
 
         <div class="border-hr"></div>
 
-        <h3 class="step-title">가져올 파일 선택</h3>
+        <h3 class="step-title">Step 1. 가져올 파일 선택</h3>
         <p class="step-desc">CSV 또는 XLSX 파일을 선택하거나 드래그하세요.</p>
 
         <input ref="fileInputRef" type="file" accept=".csv,.xlsx,.xls" style="display:none" @change="onFileChange"/>
@@ -890,7 +890,7 @@ function resetWizard() {
 
       <!-- Step 2: 양식 선택 -->
       <div v-else-if="step === 2" class="step-content">
-        <h3 class="step-title">엑셀 파일 양식 선택</h3>
+        <h3 class="step-title">Step 2. 엑셀 파일 양식 선택</h3>
         <p class="step-desc">
           가져올 엑셀 파일 양식에 맞는 타입을 선택하세요.
           잘못된 타입을 선택하면 데이터 오류 또는 항목 누락이 발생할 수 있습니다.
@@ -1005,7 +1005,7 @@ function resetWizard() {
 
       <!-- Step 3: 열 매핑 -->
       <div v-else-if="step === 3" class="step-content">
-        <h3 class="step-title">열 매핑</h3>
+        <h3 class="step-title">Step 3. 열 매핑</h3>
         <p class="step-desc">엑셀 파일의 각 열을 올바르게 연결하세요. <span class="required">*</span> 는 필수입니다.</p>
 
         <!-- 학생 식별 방식 토글 -->
@@ -1112,7 +1112,7 @@ function resetWizard() {
 
       <!-- Step 4: 활동 매칭 -->
       <div v-else-if="step === 4" class="step-content">
-        <h3 class="step-title">활동 매칭</h3>
+        <h3 class="step-title">Step 4. 활동 매칭</h3>
         <p class="step-desc">파일의 활동명을 기존 활동에 연결하거나 새로 만드세요. 이름이 일치하면 자동 매칭됩니다.</p>
 
         <p v-if="extractedActivities.length === 0" class="empty-hint">파일에서 활동을 찾을 수 없습니다. 이전 단계로 돌아가 열 매핑을 확인하세요.</p>
@@ -1136,7 +1136,7 @@ function resetWizard() {
 
       <!-- Step 5: 변경사항 확인 -->
       <div v-else-if="step === 5" class="step-content">
-        <h3 class="step-title">변경사항 확인</h3>
+        <h3 class="step-title">Step 5. 변경사항 확인</h3>
         <p class="step-desc">기존 데이터와 비교하여 변경될 항목을 확인하고 업데이트할 항목을 선택하세요.</p>
 
         <div v-if="previewLoading" class="diff-loading">기존 데이터와 비교 중...</div>
@@ -1246,7 +1246,7 @@ function resetWizard() {
 
       <!-- Step 6: 실행 -->
       <div v-else-if="step === 6" class="step-content">
-        <h3 class="step-title">가져오기 실행</h3>
+        <h3 class="step-title">Step 6. 가져오기 실행</h3>
 
         <div v-if="!importResult">
           <div class="summary-box">
