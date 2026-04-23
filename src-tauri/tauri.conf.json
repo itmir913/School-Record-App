@@ -12,8 +12,8 @@
   "app": {
     "windows": [
       {
-        "title": "생기부 에디터 (School Record Editor)",
-        "width": 580,
+        "title": "All-in-One 학교생활기록부 에디터",
+        "width": 760,
         "height": 580,
         "resizable": false,
         "center": true,

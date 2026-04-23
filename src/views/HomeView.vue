@@ -97,8 +97,8 @@ function closeUpdateModal() {
             <span class="logo-badge"/>
           </div>
           <div class="logo-text">
-            <h1>학교생활기록부 작성 프로그램</h1>
-            <p>학생부를 체계적으로 작성하기 위한 유틸리티 프로그램</p>
+            <h1>All-in-One 학교생활기록부 에디터</h1>
+            <p>학생부를 체계적으로 작성하기 위한 교육용 프로그램</p>
           </div>
         </div>
 
