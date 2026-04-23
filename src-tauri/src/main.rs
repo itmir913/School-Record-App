@@ -622,7 +622,8 @@ fn get_area_grid(area_id: i64, state: State<DbState>) -> Result<AreaGridData, St
             "SELECT act.id, act.name
              FROM Activity act
              JOIN AreaActivity aa ON act.id = aa.activity_id
-             WHERE aa.area_id = ?1",
+             WHERE aa.area_id = ?1
+             ORDER BY act.name ASC",
         )
         .map_err(|e| e.to_string())?;
 
