@@ -213,9 +213,18 @@ function isStudentEmpty(studentId) {
 }
 
 // 셀 내용 클립보드 복사
+const copiedCells = ref(new Set())
+
 async function copyCell(activityId, studentId) {
   const content = getCellContent(activityId, studentId)
   await navigator.clipboard.writeText(content)
+  const key = cellKey(activityId, studentId)
+  copiedCells.value.add(key)
+  copiedCells.value = new Set(copiedCells.value)
+  setTimeout(() => {
+    copiedCells.value.delete(key)
+    copiedCells.value = new Set(copiedCells.value)
+  }, 1000)
 }
 
 // 히스토리 모달
@@ -441,7 +450,9 @@ function isNewGroup(students, index) {
                 <div class="byte-counter" :class="isOverLimit(act.id, student.id) ? 'byte-counter--over' : ''">
                   {{ byteLength(getCellContent(act.id, student.id) || '') }} Bytes
                   <span class="history-sep">|</span>
-                  <button class="btn-history" @click.stop="copyCell(act.id, student.id)">Copy</button>
+                  <button class="btn-history" @click.stop="copyCell(act.id, student.id)">
+                    {{ copiedCells.has(cellKey(act.id, student.id)) ? 'Copied!' : 'Copy' }}
+                  </button>
                   <span class="history-sep">|</span>
                   <button class="btn-history" @click.stop="openHistory(act, student)">History</button>
                 </div>
