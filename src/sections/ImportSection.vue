@@ -57,6 +57,7 @@ const dbActivities = ref([])
 const importing = ref(false)
 const importResult = ref(null)
 const importError = ref('')
+const isNavigating = ref(false)
 
 // ── Diff 미리보기 상태 ────────────────────────────────────────
 const previewLoading = ref(false)
@@ -330,19 +331,26 @@ function autoDetectColumns() {
 
 async function goNext() {
   if (!canGoNext.value) return
+  if (isNavigating.value) return
+  isNavigating.value = true
 
   parseError.value = ''
   previewError.value = ''
   importError.value = ''
 
-  if (step.value === 3) {
-    await loadDbActivities()
-    initActivityMatchMap()
+  try {
+    if (step.value === 3) {
+      await loadDbActivities()
+      if (importError.value) return
+      initActivityMatchMap()
+    }
+    if (step.value === 4) {
+      await loadPreview()
+    }
+    step.value++
+  } finally {
+    isNavigating.value = false
   }
-  if (step.value === 4) {
-    await loadPreview()
-  }
-  step.value++
 }
 
 function goPrev() {
@@ -598,7 +606,11 @@ async function downloadSampleA() {
   }
   const buffer = await workbook.xlsx.writeBuffer()
   const data = bufferToBase64(buffer)
-  await invoke('write_bytes_file', {path: filePath, data})
+  try {
+    await invoke('write_bytes_file', {path: filePath, data})
+  } catch (e) {
+    parseError.value = `파일 저장 실패: ${e}`
+  }
 }
 
 async function downloadSampleB() {
@@ -676,7 +688,11 @@ async function downloadSampleB() {
   }
   const buffer = await workbook.xlsx.writeBuffer()
   const data = bufferToBase64(buffer)
-  await invoke('write_bytes_file', {path: filePath, data})
+  try {
+    await invoke('write_bytes_file', {path: filePath, data})
+  } catch (e) {
+    parseError.value = `파일 저장 실패: ${e}`
+  }
 }
 
 function resetWizard() {
@@ -701,6 +717,7 @@ function resetWizard() {
   importing.value = false
   importResult.value = null
   importError.value = ''
+  isNavigating.value = false
   previewLoading.value = false
   previewError.value = ''
   previewItems.value = []
@@ -1112,6 +1129,7 @@ function resetWizard() {
           </template>
 
           <p v-if="hasDuplicateCols" class="col-map-error">동일한 열을 여러 필드에 지정할 수 없습니다. 각 필드에 서로 다른 열을 선택해 주세요.</p>
+          <p v-if="importError" class="col-map-error">{{ importError }}</p>
         </div>
       </div>
 
@@ -1341,8 +1359,8 @@ function resetWizard() {
         <ArrowLeft :size="15"/>
         이전
       </button>
-      <button v-if="step < 6" class="btn-next" :disabled="!canGoNext" @click="goNext">
-        다음
+      <button v-if="step < 6" class="btn-next" :disabled="!canGoNext || isNavigating" @click="goNext">
+        {{ isNavigating ? '불러오는 중…' : '다음' }}
         <ArrowRight :size="15"/>
       </button>
     </div>
