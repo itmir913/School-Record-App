@@ -1576,6 +1576,44 @@ fn delete_replace_rule(
 }
 
 #[tauri::command]
+fn seed_default_replace_rules(
+    rules: Vec<serde_json::Value>,
+    state: State<DbState>,
+    cache: State<ReplaceCacheState>,
+) -> Result<(), String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM ReplaceRule", [], |r| r.get(0))
+        .map_err(|e| e.to_string())?;
+
+    if count > 0 {
+        return Ok(());
+    }
+
+    conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
+    for rule in &rules {
+        let old_text = rule["oldText"].as_str().ok_or("oldText 누락")?;
+        let new_text = rule["newText"].as_str().ok_or("newText 누락")?;
+        let priority = rule["priority"].as_i64().ok_or("priority 누락")?;
+        conn.execute(
+            "INSERT INTO ReplaceRule (old_text, new_text, priority) VALUES (?1, ?2, ?3)",
+            rusqlite::params![old_text, new_text, priority],
+        )
+        .map_err(|e| {
+            let _ = conn.execute_batch("ROLLBACK");
+            e.to_string()
+        })?;
+    }
+    conn.execute_batch("COMMIT").map_err(|e| e.to_string())?;
+
+    drop(guard);
+    cache.lock().unwrap().ruleset_version += 1;
+    Ok(())
+}
+
+#[tauri::command]
 fn preview_replace(
     scope_type: String,
     area_id: Option<i64>,
@@ -1959,6 +1997,7 @@ fn main() {
             create_replace_rule,
             update_replace_rule,
             delete_replace_rule,
+            seed_default_replace_rules,
             preview_replace,
             apply_replace,
             get_synonym_groups,

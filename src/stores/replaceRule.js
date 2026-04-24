@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { invoke } from '@tauri-apps/api/core'
 import { ref } from 'vue'
+import { DEFAULT_REPLACE_RULES } from '../data/defaultReplaceRules'
 
 export const useReplaceRuleStore = defineStore('replaceRule', () => {
   const rules = ref([])
@@ -11,7 +12,13 @@ export const useReplaceRuleStore = defineStore('replaceRule', () => {
     loading.value = true
     error.value = ''
     try {
-      rules.value = await invoke('get_replace_rules')
+      const fetched = await invoke('get_replace_rules')
+      if (fetched.length === 0) {
+        await invoke('seed_default_replace_rules', { rules: DEFAULT_REPLACE_RULES })
+        rules.value = await invoke('get_replace_rules')
+      } else {
+        rules.value = fetched
+      }
     } catch (e) {
       error.value = e?.toString() ?? '규칙 목록을 불러오지 못했습니다.'
     } finally {
