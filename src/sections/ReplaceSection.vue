@@ -303,7 +303,7 @@ onMounted(async () => {
               v-model="selectedAreaId"
               class="select-sm"
           >
-            <option :value="null" disabled>영역 선택...</option>
+            <option :value="null" disabled>영역(Area) 선택</option>
             <option v-for="area in areaStore.areas" :key="area.id" :value="area.id">
               {{ area.name }}
             </option>
