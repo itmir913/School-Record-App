@@ -190,10 +190,12 @@ async function exportToExcel() {
     const ws = wb.addWorksheet('유의어점검')
 
     ws.columns = [
-      {header: '기록 ID', key: 'id', width: 10},
+      {header: '학년', key: 'grade', width: 8},
+      {header: '반', key: 'class_num', width: 8},
+      {header: '번호', key: 'number', width: 8},
+      {header: '이름', key: 'name', width: 10},
       {header: '영역', key: 'area', width: 16},
       {header: '활동', key: 'activity', width: 22},
-      {header: '학생', key: 'student', width: 18},
       {header: '원본 내용', key: 'content', width: 60},
       {header: '탐지된 유의어', key: 'words', width: 32},
     ]
@@ -203,10 +205,12 @@ async function exportToExcel() {
 
     for (const {record, detectedWords} of inspectResults.value) {
       const row = ws.addRow({
-        id: record.id,
+        grade: record.grade,
+        class_num: record.class_num,
+        number: record.number,
+        name: record.name,
         area: record.area_name,
         activity: record.activity_name,
-        student: `${record.grade}-${record.class_num}-${record.number} ${record.student_name}`,
         content: record.content,
         words: detectedWords.join(', '),
       })
