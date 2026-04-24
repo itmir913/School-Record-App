@@ -62,11 +62,15 @@ async function handleSaved({name, areaIds}) {
 }
 
 async function handleDeleted() {
+  if (isSubmitting.value) return
+  isSubmitting.value = true
   try {
     await activityStore.deleteActivity(selectedActivity.value.id)
     closeModal()
   } catch (e) {
     activityModalRef.value?.setServerError(String(e))
+  } finally {
+    isSubmitting.value = false
   }
 }
 </script>

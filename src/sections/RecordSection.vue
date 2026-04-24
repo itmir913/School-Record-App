@@ -50,7 +50,7 @@ watch(selectedAreaId, async (id) => {
   }
   try {
     await recordStore.fetchAreaGrid(id)
-    // 기존 기록을 cellContent에 세팅
+    if (selectedAreaId.value !== id) return
     const map = new Map()
     for (const r of recordStore.gridData.records) {
       map.set(cellKey(r.activity_id, r.student_id), r.content)
@@ -63,6 +63,7 @@ watch(selectedAreaId, async (id) => {
       document.querySelectorAll('.cell-input').forEach(el => autoResize(el))
     }
   } catch (e) {
+    if (selectedAreaId.value !== id) return
     loadError.value = String(e)
   }
 })

@@ -13,7 +13,7 @@ export const useReplaceRuleStore = defineStore('replaceRule', () => {
     error.value = ''
     try {
       const fetched = await invoke('get_replace_rules')
-      if (fetched.length === 0) {
+      if (!Array.isArray(fetched) || fetched.length === 0) {
         await invoke('seed_default_replace_rules', { rules: DEFAULT_REPLACE_RULES })
         rules.value = await invoke('get_replace_rules')
       } else {
