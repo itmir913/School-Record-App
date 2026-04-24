@@ -204,8 +204,10 @@ onMounted(async () => {
 
         <div v-else class="rule-table">
           <div class="rule-header-row">
-            <span class="col-priority">우선순위</span>
-            <span class="col-rule">규칙</span>
+            <span class="col-priority">순위</span>
+            <span class="col-old">찾을 텍스트</span>
+            <span class="col-arrow"></span>
+            <span class="col-new">바꿀 텍스트</span>
             <span class="col-toggle">활성</span>
             <span class="col-actions"></span>
           </div>
@@ -223,10 +225,10 @@ onMounted(async () => {
                 <span class="arrow-label">→</span>
                 <input v-model="editForm.newText" class="input-sm" placeholder="바꿀 텍스트"/>
                 <button class="btn-icon btn-confirm" @click="commitEdit(rule)" title="저장">
-                  <Check :size="14"/>
+                  <Check :size="15"/>
                 </button>
                 <button class="btn-icon btn-cancel" @click="cancelEdit" title="취소">
-                  <X :size="14"/>
+                  <X :size="15"/>
                 </button>
               </div>
               <p v-if="editError" class="error-msg">{{ editError }}</p>
@@ -236,25 +238,31 @@ onMounted(async () => {
             <template v-else>
               <div class="col-priority priority-ctrl">
                 <button class="btn-icon-tiny" @click="adjustPriority(rule, -1)" title="우선순위 높이기">
-                  <ChevronUp :size="12"/>
+                  <ChevronUp :size="13"/>
                 </button>
                 <span class="priority-val">{{ rule.priority }}</span>
                 <button class="btn-icon-tiny" @click="adjustPriority(rule, 1)" title="우선순위 낮추기">
-                  <ChevronDown :size="12"/>
+                  <ChevronDown :size="13"/>
                 </button>
               </div>
 
-              <div class="col-rule rule-text">
+              <div class="col-old">
                 <span class="old-text">{{ rule.old_text }}</span>
-                <span class="arrow-label">→</span>
-                <span class="new-text">{{ rule.new_text || '(빈 문자열)' }}</span>
                 <span
                   v-if="rule.conflicts.length > 0"
                   class="conflict-badge"
                   :title="`충돌 규칙 ID: ${rule.conflicts.join(', ')}`"
                 >
-                  <TriangleAlert :size="12"/>
+                  <TriangleAlert :size="13"/>
                 </span>
+              </div>
+
+              <div class="col-arrow">
+                <span class="arrow-label">→</span>
+              </div>
+
+              <div class="col-new">
+                <span class="new-text">{{ rule.new_text || '(빈 문자열)' }}</span>
               </div>
 
               <div class="col-toggle">
@@ -269,10 +277,10 @@ onMounted(async () => {
 
               <div class="col-actions action-btns">
                 <button class="btn-icon" @click="startEdit(rule)" title="편집">
-                  <Pencil :size="13"/>
+                  <Pencil :size="15"/>
                 </button>
                 <button class="btn-icon btn-danger" @click="deleteRule(rule.id)" title="삭제">
-                  <Trash2 :size="13"/>
+                  <Trash2 :size="15"/>
                 </button>
               </div>
             </template>
@@ -388,7 +396,7 @@ onMounted(async () => {
   flex-direction: column;
   height: 100%;
   color: #c8d8f0;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .section-header {
@@ -397,7 +405,7 @@ onMounted(async () => {
 }
 
 .section-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   color: #e2e8f0;
   margin: 0 0 4px;
@@ -406,7 +414,7 @@ onMounted(async () => {
 .section-desc {
   color: #64748b;
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .section-body {
@@ -434,7 +442,7 @@ onMounted(async () => {
 }
 
 .panel-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #94a3b8;
   text-transform: uppercase;
@@ -449,9 +457,9 @@ onMounted(async () => {
 .add-form {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
-  padding: 10px;
+  padding: 12px;
   background: #111827;
   border-radius: 8px;
   margin-bottom: 10px;
@@ -464,23 +472,25 @@ onMounted(async () => {
   gap: 2px;
 }
 
-.rule-header-row {
+/* 6열: 순위 | 찾을 텍스트 | → | 바꿀 텍스트 | 활성 | 액션 */
+.rule-header-row,
+.rule-row {
   display: grid;
-  grid-template-columns: 80px 1fr 56px 72px;
+  grid-template-columns: 72px 1fr 36px 1fr 64px 76px;
   gap: 8px;
-  padding: 4px 8px;
-  font-size: 11px;
+  align-items: center;
+}
+
+.rule-header-row {
+  padding: 4px 10px;
+  font-size: 12px;
   color: #475569;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .rule-row {
-  display: grid;
-  grid-template-columns: 80px 1fr 56px 72px;
-  gap: 8px;
-  align-items: center;
-  padding: 6px 8px;
+  padding: 8px 10px;
   border-radius: 6px;
   transition: background-color 0.1s;
 }
@@ -497,7 +507,7 @@ onMounted(async () => {
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
@@ -510,14 +520,15 @@ onMounted(async () => {
 }
 
 .priority-val {
-  font-size: 12px;
+  font-size: 14px;
   color: #64748b;
-  min-width: 20px;
+  min-width: 22px;
   text-align: center;
 }
 
-/* 규칙 텍스트 */
-.rule-text {
+/* 텍스트 열 */
+.col-old,
+.col-new {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -527,21 +538,31 @@ onMounted(async () => {
 .old-text {
   color: #f87171;
   font-family: monospace;
-  font-size: 13px;
+  font-size: 15px;
   white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .new-text {
   color: #4ade80;
   font-family: monospace;
-  font-size: 13px;
+  font-size: 15px;
   white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.col-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .arrow-label {
   color: #475569;
   flex-shrink: 0;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .conflict-badge {
@@ -560,10 +581,10 @@ onMounted(async () => {
 
 /* 토글 버튼 */
 .toggle-btn {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 3px 8px;
+  border-radius: 5px;
   border: none;
   cursor: pointer;
   transition: background-color 0.15s;
@@ -583,31 +604,34 @@ onMounted(async () => {
 .scope-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
 .radio-label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   cursor: pointer;
   color: #94a3b8;
+  font-size: 15px;
 }
 
 .radio-label input {
   accent-color: #3b5bdb;
+  width: 15px;
+  height: 15px;
 }
 
 /* 버튼류 */
 .btn-sm {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
+  gap: 5px;
+  padding: 6px 12px;
   border-radius: 6px;
   border: none;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
   transition: background-color 0.15s;
 }
@@ -629,8 +653,8 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 5px;
   border: none;
   background: none;
@@ -645,8 +669,8 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 3px;
   border: none;
   background: none;
@@ -666,13 +690,13 @@ onMounted(async () => {
 .btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
+  gap: 7px;
+  padding: 9px 20px;
   border-radius: 8px;
   border: none;
   background-color: rgba(59, 91, 219, 0.25);
   color: #93c5fd;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   transition: background-color 0.15s;
 }
@@ -682,13 +706,13 @@ onMounted(async () => {
 .btn-apply {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 20px;
+  gap: 7px;
+  padding: 9px 22px;
   border-radius: 8px;
   border: none;
   background-color: rgba(74, 222, 128, 0.18);
   color: #4ade80;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   font-weight: 600;
   transition: background-color 0.15s;
@@ -702,8 +726,8 @@ onMounted(async () => {
   border: 1px solid #1e293b;
   border-radius: 6px;
   color: #c8d8f0;
-  font-size: 13px;
-  padding: 5px 8px;
+  font-size: 15px;
+  padding: 6px 10px;
   outline: none;
   flex: 1;
   min-width: 80px;
@@ -711,8 +735,8 @@ onMounted(async () => {
 .input-sm:focus { border-color: #3b5bdb; }
 
 .input-priority {
-  flex: 0 0 64px;
-  min-width: 64px;
+  flex: 0 0 68px;
+  min-width: 68px;
 }
 
 .select-sm {
@@ -720,15 +744,15 @@ onMounted(async () => {
   border: 1px solid #1e293b;
   border-radius: 6px;
   color: #c8d8f0;
-  font-size: 13px;
-  padding: 5px 8px;
+  font-size: 15px;
+  padding: 6px 10px;
   outline: none;
 }
 .select-sm:focus { border-color: #3b5bdb; }
 
 /* diff 항목 */
 .diff-item {
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px solid #1a2035;
 }
 .diff-item:last-child { border-bottom: none; }
@@ -741,7 +765,7 @@ onMounted(async () => {
 }
 
 .diff-label {
-  font-size: 12px;
+  font-size: 13px;
   color: #64748b;
 }
 .diff-sep { color: #334155; }
@@ -754,7 +778,7 @@ onMounted(async () => {
 
 .error-msg {
   color: #f87171;
-  font-size: 12px;
+  font-size: 13px;
   margin: 4px 0 0;
   width: 100%;
 }
@@ -764,8 +788,8 @@ onMounted(async () => {
   border: 1px solid rgba(248, 113, 113, 0.2);
   border-radius: 8px;
   color: #f87171;
-  padding: 10px 14px;
-  font-size: 13px;
+  padding: 12px 16px;
+  font-size: 14px;
 }
 
 .result-box {
@@ -774,25 +798,25 @@ onMounted(async () => {
   border-radius: 8px;
   color: #4ade80;
   padding: 12px 16px;
-  font-size: 14px;
+  font-size: 15px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.result-icon { font-size: 16px; }
+.result-icon { font-size: 17px; }
 
 .empty-state {
   color: #334155;
-  font-size: 13px;
-  padding: 12px 0;
+  font-size: 14px;
+  padding: 14px 0;
   text-align: center;
 }
 
 .empty-preview {
   color: #334155;
-  font-size: 13px;
-  padding: 16px;
+  font-size: 14px;
+  padding: 18px;
   text-align: center;
   border: 1px dashed #1a2035;
   border-radius: 8px;
@@ -803,9 +827,9 @@ onMounted(async () => {
   align-items: center;
   gap: 6px;
   color: #f59e0b;
-  font-size: 12px;
+  font-size: 13px;
   margin-top: 12px;
-  padding: 8px 10px;
+  padding: 9px 12px;
   background-color: rgba(245, 158, 11, 0.06);
   border-radius: 6px;
   border: 1px solid rgba(245, 158, 11, 0.15);
@@ -813,14 +837,13 @@ onMounted(async () => {
 
 .hint-text {
   color: #475569;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: normal;
   text-transform: none;
   letter-spacing: 0;
 }
 
 .col-priority { display: flex; align-items: center; }
-.col-rule { overflow: hidden; }
 .col-toggle { display: flex; align-items: center; justify-content: center; }
 .col-actions { display: flex; align-items: center; justify-content: flex-end; }
 </style>
