@@ -12,6 +12,7 @@ import {
   Layers,
   LayoutDashboard,
   PenLine,
+  Replace,
   Upload,
   Users,
 } from 'lucide-vue-next'
@@ -66,6 +67,7 @@ const navGroups = [
       {id: 'import', label: '가져오기(Import)', icon: Download},
       {id: 'export', label: '내보내기(Export)', icon: Upload},
       {id: 'checklist', label: '체크리스트(Checklist)', icon: ClipboardList},
+      {id: 'replace', label: '텍스트 치환(Replace)', icon: Replace},
     ],
   },
 ]

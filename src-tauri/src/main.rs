@@ -5,11 +5,23 @@ mod db;
 
 use rusqlite::{Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
+use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
 use std::sync::Mutex;
 use tauri::State;
 
 struct DbState(Mutex<Option<Connection>>);
+
+// ── 치환 엔진 상태 ────────────────────────────────────────────
+
+struct ReplaceCache {
+    ruleset_version: u64,
+    /// hash(content) → (result, version)
+    entries: HashMap<u64, (String, u64)>,
+}
+
+type ReplaceCacheState = Mutex<ReplaceCache>;
 
 fn unique_err(e: &rusqlite::Error, conflict_msg: &str) -> String {
     if e.to_string().contains("UNIQUE constraint failed") {
@@ -50,6 +62,37 @@ struct StudentItem {
     class_num: i64,
     number: i64,
     name: String,
+}
+
+// ── 치환 규칙 구조체 ─────────────────────────────────────────
+
+#[derive(Serialize, Clone)]
+struct ReplaceRule {
+    id: i64,
+    old_text: String,
+    new_text: String,
+    enabled: bool,
+    priority: i64,
+    created_at: String,
+    updated_at: String,
+    /// 충돌하는 규칙 id 목록 (get_replace_rules에서 계산, DB에 저장 안 됨)
+    conflicts: Vec<i64>,
+}
+
+#[derive(Serialize)]
+struct ReplacePreviewItem {
+    activity_id: i64,
+    student_id: i64,
+    activity_name: String,
+    student_name: String,
+    original: String,
+    result: String,
+}
+
+#[derive(Serialize)]
+struct ReplaceApplyResult {
+    changed_count: i64,
+    total_count: i64,
 }
 
 /// get_activities 가 반환하는 풍부한 Activity 항목
@@ -1216,6 +1259,448 @@ fn restore_snapshot(
     }
 }
 
+// ── 치환 엔진 ────────────────────────────────────────────────
+
+fn hash_content(content: &str) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    content.hash(&mut hasher);
+    hasher.finish()
+}
+
+fn apply_rules(content: &str, rules: &[ReplaceRule]) -> String {
+    let mut result = content.to_string();
+    for rule in rules.iter().filter(|r| r.enabled) {
+        result = result.replace(&rule.old_text, &rule.new_text);
+    }
+    result
+}
+
+fn apply_rules_cached(content: &str, rules: &[ReplaceRule], cache: &mut ReplaceCache) -> String {
+    if content.is_empty() {
+        return String::new();
+    }
+    let version = cache.ruleset_version;
+    let key = hash_content(content);
+    if let Some((result, v)) = cache.entries.get(&key) {
+        if *v == version {
+            return result.clone();
+        }
+    }
+    let result = apply_rules(content, rules);
+    cache.entries.insert(key, (result.clone(), version));
+    result
+}
+
+fn detect_conflicts(rules: &[ReplaceRule]) -> HashMap<i64, Vec<i64>> {
+    let mut conflicts: HashMap<i64, Vec<i64>> = HashMap::new();
+    let n = rules.len();
+    for i in 0..n {
+        for j in 0..n {
+            if i == j {
+                continue;
+            }
+            let ri = &rules[i];
+            let rj = &rules[j];
+            let is_cycle = ri.old_text == rj.new_text && ri.new_text == rj.old_text;
+            let is_cascade =
+                !rj.old_text.is_empty() && ri.new_text.contains(rj.old_text.as_str());
+            if is_cycle || is_cascade {
+                conflicts.entry(ri.id).or_default().push(rj.id);
+            }
+        }
+    }
+    conflicts
+}
+
+fn fetch_rules_from_db(conn: &Connection) -> Result<Vec<ReplaceRule>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT id, old_text, new_text, enabled, priority, created_at, updated_at
+             FROM ReplaceRule ORDER BY priority ASC, id ASC",
+        )
+        .map_err(|e| e.to_string())?;
+
+    let rules = stmt
+        .query_map([], |row| {
+            Ok(ReplaceRule {
+                id: row.get(0)?,
+                old_text: row.get(1)?,
+                new_text: row.get(2)?,
+                enabled: row.get::<_, i64>(3)? != 0,
+                priority: row.get(4)?,
+                created_at: row.get(5)?,
+                updated_at: row.get(6)?,
+                conflicts: vec![],
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+
+    Ok(rules)
+}
+
+fn get_records_for_scope(
+    conn: &Connection,
+    scope_type: &str,
+    area_id: Option<i64>,
+) -> Result<Vec<RecordCell>, String> {
+    match scope_type {
+        "all" => {
+            let mut stmt = conn
+                .prepare(
+                    "SELECT activity_id, student_id, content
+                     FROM ActivityRecord WHERE content != ''",
+                )
+                .map_err(|e| e.to_string())?;
+            let records = stmt
+                .query_map([], |row| {
+                    Ok(RecordCell {
+                        activity_id: row.get(0)?,
+                        student_id: row.get(1)?,
+                        content: row.get(2)?,
+                    })
+                })
+                .map_err(|e| e.to_string())?
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|e| e.to_string())?;
+            Ok(records)
+        }
+        "area" => {
+            let aid =
+                area_id.ok_or_else(|| "area 범위에는 area_id가 필요합니다.".to_string())?;
+            let mut stmt = conn
+                .prepare(
+                    "SELECT ar.activity_id, ar.student_id, ar.content
+                     FROM ActivityRecord ar
+                     JOIN AreaActivity aa ON aa.activity_id = ar.activity_id
+                     WHERE aa.area_id = ?1 AND ar.content != ''",
+                )
+                .map_err(|e| e.to_string())?;
+            let records = stmt
+                .query_map(rusqlite::params![aid], |row| {
+                    Ok(RecordCell {
+                        activity_id: row.get(0)?,
+                        student_id: row.get(1)?,
+                        content: row.get(2)?,
+                    })
+                })
+                .map_err(|e| e.to_string())?
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|e| e.to_string())?;
+            Ok(records)
+        }
+        _ => Err(format!("알 수 없는 scope_type: {scope_type}")),
+    }
+}
+
+// ── 치환 규칙 커맨드 ─────────────────────────────────────────
+
+#[tauri::command]
+fn get_replace_rules(state: State<DbState>) -> Result<Vec<ReplaceRule>, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    let mut rules = fetch_rules_from_db(conn)?;
+    let conflicts = detect_conflicts(&rules);
+    for rule in rules.iter_mut() {
+        if let Some(ids) = conflicts.get(&rule.id) {
+            rule.conflicts = ids.clone();
+        }
+    }
+    Ok(rules)
+}
+
+#[tauri::command]
+fn create_replace_rule(
+    old_text: String,
+    new_text: String,
+    priority: i64,
+    state: State<DbState>,
+    cache: State<ReplaceCacheState>,
+) -> Result<ReplaceRule, String> {
+    if old_text.trim().is_empty() {
+        return Err("찾을 텍스트를 입력해주세요.".to_string());
+    }
+    if old_text == new_text {
+        return Err("찾을 텍스트와 바꿀 텍스트가 동일합니다.".to_string());
+    }
+
+    let rule = {
+        let guard = state.0.lock().unwrap();
+        let conn = guard
+            .as_ref()
+            .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+        conn.execute(
+            "INSERT INTO ReplaceRule (old_text, new_text, priority) VALUES (?1, ?2, ?3)",
+            rusqlite::params![old_text, new_text, priority],
+        )
+        .map_err(|e| e.to_string())?;
+
+        let id = conn.last_insert_rowid();
+        conn.query_row(
+            "SELECT id, old_text, new_text, enabled, priority, created_at, updated_at
+             FROM ReplaceRule WHERE id = ?1",
+            rusqlite::params![id],
+            |row| {
+                Ok(ReplaceRule {
+                    id: row.get(0)?,
+                    old_text: row.get(1)?,
+                    new_text: row.get(2)?,
+                    enabled: row.get::<_, i64>(3)? != 0,
+                    priority: row.get(4)?,
+                    created_at: row.get(5)?,
+                    updated_at: row.get(6)?,
+                    conflicts: vec![],
+                })
+            },
+        )
+        .map_err(|e| e.to_string())?
+    };
+
+    cache.lock().unwrap().ruleset_version += 1;
+    Ok(rule)
+}
+
+#[tauri::command]
+fn update_replace_rule(
+    id: i64,
+    old_text: String,
+    new_text: String,
+    enabled: bool,
+    priority: i64,
+    state: State<DbState>,
+    cache: State<ReplaceCacheState>,
+) -> Result<ReplaceRule, String> {
+    if old_text.trim().is_empty() {
+        return Err("찾을 텍스트를 입력해주세요.".to_string());
+    }
+    if old_text == new_text {
+        return Err("찾을 텍스트와 바꿀 텍스트가 동일합니다.".to_string());
+    }
+
+    let rule = {
+        let guard = state.0.lock().unwrap();
+        let conn = guard
+            .as_ref()
+            .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+        let enabled_int: i64 = if enabled { 1 } else { 0 };
+        conn.execute(
+            "UPDATE ReplaceRule
+             SET old_text=?1, new_text=?2, enabled=?3, priority=?4,
+                 updated_at=datetime('now','localtime')
+             WHERE id=?5",
+            rusqlite::params![old_text, new_text, enabled_int, priority, id],
+        )
+        .map_err(|e| e.to_string())?;
+
+        conn.query_row(
+            "SELECT id, old_text, new_text, enabled, priority, created_at, updated_at
+             FROM ReplaceRule WHERE id = ?1",
+            rusqlite::params![id],
+            |row| {
+                Ok(ReplaceRule {
+                    id: row.get(0)?,
+                    old_text: row.get(1)?,
+                    new_text: row.get(2)?,
+                    enabled: row.get::<_, i64>(3)? != 0,
+                    priority: row.get(4)?,
+                    created_at: row.get(5)?,
+                    updated_at: row.get(6)?,
+                    conflicts: vec![],
+                })
+            },
+        )
+        .map_err(|e| e.to_string())?
+    };
+
+    cache.lock().unwrap().ruleset_version += 1;
+    Ok(rule)
+}
+
+#[tauri::command]
+fn delete_replace_rule(
+    id: i64,
+    state: State<DbState>,
+    cache: State<ReplaceCacheState>,
+) -> Result<(), String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    conn.execute("DELETE FROM ReplaceRule WHERE id = ?1", rusqlite::params![id])
+        .map_err(|e| e.to_string())?;
+
+    drop(guard);
+    cache.lock().unwrap().ruleset_version += 1;
+    Ok(())
+}
+
+#[tauri::command]
+fn preview_replace(
+    scope_type: String,
+    area_id: Option<i64>,
+    state: State<DbState>,
+    cache: State<ReplaceCacheState>,
+) -> Result<Vec<ReplacePreviewItem>, String> {
+    // Phase 1: DB에서 규칙·기록·이름 수집 (DB 락 보유)
+    let (rules, records, act_names, stu_names) = {
+        let guard = state.0.lock().unwrap();
+        let conn = guard
+            .as_ref()
+            .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+        let rules = fetch_rules_from_db(conn)?;
+        let records = get_records_for_scope(conn, &scope_type, area_id)?;
+
+        let mut act_names: HashMap<i64, String> = HashMap::new();
+        let mut stu_names: HashMap<i64, String> = HashMap::new();
+        for rec in &records {
+            act_names.entry(rec.activity_id).or_insert_with(|| {
+                conn.query_row(
+                    "SELECT name FROM Activity WHERE id=?1",
+                    rusqlite::params![rec.activity_id],
+                    |r| r.get(0),
+                )
+                .unwrap_or_else(|_| format!("활동#{}", rec.activity_id))
+            });
+            stu_names.entry(rec.student_id).or_insert_with(|| {
+                conn.query_row(
+                    "SELECT name FROM Student WHERE id=?1",
+                    rusqlite::params![rec.student_id],
+                    |r| r.get(0),
+                )
+                .unwrap_or_else(|_| format!("학생#{}", rec.student_id))
+            });
+        }
+        (rules, records, act_names, stu_names)
+    }; // DB 락 해제
+
+    // Phase 2: 캐시를 이용해 치환 결과 계산
+    let mut cache_guard = cache.lock().unwrap();
+    let mut items = Vec::new();
+
+    for rec in &records {
+        let result = apply_rules_cached(&rec.content, &rules, &mut cache_guard);
+        if result == rec.content {
+            continue;
+        }
+        let activity_name = act_names
+            .get(&rec.activity_id)
+            .cloned()
+            .unwrap_or_default();
+        let student_name = stu_names
+            .get(&rec.student_id)
+            .cloned()
+            .unwrap_or_default();
+
+        items.push(ReplacePreviewItem {
+            activity_id: rec.activity_id,
+            student_id: rec.student_id,
+            activity_name,
+            student_name,
+            original: rec.content.clone(),
+            result,
+        });
+    }
+
+    Ok(items)
+}
+
+#[tauri::command]
+fn apply_replace(
+    scope_type: String,
+    area_id: Option<i64>,
+    state: State<DbState>,
+    cache: State<ReplaceCacheState>,
+) -> Result<ReplaceApplyResult, String> {
+    // Phase 1: 규칙·기록 수집 (DB 락 해제 후 캐시 계산)
+    let (rules, records) = {
+        let guard = state.0.lock().unwrap();
+        let conn = guard
+            .as_ref()
+            .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+        let rules = fetch_rules_from_db(conn)?;
+        let records = get_records_for_scope(conn, &scope_type, area_id)?;
+        (rules, records)
+    };
+
+    let total_count = records.len() as i64;
+
+    // Phase 2: 변경 목록 계산 (캐시 락만 보유)
+    let changes: Vec<(i64, i64, String)> = {
+        let mut cache_guard = cache.lock().unwrap();
+        records
+            .iter()
+            .filter_map(|rec| {
+                let result = apply_rules_cached(&rec.content, &rules, &mut cache_guard);
+                if result != rec.content {
+                    Some((rec.activity_id, rec.student_id, result))
+                } else {
+                    None
+                }
+            })
+            .collect()
+    };
+
+    let changed_count = changes.len() as i64;
+    if changes.is_empty() {
+        return Ok(ReplaceApplyResult { changed_count: 0, total_count });
+    }
+
+    // Phase 3: 트랜잭션으로 DB에 반영
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
+    let result: Result<(), String> = (|| {
+        for (activity_id, student_id, new_content) in &changes {
+            conn.execute(
+                "INSERT INTO ActivityRecord (activity_id, student_id, content, updated_at)
+                 VALUES (?1, ?2, ?3, datetime('now'))
+                 ON CONFLICT(activity_id, student_id) DO UPDATE SET
+                   content = excluded.content,
+                   updated_at = excluded.updated_at",
+                rusqlite::params![activity_id, student_id, new_content],
+            )
+            .map_err(|e| e.to_string())?;
+
+            conn.execute(
+                "INSERT INTO ActivityRecordHistory (activity_record_id, content, changed_at, note)
+                 SELECT r.id, r.content, r.updated_at, '치환 적용'
+                 FROM ActivityRecord r
+                 WHERE r.activity_id = ?1 AND r.student_id = ?2
+                   AND NOT EXISTS (
+                       SELECT 1 FROM ActivityRecordHistory h
+                       WHERE h.activity_record_id = r.id
+                         AND h.changed_at = r.updated_at
+                   )",
+                rusqlite::params![activity_id, student_id],
+            )
+            .map_err(|e| e.to_string())?;
+        }
+        Ok(())
+    })();
+
+    match result {
+        Ok(_) => {
+            conn.execute_batch("COMMIT").map_err(|e| e.to_string())?;
+            Ok(ReplaceApplyResult { changed_count, total_count })
+        }
+        Err(e) => {
+            let _ = conn.execute_batch("ROLLBACK");
+            Err(e)
+        }
+    }
+}
+
 // ── 파일 유틸 ────────────────────────────────────────────────
 
 #[tauri::command]
@@ -1239,6 +1724,10 @@ fn main() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .manage(DbState(Mutex::new(None)))
+        .manage(Mutex::new(ReplaceCache {
+            ruleset_version: 0,
+            entries: HashMap::new(),
+        }))
         .invoke_handler(tauri::generate_handler![
             new_project,
             open_project,
@@ -1270,7 +1759,100 @@ fn main() {
             create_snapshot,
             get_snapshots,
             restore_snapshot,
+            get_replace_rules,
+            create_replace_rule,
+            update_replace_rule,
+            delete_replace_rule,
+            preview_replace,
+            apply_replace,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+// ── 단위 테스트 ──────────────────────────────────────────────
+
+#[cfg(test)]
+mod replace_tests {
+    use super::*;
+
+    fn make_rule(id: i64, old: &str, new: &str, enabled: bool, priority: i64) -> ReplaceRule {
+        ReplaceRule {
+            id,
+            old_text: old.to_string(),
+            new_text: new.to_string(),
+            enabled,
+            priority,
+            created_at: String::new(),
+            updated_at: String::new(),
+            conflicts: vec![],
+        }
+    }
+
+    #[test]
+    fn test_sequential_apply() {
+        // A→B (rule 0), B→C (rule 1): 최종 결과 C
+        let rules = vec![
+            make_rule(1, "A", "B", true, 0),
+            make_rule(2, "B", "C", true, 1),
+        ];
+        assert_eq!(apply_rules("A", &rules), "C");
+    }
+
+    #[test]
+    fn test_quote_replacement() {
+        let rules = vec![
+            make_rule(1, "\u{201C}", "'", true, 0),
+            make_rule(2, "\u{201D}", "'", true, 1),
+            make_rule(3, "\u{2018}", "'", true, 2),
+            make_rule(4, "\u{2019}", "'", true, 3),
+        ];
+        let input = "\u{201C}안녕\u{201D} \u{2018}반갑\u{2019}";
+        assert_eq!(apply_rules(input, &rules), "'안녕' '반갑'");
+    }
+
+    #[test]
+    fn test_disabled_rule_skipped() {
+        let rules = vec![
+            make_rule(1, "hello", "world", false, 0),
+            make_rule(2, "foo", "bar", true, 1),
+        ];
+        assert_eq!(apply_rules("hello foo", &rules), "hello bar");
+    }
+
+    #[test]
+    fn test_cache_invalidation_on_version_change() {
+        let mut cache = ReplaceCache { ruleset_version: 0, entries: HashMap::new() };
+        let rules_v0 = vec![make_rule(1, "A", "B", true, 0)];
+        assert_eq!(apply_rules_cached("A", &rules_v0, &mut cache), "B");
+
+        cache.ruleset_version += 1;
+        let rules_v1 = vec![make_rule(1, "A", "C", true, 0)];
+        assert_eq!(apply_rules_cached("A", &rules_v1, &mut cache), "C");
+    }
+
+    #[test]
+    fn test_conflict_cycle_detection() {
+        let rules = vec![
+            make_rule(1, "A", "B", true, 0),
+            make_rule(2, "B", "A", true, 1),
+        ];
+        let conflicts = detect_conflicts(&rules);
+        assert!(conflicts.contains_key(&1));
+        assert!(conflicts.contains_key(&2));
+    }
+
+    #[test]
+    fn test_empty_content_returns_empty() {
+        let rules = vec![make_rule(1, "A", "B", true, 0)];
+        assert_eq!(apply_rules_cached("", &rules, &mut ReplaceCache {
+            ruleset_version: 0, entries: HashMap::new()
+        }), "");
+    }
+
+    #[test]
+    fn test_no_match_returns_original() {
+        let rules = vec![make_rule(1, "X", "Y", true, 0)];
+        assert_eq!(apply_rules("hello", &rules), "hello");
+    }
 }

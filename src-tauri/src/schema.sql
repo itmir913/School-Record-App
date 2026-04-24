@@ -92,3 +92,30 @@ CREATE TABLE IF NOT EXISTS Snapshot
     memo       TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- ================================================================
+-- 치환 규칙
+-- ================================================================
+
+CREATE TABLE IF NOT EXISTS ReplaceRule
+(
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    old_text   TEXT    NOT NULL,
+    new_text   TEXT    NOT NULL,
+    enabled    INTEGER NOT NULL DEFAULT 1,
+    priority   INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now', 'localtime')),
+    updated_at TEXT    NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_replace_rule_priority ON ReplaceRule (priority);
+
+INSERT INTO ReplaceRule (old_text, new_text, priority) VALUES
+    ('"', '''', 0),
+    ('"', '''', 1),
+    (''', '''', 2),
+    (''', '''', 3),
+    ('「', '''', 4),
+    ('」', '''', 5),
+    ('『', '''', 6),
+    ('』', '''', 7);

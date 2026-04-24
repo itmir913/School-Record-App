@@ -12,6 +12,7 @@ import RecordSection from '../sections/RecordSection.vue'
 import ImportSection from '../sections/ImportSection.vue'
 import ExportSection from '../sections/ExportSection.vue'
 import ChecklistSection from '../sections/ChecklistSection.vue'
+import ReplaceSection from '../sections/ReplaceSection.vue'
 import SnapshotModal from '../components/SnapshotModal.vue'
 
 const project = useProjectStore()
@@ -29,6 +30,7 @@ const sectionMap = {
   import: ImportSection,
   export: ExportSection,
   checklist: ChecklistSection,
+  replace: ReplaceSection,
 }
 
 const currentSection = computed(() => sectionMap[activeSection.value])
