@@ -549,6 +549,7 @@ async function doImport() {
     }
 
     importResult.value = await invoke('bulk_import_records', {records})
+    step.value++
   } catch (e) {
     importError.value = '가져오기 실패: ' + String(e)
   } finally {
@@ -1282,26 +1283,26 @@ function resetWizard() {
             {{ importing ? '가져오는 중...' : '가져오기 실행' }}
           </button>
         </div>
+      </div>
 
-        <div v-else class="result-box">
-          <div class="result-check">✓</div>
-          <p class="result-title">가져오기 완료</p>
-          <div class="result-stats">
-            <div class="stat-item">
-              <span class="stat-val">{{ importResult.students_created }}</span>
-              <span class="stat-label">학생 신규 생성</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-val">{{ importResult.students_updated }}</span>
-              <span class="stat-label">학생 업데이트</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-val">{{ importResult.records_saved }}</span>
-              <span class="stat-label">기록 저장</span>
-            </div>
+      <div v-else-if="step === 7" class="result-box">
+        <div class="result-check">✓</div>
+        <p class="result-title">가져오기 완료</p>
+        <div class="result-stats">
+          <div class="stat-item">
+            <span class="stat-val">{{ importResult.students_created }}</span>
+            <span class="stat-label">학생 신규 생성</span>
           </div>
-          <button class="btn-reset" @click="resetWizard">새로 가져오기</button>
+          <div class="stat-item">
+            <span class="stat-val">{{ importResult.students_updated }}</span>
+            <span class="stat-label">학생 업데이트</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val">{{ importResult.records_saved }}</span>
+            <span class="stat-label">기록 저장</span>
+          </div>
         </div>
+        <button class="btn-reset" @click="resetWizard">새로 가져오기</button>
       </div>
 
       <!-- 파일 미리보기 (Step 3에서만 하단에 미리보기 표시) -->

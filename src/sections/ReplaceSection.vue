@@ -178,11 +178,23 @@ async function runApply() {
     const [st, ids] = scopeArgs()
     applyResult.value = await ruleStore.applyReplace(st, ids)
     previewItems.value = []
+    step.value++
   } catch (e) {
     applyError.value = e?.toString() ?? '적용 실패'
   } finally {
     isApplying.value = false
   }
+}
+
+function resetWizard() {
+  step.value = 1
+  previewError.value = ''
+  applyError.value = ''
+  previewItems.value = []
+  applyResult.value = null
+  hasRanPreview.value = false
+  isPreviewing.value = false
+  isApplying.value = false
 }
 
 // ── 마운트 ─────────────────────────────────────────────────
@@ -487,20 +499,34 @@ onMounted(async () => {
           미리보기를 실행하면 변경될 항목이 표시됩니다.
         </div>
 
+      </div>
+
+      <div v-if="step === 4">
         <!-- 적용 결과 -->
         <div v-if="applyResult" class="result-box">
-          <span class="result-icon">✓</span>
-          {{ applyResult.changed_count }}건 적용 완료
-          (전체 {{ applyResult.total_count }}건 중)
+          <div class="result-check">✓</div>
+          <p class="result-title">텍스트 치환 완료</p>
+          <div class="result-stats">
+            <div class="stat-item">
+              <span class="stat-val">{{ applyResult.changed_count }}건 적용 완료</span>
+              <span class="stat-label">(전체 {{ applyResult.total_count }}건 중)</span>
+            </div>
+          </div>
+          <div class="result-actions">
+            <button class="btn-reset" @click="resetWizard">새로 치환하기</button>
+          </div>
         </div>
 
-        <div v-if="applyError" class="error-box">{{ applyError }}</div>
+        <div v-else-if="applyError" class="error-box">
+          {{ applyError }}
+        </div>
+
       </div>
 
     </div>
 
     <!-- 하단 네비게이션 -->
-    <div class="wizard-footer">
+    <div v-if="!applyResult" class="wizard-footer">
       <button
           class="btn-prev"
           :disabled="step === 1"
@@ -1198,20 +1224,91 @@ onMounted(async () => {
 }
 
 .result-box {
-  background-color: rgba(74, 222, 128, 0.08);
-  border: 1px solid rgba(74, 222, 128, 0.2);
-  border-radius: 8px;
-  color: #4ade80;
-  padding: 12px 16px;
-  font-size: 15px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  margin-top: 16px;
+  gap: 16px;
+  padding: 48px 0;
 }
 
-.result-icon {
-  font-size: 17px;
+.result-check {
+  font-size: 40px;
+  color: #34d399;
+}
+
+.result-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.result-stats {
+  display: flex;
+  gap: 32px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-val {
+  font-size: 28px;
+  font-weight: 700;
+  color: #7ba8f0;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--clr-text-subtle);
+}
+
+.result-filename {
+  font-size: 14px;
+  color: var(--clr-text-subtle);
+  margin: 0;
+}
+
+.result-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.btn-reveal {
+  padding: 9px 24px;
+  background: rgba(59, 91, 219, 0.12);
+  border: 1px solid rgba(59, 91, 219, 0.35);
+  border-radius: 8px;
+  color: #7ba8f0;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.btn-reveal:hover {
+  background: rgba(59, 91, 219, 0.22);
+  color: #93c5fd;
+}
+
+.btn-reset {
+  padding: 9px 24px;
+  margin-top: 0;
+  background: none;
+  border: 1px solid #1a2035;
+  border-radius: 8px;
+  color: var(--clr-text-subtle);
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.btn-reset:hover {
+  background: #1a2035;
+  color: #93afd4;
 }
 
 .empty-state {

@@ -283,6 +283,7 @@ async function doExport() {
       filePath,
       pageCount: students.length,
     }
+    step.value++
   } catch (e) {
     exportError.value = String(e)
   } finally {
@@ -430,21 +431,21 @@ async function doExport() {
             {{ exporting ? '내보내는 중...' : '체크리스트 내보내기' }}
           </button>
         </div>
+      </div>
 
-        <div v-else class="result-box">
-          <div class="result-check">✓</div>
-          <p class="result-title">내보내기 완료</p>
-          <div class="result-stats">
-            <div class="stat-item">
-              <span class="stat-val">{{ exportResult.pageCount }}</span>
-              <span class="stat-label">페이지</span>
-            </div>
+      <div v-else-if="step === 4" class="result-box">
+        <div class="result-check">✓</div>
+        <p class="result-title">내보내기 완료</p>
+        <div class="result-stats">
+          <div class="stat-item">
+            <span class="stat-val">{{ exportResult.pageCount }}</span>
+            <span class="stat-label">페이지</span>
           </div>
-          <p class="result-filename">{{ exportResult.fileName }}</p>
-          <div class="result-actions">
-            <button class="btn-reveal" @click="revealItemInDir(exportResult.filePath)">파일 확인</button>
-            <button class="btn-reset" @click="resetWizard">새로 내보내기</button>
-          </div>
+        </div>
+        <p class="result-filename">{{ exportResult.fileName }}</p>
+        <div class="result-actions">
+          <button class="btn-reveal" @click="revealItemInDir(exportResult.filePath)">파일 확인</button>
+          <button class="btn-reset" @click="resetWizard">새로 내보내기</button>
         </div>
       </div>
 
