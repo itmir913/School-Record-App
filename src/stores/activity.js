@@ -34,5 +34,26 @@ export const useActivityStore = defineStore('activity', () => {
         await fetchActivities()
     }
 
-    return {activities, loading, error, fetchActivities, createActivity, updateActivity, deleteActivity}
+    async function saveActivity({mode, id, name, areaIds}) {
+        loading.value = true
+        error.value = ''
+        try {
+            let activityId
+            if (mode === 'add') {
+                activityId = await invoke('create_activity', {name})
+            } else {
+                activityId = id
+                await invoke('update_activity', {id: activityId, name})
+            }
+            await invoke('set_activity_areas', {activityId, areaIds})
+            await fetchActivities()
+        } catch (e) {
+            error.value = String(e)
+            throw e
+        } finally {
+            loading.value = false
+        }
+    }
+
+    return {activities, loading, error, fetchActivities, createActivity, updateActivity, deleteActivity, saveActivity}
 })

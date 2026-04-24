@@ -1,7 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from 'vue'
 import {BookOpen, Plus} from 'lucide-vue-next'
-import {invoke} from '@tauri-apps/api/core'
 import {useActivityStore} from '../stores/activity'
 import {useAreaStore} from '../stores/area'
 import ActivityCard from '../components/ActivityCard.vue'
@@ -19,6 +18,7 @@ const modalVisible = ref(false)
 const modalMode = ref('add')       // 'add' | 'edit'
 const selectedActivity = ref(null)
 const activityModalRef = ref(null)
+const isSubmitting = ref(false)
 
 onMounted(() => {
   activityStore.fetchActivities()
@@ -43,20 +43,21 @@ function closeModal() {
 }
 
 async function handleSaved({name, areaIds}) {
+  if (isSubmitting.value) return
+  isSubmitting.value = true
   try {
-    let activityId
-    if (modalMode.value === 'add') {
-      activityId = await invoke('create_activity', {name})
-    } else {
-      activityId = selectedActivity.value.id
-      await invoke('update_activity', {id: activityId, name})
-    }
-    await invoke('set_activity_areas', {activityId, areaIds})
-    await activityStore.fetchActivities()
-    await areaStore.fetchAreas()  // ActivityDetail.areas 반영
+    await activityStore.saveActivity({
+      mode: modalMode.value,
+      id: selectedActivity.value?.id,
+      name,
+      areaIds,
+    })
+    await areaStore.fetchAreas()
     closeModal()
   } catch (e) {
     activityModalRef.value?.setServerError(String(e))
+  } finally {
+    isSubmitting.value = false
   }
 }
 
@@ -65,7 +66,7 @@ async function handleDeleted() {
     await activityStore.deleteActivity(selectedActivity.value.id)
     closeModal()
   } catch (e) {
-    console.error(e)
+    activityModalRef.value?.setServerError(String(e))
   }
 }
 </script>
@@ -131,6 +132,7 @@ async function handleDeleted() {
           :mode="modalMode"
           :activity="selectedActivity"
           :all-areas="areaStore.areas"
+          :submitting="isSubmitting"
           @close="closeModal"
           @saved="handleSaved"
           @deleted="handleDeleted"
