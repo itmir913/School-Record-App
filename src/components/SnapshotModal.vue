@@ -133,7 +133,7 @@ onMounted(loadSnapshots)
               </button>
             </template>
             <template v-else>
-              <span class="confirm-text">이 시점으로 복원합니다. 현재 내용이 덮어써집니다.</span>
+              <span class="confirm-text">이 시점으로 복원합니다. <strong><u>저장되지 않은 모든 내용이 삭제</u></strong>되고 과거 스냅샷 시점으로 덮어써집니다.</span>
               <button class="btn-confirm-restore" :disabled="restoring" @click="handleRestore">
                 {{ restoring ? '복원 중...' : '확인' }}
               </button>
