@@ -561,7 +561,7 @@ async function doExport() {
 .empty-hint {
   font-size: 15px;
   color: var(--clr-text-subtle);
-  margin: 0;
+  margin: 0 0 24px;
 }
 
 .error-text {
