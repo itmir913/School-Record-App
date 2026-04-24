@@ -243,7 +243,7 @@ onMounted(async () => {
       <div v-if="step === 1" class="step-content">
         <div class="step-header">
           <h3 class="step-title">Step 1. 텍스트 치환 규칙</h3>
-          <p class="step-desc">찾아 바꿀 텍스트 규칙을 관리합니다.</p>
+          <p class="step-desc">찾아 바꿀 텍스트 규칙을 관리합니다. <u>우선순위가 낮은 규칙부터 먼저 실행</u>됩니다.</p>
         </div>
 
         <div class="panel">
