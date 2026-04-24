@@ -1,13 +1,9 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
-import { useReplaceRuleStore } from '../stores/replaceRule'
-import { useAreaStore } from '../stores/area'
+import {computed, onMounted, ref} from 'vue'
+import {useReplaceRuleStore} from '../stores/replaceRule'
+import {useAreaStore} from '../stores/area'
 import DiffView from '../components/DiffView.vue'
-import {
-  Plus, Trash2, Pencil, Check, X, ChevronUp, ChevronDown,
-  TriangleAlert, Eye, Play,
-} from 'lucide-vue-next'
+import {Check, ChevronDown, ChevronUp, Eye, Pencil, Play, Plus, Trash2, TriangleAlert, X,} from 'lucide-vue-next'
 
 const ruleStore = useReplaceRuleStore()
 const areaStore = useAreaStore()
@@ -18,24 +14,26 @@ const selectedAreaId = ref(null)
 
 // ── 규칙 인라인 편집 ───────────────────────────────────────
 const editingId = ref(null)
-const editForm = ref({ oldText: '', newText: '', priority: 0 })
+const editForm = ref({oldText: '', newText: '', priority: 0})
 
 function startEdit(rule) {
   editingId.value = rule.id
-  editForm.value = { oldText: rule.old_text, newText: rule.new_text, priority: rule.priority }
+  editForm.value = {oldText: rule.old_text, newText: rule.new_text, priority: rule.priority}
 }
+
 function cancelEdit() {
   editingId.value = null
 }
+
 async function commitEdit(rule) {
   editError.value = ''
   try {
     await ruleStore.updateRule(
-      rule.id,
-      editForm.value.oldText,
-      editForm.value.newText,
-      rule.enabled,
-      editForm.value.priority,
+        rule.id,
+        editForm.value.oldText,
+        editForm.value.newText,
+        rule.enabled,
+        editForm.value.priority,
     )
     editingId.value = null
   } catch (e) {
@@ -46,7 +44,7 @@ async function commitEdit(rule) {
 async function toggleEnabled(rule) {
   try {
     await ruleStore.updateRule(
-      rule.id, rule.old_text, rule.new_text, !rule.enabled, rule.priority,
+        rule.id, rule.old_text, rule.new_text, !rule.enabled, rule.priority,
     )
   } catch (e) {
     ruleStore.error = e?.toString() ?? '수정 실패'
@@ -57,7 +55,7 @@ async function adjustPriority(rule, delta) {
   const newPriority = rule.priority + delta
   try {
     await ruleStore.updateRule(
-      rule.id, rule.old_text, rule.new_text, rule.enabled, newPriority,
+        rule.id, rule.old_text, rule.new_text, rule.enabled, newPriority,
     )
   } catch (e) {
     ruleStore.error = e?.toString() ?? '수정 실패'
@@ -74,7 +72,7 @@ async function deleteRule(id) {
 
 // ── 규칙 추가 폼 ───────────────────────────────────────────
 const showAddForm = ref(false)
-const newRule = ref({ oldText: '', newText: '', priority: 0 })
+const newRule = ref({oldText: '', newText: '', priority: 0})
 const addError = ref('')
 const editError = ref('')
 
@@ -82,7 +80,7 @@ async function submitAdd() {
   addError.value = ''
   try {
     await ruleStore.createRule(newRule.value.oldText, newRule.value.newText, newRule.value.priority)
-    newRule.value = { oldText: '', newText: '', priority: 0 }
+    newRule.value = {oldText: '', newText: '', priority: 0}
     showAddForm.value = false
   } catch (e) {
     addError.value = e?.toString() ?? '추가 실패'
@@ -97,7 +95,7 @@ const PREVIEW_LIMIT = 50
 const showAllPreview = ref(false)
 
 const visiblePreviewItems = computed(() =>
-  showAllPreview.value ? previewItems.value : previewItems.value.slice(0, PREVIEW_LIMIT),
+    showAllPreview.value ? previewItems.value : previewItems.value.slice(0, PREVIEW_LIMIT),
 )
 
 async function runPreview() {
@@ -107,8 +105,8 @@ async function runPreview() {
   isPreviewing.value = true
   try {
     previewItems.value = await ruleStore.previewReplace(
-      scope.value,
-      scope.value === 'area' ? selectedAreaId.value : null,
+        scope.value,
+        scope.value === 'area' ? selectedAreaId.value : null,
     )
     showAllPreview.value = false
   } catch (e) {
@@ -128,8 +126,8 @@ async function runApply() {
   isApplying.value = true
   try {
     applyResult.value = await ruleStore.applyReplace(
-      scope.value,
-      scope.value === 'area' ? selectedAreaId.value : null,
+        scope.value,
+        scope.value === 'area' ? selectedAreaId.value : null,
     )
     previewItems.value = []
   } catch (e) {
@@ -148,8 +146,8 @@ onMounted(async () => {
 <template>
   <div class="section-container">
     <div class="section-header">
-      <h2 class="section-title">텍스트 치환</h2>
-      <p class="section-desc">생기부 기록에 치환 규칙을 일괄 적용합니다.</p>
+      <h2 class="section-title">텍스트 치환(Replace)</h2>
+      <p class="section-desc">학교생활기록부 문장의 특수문자, 텍스트 등을 일괄 교체합니다.</p>
     </div>
 
     <div class="section-body">
@@ -157,7 +155,7 @@ onMounted(async () => {
       <!-- ── 규칙 관리 ── -->
       <div class="panel">
         <div class="panel-head">
-          <span class="panel-title">치환 규칙</span>
+          <span class="panel-title">텍스트 치환 규칙</span>
           <button class="btn-sm btn-add" @click="showAddForm = !showAddForm">
             <Plus :size="14"/>
             규칙 추가
@@ -167,24 +165,24 @@ onMounted(async () => {
         <!-- 추가 폼 -->
         <div v-if="showAddForm" class="add-form">
           <input
-            v-model="newRule.oldText"
-            class="input-sm"
-            placeholder="찾을 텍스트"
-            @keydown.enter="submitAdd"
+              v-model="newRule.oldText"
+              class="input-sm"
+              placeholder="찾을 텍스트"
+              @keydown.enter="submitAdd"
           />
           <span class="arrow-label">→</span>
           <input
-            v-model="newRule.newText"
-            class="input-sm"
-            placeholder="바꿀 텍스트"
-            @keydown.enter="submitAdd"
+              v-model="newRule.newText"
+              class="input-sm"
+              placeholder="바꿀 텍스트"
+              @keydown.enter="submitAdd"
           />
           <input
-            v-model.number="newRule.priority"
-            type="number"
-            class="input-sm input-priority"
-            placeholder="우선순위"
-            @keydown.enter="submitAdd"
+              v-model.number="newRule.priority"
+              type="number"
+              class="input-sm input-priority"
+              placeholder="우선순위"
+              @keydown.enter="submitAdd"
           />
           <button class="btn-icon btn-confirm" @click="submitAdd" title="추가">
             <Check :size="14"/>
@@ -204,18 +202,18 @@ onMounted(async () => {
 
         <div v-else class="rule-table">
           <div class="rule-header-row">
-            <span class="col-priority">순위</span>
+            <span class="col-priority">우선순위</span>
             <span class="col-old">찾을 텍스트</span>
-            <span class="col-arrow"></span>
+            <span class="col-arrow">→</span>
             <span class="col-new">바꿀 텍스트</span>
-            <span class="col-toggle">활성</span>
-            <span class="col-actions"></span>
+            <span class="col-toggle">활성화</span>
+            <span class="col-actions">편집</span>
           </div>
 
           <div
-            v-for="rule in ruleStore.rules"
-            :key="rule.id"
-            :class="['rule-row', !rule.enabled && 'rule-row--disabled']"
+              v-for="rule in ruleStore.rules"
+              :key="rule.id"
+              :class="['rule-row', !rule.enabled && 'rule-row--disabled']"
           >
             <!-- 인라인 편집 모드 -->
             <template v-if="editingId === rule.id">
@@ -249,9 +247,9 @@ onMounted(async () => {
               <div class="col-old">
                 <span class="old-text">{{ rule.old_text }}</span>
                 <span
-                  v-if="rule.conflicts.length > 0"
-                  class="conflict-badge"
-                  :title="`충돌 규칙 ID: ${rule.conflicts.join(', ')}`"
+                    v-if="rule.conflicts.length > 0"
+                    class="conflict-badge"
+                    :title="`충돌 규칙 ID: ${rule.conflicts.join(', ')}`"
                 >
                   <TriangleAlert :size="13"/>
                 </span>
@@ -267,9 +265,9 @@ onMounted(async () => {
 
               <div class="col-toggle">
                 <button
-                  :class="['toggle-btn', rule.enabled ? 'toggle-btn--on' : 'toggle-btn--off']"
-                  @click="toggleEnabled(rule)"
-                  :title="rule.enabled ? '비활성화' : '활성화'"
+                    :class="['toggle-btn', rule.enabled ? 'toggle-btn--on' : 'toggle-btn--off']"
+                    @click="toggleEnabled(rule)"
+                    :title="rule.enabled ? '비활성화' : '활성화'"
                 >
                   {{ rule.enabled ? 'ON' : 'OFF' }}
                 </button>
@@ -301,9 +299,9 @@ onMounted(async () => {
             특정 영역
           </label>
           <select
-            v-if="scope === 'area'"
-            v-model="selectedAreaId"
-            class="select-sm"
+              v-if="scope === 'area'"
+              v-model="selectedAreaId"
+              class="select-sm"
           >
             <option :value="null" disabled>영역 선택...</option>
             <option v-for="area in areaStore.areas" :key="area.id" :value="area.id">
@@ -316,9 +314,9 @@ onMounted(async () => {
       <!-- ── 미리보기 버튼 ── -->
       <div class="action-row">
         <button
-          class="btn-primary"
-          :disabled="isPreviewing || (scope === 'area' && !selectedAreaId)"
-          @click="runPreview"
+            class="btn-primary"
+            :disabled="isPreviewing || (scope === 'area' && !selectedAreaId)"
+            @click="runPreview"
         >
           <Eye :size="15"/>
           {{ isPreviewing ? '미리보기 중...' : '미리보기' }}
@@ -348,9 +346,9 @@ onMounted(async () => {
         </div>
 
         <button
-          v-if="previewItems.length > PREVIEW_LIMIT && !showAllPreview"
-          class="btn-sm btn-ghost mt-3"
-          @click="showAllPreview = true"
+            v-if="previewItems.length > PREVIEW_LIMIT && !showAllPreview"
+            class="btn-sm btn-ghost mt-3"
+            @click="showAllPreview = true"
         >
           전체 {{ previewItems.length }}건 모두 보기
         </button>
@@ -363,9 +361,9 @@ onMounted(async () => {
 
         <div class="action-row mt-2">
           <button
-            class="btn-apply"
-            :disabled="isApplying"
-            @click="runApply"
+              class="btn-apply"
+              :disabled="isApplying"
+              @click="runApply"
           >
             <Play :size="15"/>
             {{ isApplying ? '적용 중...' : `적용 (${previewItems.length}건)` }}
@@ -373,7 +371,8 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div v-else-if="!isPreviewing && previewItems.length === 0 && applyResult === null && !previewError" class="empty-preview">
+      <div v-else-if="!isPreviewing && previewItems.length === 0 && applyResult === null && !previewError"
+           class="empty-preview">
         미리보기를 실행하면 변경될 항목이 표시됩니다.
       </div>
 
@@ -395,26 +394,27 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  color: #c8d8f0;
-  font-size: 15px;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .section-header {
-  padding: 24px 28px 16px;
+  font-size: 22px;
   border-bottom: 1px solid #1a2035;
+  padding: 36px 40px;
 }
 
 .section-title {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
   color: #e2e8f0;
-  margin: 0 0 4px;
+  margin: 0 0 6px;
 }
 
 .section-desc {
-  color: #64748b;
+  font-size: 16px;
+  color: #7ba3d4;
   margin: 0;
-  font-size: 14px;
 }
 
 .section-body {
@@ -442,7 +442,7 @@ onMounted(async () => {
 }
 
 .panel-title {
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 600;
   color: #94a3b8;
   text-transform: uppercase;
@@ -478,15 +478,25 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: 72px 1fr 36px 1fr 64px 76px;
   gap: 8px;
+  font-size: 18px;
   align-items: center;
 }
 
 .rule-header-row {
   padding: 4px 10px;
-  font-size: 12px;
+  font-size: 14px;
   color: #475569;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+/* 헤더 영역의 특정 열(순위, 활성화, 편집)만 가운데 정렬 */
+.rule-header-row .col-priority,
+.rule-header-row .col-toggle,
+.rule-header-row .col-actions {
+  display: flex;
+  justify-content: center;
+  text-align: center;
 }
 
 .rule-row {
@@ -535,10 +545,14 @@ onMounted(async () => {
   overflow: hidden;
 }
 
+.col-old {
+  justify-content: flex-end;
+}
+
 .old-text {
   color: #f87171;
   font-family: monospace;
-  font-size: 15px;
+  font-size: 20px;
   white-space: pre;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -547,7 +561,7 @@ onMounted(async () => {
 .new-text {
   color: #4ade80;
   font-family: monospace;
-  font-size: 15px;
+  font-size: 20px;
   white-space: pre;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -640,14 +654,21 @@ onMounted(async () => {
   background-color: rgba(59, 91, 219, 0.2);
   color: #93c5fd;
 }
-.btn-add:hover { background-color: rgba(59, 91, 219, 0.35); }
+
+.btn-add:hover {
+  background-color: rgba(59, 91, 219, 0.35);
+}
 
 .btn-ghost {
   background: none;
   color: #64748b;
   border: 1px solid #1a2035;
 }
-.btn-ghost:hover { background-color: #1a2035; color: #94a3b8; }
+
+.btn-ghost:hover {
+  background-color: #1a2035;
+  color: #94a3b8;
+}
 
 .btn-icon {
   display: inline-flex;
@@ -663,7 +684,11 @@ onMounted(async () => {
   transition: background-color 0.1s, color 0.1s;
   flex-shrink: 0;
 }
-.btn-icon:hover { background-color: #1e293b; color: #c8d8f0; }
+
+.btn-icon:hover {
+  background-color: #1e293b;
+  color: #c8d8f0;
+}
 
 .btn-icon-tiny {
   display: flex;
@@ -677,15 +702,32 @@ onMounted(async () => {
   color: #475569;
   cursor: pointer;
 }
-.btn-icon-tiny:hover { background-color: #1e293b; color: #94a3b8; }
 
-.btn-confirm { color: #4ade80 !important; }
-.btn-confirm:hover { background-color: rgba(74, 222, 128, 0.1) !important; }
+.btn-icon-tiny:hover {
+  background-color: #1e293b;
+  color: #94a3b8;
+}
 
-.btn-cancel { color: #f87171 !important; }
-.btn-cancel:hover { background-color: rgba(248, 113, 113, 0.1) !important; }
+.btn-confirm {
+  color: #4ade80 !important;
+}
 
-.btn-danger:hover { background-color: rgba(248, 113, 113, 0.12) !important; color: #f87171 !important; }
+.btn-confirm:hover {
+  background-color: rgba(74, 222, 128, 0.1) !important;
+}
+
+.btn-cancel {
+  color: #f87171 !important;
+}
+
+.btn-cancel:hover {
+  background-color: rgba(248, 113, 113, 0.1) !important;
+}
+
+.btn-danger:hover {
+  background-color: rgba(248, 113, 113, 0.12) !important;
+  color: #f87171 !important;
+}
 
 .btn-primary {
   display: inline-flex;
@@ -700,8 +742,15 @@ onMounted(async () => {
   cursor: pointer;
   transition: background-color 0.15s;
 }
-.btn-primary:hover:not(:disabled) { background-color: rgba(59, 91, 219, 0.4); }
-.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-primary:hover:not(:disabled) {
+  background-color: rgba(59, 91, 219, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 .btn-apply {
   display: inline-flex;
@@ -717,8 +766,15 @@ onMounted(async () => {
   font-weight: 600;
   transition: background-color 0.15s;
 }
-.btn-apply:hover:not(:disabled) { background-color: rgba(74, 222, 128, 0.28); }
-.btn-apply:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-apply:hover:not(:disabled) {
+  background-color: rgba(74, 222, 128, 0.28);
+}
+
+.btn-apply:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 /* 입력 */
 .input-sm {
@@ -726,13 +782,16 @@ onMounted(async () => {
   border: 1px solid #1e293b;
   border-radius: 6px;
   color: #c8d8f0;
-  font-size: 15px;
+  font-size: 18px;
   padding: 6px 10px;
   outline: none;
   flex: 1;
   min-width: 80px;
 }
-.input-sm:focus { border-color: #3b5bdb; }
+
+.input-sm:focus {
+  border-color: #3b5bdb;
+}
 
 .input-priority {
   flex: 0 0 68px;
@@ -748,14 +807,20 @@ onMounted(async () => {
   padding: 6px 10px;
   outline: none;
 }
-.select-sm:focus { border-color: #3b5bdb; }
+
+.select-sm:focus {
+  border-color: #3b5bdb;
+}
 
 /* diff 항목 */
 .diff-item {
   padding: 12px 0;
   border-bottom: 1px solid #1a2035;
 }
-.diff-item:last-child { border-bottom: none; }
+
+.diff-item:last-child {
+  border-bottom: none;
+}
 
 .diff-meta {
   display: flex;
@@ -768,7 +833,10 @@ onMounted(async () => {
   font-size: 13px;
   color: #64748b;
 }
-.diff-sep { color: #334155; }
+
+.diff-sep {
+  color: #334155;
+}
 
 /* 기타 */
 .action-row {
@@ -804,7 +872,9 @@ onMounted(async () => {
   gap: 8px;
 }
 
-.result-icon { font-size: 17px; }
+.result-icon {
+  font-size: 17px;
+}
 
 .empty-state {
   color: #334155;
@@ -843,7 +913,20 @@ onMounted(async () => {
   letter-spacing: 0;
 }
 
-.col-priority { display: flex; align-items: center; }
-.col-toggle { display: flex; align-items: center; justify-content: center; }
-.col-actions { display: flex; align-items: center; justify-content: flex-end; }
+.col-priority {
+  display: flex;
+  align-items: center;
+}
+
+.col-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.col-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
 </style>
