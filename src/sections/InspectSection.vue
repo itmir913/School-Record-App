@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
-import { save } from '@tauri-apps/plugin-dialog'
-import { Workbook } from 'exceljs'
+import {computed, onMounted, ref, watch} from 'vue'
+import {invoke} from '@tauri-apps/api/core'
+import {save} from '@tauri-apps/plugin-dialog'
+import {Workbook} from 'exceljs'
 import {
   ArrowLeft,
   ArrowRight,
@@ -15,8 +15,8 @@ import {
   Trash2,
   X,
 } from 'lucide-vue-next'
-import { useSynonymStore } from '../stores/synonymStore'
-import { performInspection } from '../services/synonymService'
+import {useSynonymStore} from '../stores/synonymStore'
+import {performInspection} from '../services/synonymService'
 
 const store = useSynonymStore()
 
@@ -26,7 +26,7 @@ const step = ref(1)
 const bodyRef = ref(null)
 
 watch(step, () => {
-  bodyRef.value?.scrollTo({ top: 0, behavior: 'smooth' })
+  bodyRef.value?.scrollTo({top: 0, behavior: 'smooth'})
 })
 
 // ── Step 1: 그룹 관리 ─────────────────────────────────────────
@@ -88,9 +88,9 @@ function setCsvInput(groupId, val) {
 async function submitCsv(groupId) {
   const raw = csvInputs.value[groupId] ?? ''
   const words = raw
-    .split(/[\n,]+/)
-    .map((w) => w.trim())
-    .filter(Boolean)
+      .split(/[\n,]+/)
+      .map((w) => w.trim())
+      .filter(Boolean)
   if (words.length === 0) return
   csvUploading.value[groupId] = true
   try {
@@ -138,9 +138,9 @@ async function startSearch() {
   try {
     await store.fetchRecords()
     inspectResults.value = performInspection(
-      selectedGroupIds.value,
-      store.groups,
-      store.records,
+        selectedGroupIds.value,
+        store.groups,
+        store.records,
     )
     if (inspectResults.value.length === 0) {
       alert('선택한 유의어 그룹에 해당하는 내용이 없습니다.')
@@ -184,7 +184,7 @@ async function exportToExcel() {
 
   const filePath = await save({
     defaultPath,
-    filters: [{ name: 'Excel 파일', extensions: ['xlsx'] }],
+    filters: [{name: 'Excel 파일', extensions: ['xlsx']}],
   })
   if (!filePath) return
 
@@ -194,18 +194,18 @@ async function exportToExcel() {
     const ws = wb.addWorksheet('유의어점검')
 
     ws.columns = [
-      { header: '기록 ID', key: 'id', width: 10 },
-      { header: '영역', key: 'area', width: 16 },
-      { header: '활동', key: 'activity', width: 22 },
-      { header: '학생', key: 'student', width: 18 },
-      { header: '원본 내용', key: 'content', width: 60 },
-      { header: '탐지된 유의어', key: 'words', width: 32 },
+      {header: '기록 ID', key: 'id', width: 10},
+      {header: '영역', key: 'area', width: 16},
+      {header: '활동', key: 'activity', width: 22},
+      {header: '학생', key: 'student', width: 18},
+      {header: '원본 내용', key: 'content', width: 60},
+      {header: '탐지된 유의어', key: 'words', width: 32},
     ]
 
-    ws.getRow(1).font = { bold: true }
-    ws.getRow(1).alignment = { horizontal: 'center', vertical: 'middle' }
+    ws.getRow(1).font = {bold: true}
+    ws.getRow(1).alignment = {horizontal: 'center', vertical: 'middle'}
 
-    for (const { record, detectedWords } of inspectResults.value) {
+    for (const {record, detectedWords} of inspectResults.value) {
       const row = ws.addRow({
         id: record.id,
         area: record.area_name,
@@ -214,12 +214,12 @@ async function exportToExcel() {
         content: record.content,
         words: detectedWords.join(', '),
       })
-      row.getCell('content').alignment = { wrapText: true, vertical: 'top' }
+      row.getCell('content').alignment = {wrapText: true, vertical: 'top'}
     }
 
     const buffer = await wb.xlsx.writeBuffer()
     const data = bufferToBase64(buffer)
-    await invoke('write_bytes_file', { path: filePath, data })
+    await invoke('write_bytes_file', {path: filePath, data})
   } finally {
     exporting.value = false
   }
@@ -237,9 +237,9 @@ onMounted(() => {
 
     <!-- 헤더 -->
     <div class="toolbar">
-      <div class="toolbar-left">
-        <ScanSearch :size="20" class="toolbar-icon"/>
+      <div class="section-header">
         <h2 class="section-title">유의어 점검(Inspect)</h2>
+        <p class="section-desc">중·고등학교 학교생활기록부 기재요령에 근거하여 유의어 및 금지어를 점검합니다.</p>
       </div>
       <div class="step-indicator">
         <div v-for="n in 3" :key="n" class="step-dot"
@@ -298,14 +298,15 @@ onMounted(() => {
               <!-- 단어 추가 입력 -->
               <div class="word-add-row">
                 <input
-                  class="input-sm"
-                  placeholder="단어 추가..."
-                  :value="getWordInput(group.id)"
-                  @input="setWordInput(group.id, $event.target.value)"
-                  @keydown.enter="submitWord(group.id)"
+                    class="input-sm"
+                    placeholder="단어 추가..."
+                    :value="getWordInput(group.id)"
+                    @input="setWordInput(group.id, $event.target.value)"
+                    @keydown.enter="submitWord(group.id)"
                 />
                 <button class="btn-sm btn-primary" @click="submitWord(group.id)">
-                  <Plus :size="13"/> 추가
+                  <Plus :size="13"/>
+                  추가
                 </button>
               </div>
 
@@ -314,15 +315,15 @@ onMounted(() => {
                 <summary class="csv-toggle">CSV 일괄 업로드</summary>
                 <div class="csv-body">
                   <textarea
-                    class="csv-textarea"
-                    placeholder="줄바꿈 또는 쉼표로 구분하여 여러 단어를 입력하세요"
-                    :value="getCsvInput(group.id)"
-                    @input="setCsvInput(group.id, $event.target.value)"
+                      class="csv-textarea"
+                      placeholder="줄바꿈 또는 쉼표로 구분하여 여러 단어를 입력하세요"
+                      :value="getCsvInput(group.id)"
+                      @input="setCsvInput(group.id, $event.target.value)"
                   />
                   <button
-                    class="btn-sm btn-primary"
-                    :disabled="csvUploading[group.id]"
-                    @click="submitCsv(group.id)"
+                      class="btn-sm btn-primary"
+                      :disabled="csvUploading[group.id]"
+                      @click="submitCsv(group.id)"
                   >
                     <Loader2 v-if="csvUploading[group.id]" :size="13" class="spin"/>
                     <span v-else>업로드</span>
@@ -338,12 +339,12 @@ onMounted(() => {
             <template v-if="showAddGroup">
               <div class="add-group-form">
                 <input
-                  v-model="newGroupName"
-                  class="input-md"
-                  placeholder="새 그룹 이름"
-                  @keydown.enter="submitNewGroup"
-                  @keydown.esc="showAddGroup = false; addGroupError = ''"
-                  autofocus
+                    v-model="newGroupName"
+                    class="input-md"
+                    placeholder="새 그룹 이름"
+                    @keydown.enter="submitNewGroup"
+                    @keydown.esc="showAddGroup = false; addGroupError = ''"
+                    autofocus
                 />
                 <button class="btn-primary" @click="submitNewGroup">추가</button>
                 <button class="btn-ghost" @click="showAddGroup = false; addGroupError = ''">취소</button>
@@ -351,7 +352,8 @@ onMounted(() => {
               <p v-if="addGroupError" class="field-error">{{ addGroupError }}</p>
             </template>
             <button v-else class="btn-add-group" @click="showAddGroup = true">
-              <Plus :size="15"/> 그룹 추가
+              <Plus :size="15"/>
+              그룹 추가
             </button>
           </div>
 
@@ -367,16 +369,16 @@ onMounted(() => {
 
         <div class="group-select-list">
           <label
-            v-for="group in store.groups"
-            :key="group.id"
-            class="group-select-card"
-            :class="{ 'group-select-card--on': isSelected(group.id) }"
+              v-for="group in store.groups"
+              :key="group.id"
+              class="group-select-card"
+              :class="{ 'group-select-card--on': isSelected(group.id) }"
           >
             <input
-              type="checkbox"
-              :checked="isSelected(group.id)"
-              @change="toggleGroup(group.id)"
-              class="sr-only"
+                type="checkbox"
+                :checked="isSelected(group.id)"
+                @change="toggleGroup(group.id)"
+                class="sr-only"
             />
             <div class="gsc-check">
               <Check v-if="isSelected(group.id)" :size="13"/>
@@ -395,9 +397,9 @@ onMounted(() => {
         </div>
 
         <button
-          class="btn-search"
-          :disabled="selectedGroupIds.length === 0 || searching"
-          @click="startSearch"
+            class="btn-search"
+            :disabled="selectedGroupIds.length === 0 || searching"
+            @click="startSearch"
         >
           <Loader2 v-if="searching" :size="16" class="spin"/>
           <ScanSearch v-else :size="16"/>
@@ -424,31 +426,31 @@ onMounted(() => {
         <div class="result-table-wrap">
           <table class="result-table">
             <thead>
-              <tr>
-                <th>영역</th>
-                <th>활동</th>
-                <th>학생</th>
-                <th class="col-content">원본 내용</th>
-                <th>탐지된 유의어</th>
-              </tr>
+            <tr>
+              <th>영역</th>
+              <th>활동</th>
+              <th>학생</th>
+              <th class="col-content">원본 내용</th>
+              <th>탐지된 유의어</th>
+            </tr>
             </thead>
             <tbody>
-              <tr v-for="{ record, detectedWords } in inspectResults" :key="record.id">
-                <td class="cell-area">{{ record.area_name || '—' }}</td>
-                <td class="cell-activity">{{ record.activity_name }}</td>
-                <td class="cell-student">
-                  {{ record.grade }}-{{ record.class_num }}-{{ record.number }}<br/>
-                  <span class="student-name">{{ record.student_name }}</span>
-                </td>
-                <td class="cell-content">{{ record.content }}</td>
-                <td class="cell-words">
+            <tr v-for="{ record, detectedWords } in inspectResults" :key="record.id">
+              <td class="cell-area">{{ record.area_name || '—' }}</td>
+              <td class="cell-activity">{{ record.activity_name }}</td>
+              <td class="cell-student">
+                {{ record.grade }}-{{ record.class_num }}-{{ record.number }}<br/>
+                <span class="student-name">{{ record.student_name }}</span>
+              </td>
+              <td class="cell-content">{{ record.content }}</td>
+              <td class="cell-words">
                   <span
-                    v-for="(word, i) in detectedWords"
-                    :key="i"
-                    class="word-badge"
+                      v-for="(word, i) in detectedWords"
+                      :key="i"
+                      class="word-badge"
                   >{{ word }}</span>
-                </td>
-              </tr>
+              </td>
+            </tr>
             </tbody>
           </table>
         </div>
@@ -459,18 +461,20 @@ onMounted(() => {
     <!-- 하단 네비게이션 -->
     <div class="wizard-footer">
       <button
-        class="btn-prev"
-        :disabled="step === 1"
-        @click="step === 3 ? backToSelect() : step--"
+          class="btn-prev"
+          :disabled="step === 1"
+          @click="step === 3 ? backToSelect() : step--"
       >
-        <ArrowLeft :size="15"/> 이전
+        <ArrowLeft :size="15"/>
+        이전
       </button>
       <button
-        v-if="step < 2"
-        class="btn-next"
-        @click="step++"
+          v-if="step < 2"
+          class="btn-next"
+          @click="step++"
       >
-        다음 <ArrowRight :size="15"/>
+        다음
+        <ArrowRight :size="15"/>
       </button>
     </div>
 
@@ -496,10 +500,11 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.toolbar-left {
+.section-header {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .toolbar-icon {
@@ -510,6 +515,12 @@ onMounted(() => {
   font-size: 22px;
   font-weight: 700;
   color: #e2e8f0;
+  margin: 0 0 6px;
+}
+
+.section-desc {
+  font-size: 16px;
+  color: #7ba3d4;
   margin: 0;
 }
 
@@ -520,7 +531,6 @@ onMounted(() => {
 }
 
 .step-content {
-  max-width: 860px;
 }
 
 .step-header {
@@ -528,16 +538,16 @@ onMounted(() => {
 }
 
 .step-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #cbd5e1;
+  font-size: 18px;
+  font-weight: 700;
+  color: #e2e8f0;
   margin: 0 0 6px;
 }
 
 .step-desc {
-  font-size: 13px;
+  font-size: 15px;
   color: #7c8db5;
-  margin: 0;
+  margin: 0 0 24px;
 }
 
 /* ── 단계 표시기 ─────────────────────────────────────────── */
@@ -1151,6 +1161,8 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
