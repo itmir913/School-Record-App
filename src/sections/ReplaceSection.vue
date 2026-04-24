@@ -658,18 +658,17 @@ onMounted(async () => {
 
 .btn-prev,
 .btn-next {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 6px;
   padding: 9px 18px;
-  border-radius: 7px;
-  font-size: 14px;
-  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid #1a2035;
+  background: none;
+  color: var(--clr-text-subtle);
+  font-size: 15px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  border: 1px solid #2a3355;
-  background: transparent;
-  color: #7c8db5;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .btn-prev:hover:not(:disabled),
