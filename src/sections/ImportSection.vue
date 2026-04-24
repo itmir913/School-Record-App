@@ -1300,8 +1300,8 @@ function resetWizard() {
         </div>
       </div>
 
-      <!-- 파일 미리보기 (Step 2 ~ 4 하단 표시) -->
-      <div v-if="step > 1 && step < 4 && rawHeaders.length > 0">
+      <!-- 파일 미리보기 (Step 3에서만 하단에 미리보기 표시) -->
+      <div v-if="step === 3 && rawHeaders.length > 0">
         <div class="border-hr"></div>
 
         <div class="persistent-preview">
@@ -2110,7 +2110,7 @@ function resetWizard() {
 }
 
 .diff-empty-sub {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--clr-text-subtle);
   margin: 4px 0 0;
 }
