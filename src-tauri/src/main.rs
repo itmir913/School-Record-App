@@ -104,6 +104,40 @@ struct ActivityDetail {
     record_count: i64,
 }
 
+// ── 유의어 점검 구조체 ────────────────────────────────────────
+
+#[derive(Serialize)]
+struct SynonymWordItem {
+    id: i64,
+    group_id: i64,
+    word: String,
+}
+
+#[derive(Serialize)]
+struct SynonymGroupFull {
+    id: i64,
+    name: String,
+    created_at: String,
+    items: Vec<SynonymWordItem>,
+}
+
+#[derive(Deserialize)]
+struct SeedGroupInput {
+    name: String,
+    words: Vec<String>,
+}
+
+#[derive(Serialize)]
+struct InspectRecord {
+    id: i64,
+    activity_name: String,
+    student_name: String,
+    area_name: String,
+    grade: i64,
+    class_num: i64,
+    number: i64,
+    content: String,
+}
 
 // ── 프로젝트 커맨드 ──────────────────────────────────────────
 
@@ -1717,6 +1751,168 @@ fn write_bytes_file(path: String, data: String) -> Result<(), String> {
     std::fs::write(&path, bytes).map_err(|e| e.to_string())
 }
 
+// ── 유의어 점검 커맨드 ────────────────────────────────────────
+
+#[tauri::command]
+fn get_synonym_groups(state: State<DbState>) -> Result<Vec<SynonymGroupFull>, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    let mut stmt = conn
+        .prepare(
+            "SELECT sg.id, sg.name, sg.created_at, si.id, si.word
+             FROM SynonymGroup sg
+             LEFT JOIN SynonymItem si ON sg.id = si.group_id
+             ORDER BY sg.id, si.id",
+        )
+        .map_err(|e| e.to_string())?;
+
+    let mut groups: Vec<SynonymGroupFull> = Vec::new();
+    let mut index_map: HashMap<i64, usize> = HashMap::new();
+
+    let rows = stmt
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, i64>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, Option<i64>>(3)?,
+                row.get::<_, Option<String>>(4)?,
+            ))
+        })
+        .map_err(|e| e.to_string())?;
+
+    for row in rows {
+        let (gid, gname, created_at, item_id, word) = row.map_err(|e| e.to_string())?;
+        let idx = if let Some(&i) = index_map.get(&gid) {
+            i
+        } else {
+            let i = groups.len();
+            groups.push(SynonymGroupFull { id: gid, name: gname, created_at, items: vec![] });
+            index_map.insert(gid, i);
+            i
+        };
+        if let (Some(id), Some(w)) = (item_id, word) {
+            groups[idx].items.push(SynonymWordItem { id, group_id: gid, word: w });
+        }
+    }
+
+    Ok(groups)
+}
+
+#[tauri::command]
+fn create_synonym_group(name: String, state: State<DbState>) -> Result<i64, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    conn.execute("INSERT INTO SynonymGroup (name) VALUES (?1)", [&name])
+        .map_err(|e| unique_err(&e, "이미 존재하는 그룹명입니다."))?;
+    Ok(conn.last_insert_rowid())
+}
+
+#[tauri::command]
+fn delete_synonym_group(id: i64, state: State<DbState>) -> Result<(), String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    conn.execute("DELETE FROM SynonymGroup WHERE id = ?1", [id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn add_synonym_word(group_id: i64, word: String, state: State<DbState>) -> Result<i64, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    conn.execute(
+        "INSERT INTO SynonymItem (group_id, word) VALUES (?1, ?2)",
+        rusqlite::params![group_id, word],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(conn.last_insert_rowid())
+}
+
+#[tauri::command]
+fn delete_synonym_word(id: i64, state: State<DbState>) -> Result<(), String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    conn.execute("DELETE FROM SynonymItem WHERE id = ?1", [id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn seed_default_synonyms(groups: Vec<SeedGroupInput>, state: State<DbState>) -> Result<(), String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM SynonymGroup", [], |r| r.get(0))
+        .map_err(|e| e.to_string())?;
+
+    if count > 0 {
+        return Ok(());
+    }
+
+    conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
+    for group in &groups {
+        conn.execute("INSERT INTO SynonymGroup (name) VALUES (?1)", [&group.name])
+            .map_err(|e| {
+                let _ = conn.execute_batch("ROLLBACK");
+                e.to_string()
+            })?;
+        let gid = conn.last_insert_rowid();
+        for word in &group.words {
+            conn.execute(
+                "INSERT INTO SynonymItem (group_id, word) VALUES (?1, ?2)",
+                rusqlite::params![gid, word],
+            )
+            .map_err(|e| {
+                let _ = conn.execute_batch("ROLLBACK");
+                e.to_string()
+            })?;
+        }
+    }
+    conn.execute_batch("COMMIT").map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn get_all_records_for_inspect(state: State<DbState>) -> Result<Vec<InspectRecord>, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+
+    let mut stmt = conn
+        .prepare(
+            "SELECT ar.id, act.name, s.name, COALESCE(a.name, '') AS area_name,
+                    s.grade, s.class_num, s.number, ar.content
+             FROM ActivityRecord ar
+             JOIN Activity act ON ar.activity_id = act.id
+             JOIN Student s ON ar.student_id = s.id
+             LEFT JOIN AreaActivity aa ON act.id = aa.activity_id
+             LEFT JOIN Area a ON aa.area_id = a.id
+             WHERE ar.content != ''
+             GROUP BY ar.id
+             ORDER BY a.id, act.id, s.grade, s.class_num, s.number",
+        )
+        .map_err(|e| e.to_string())?;
+
+    let rows = stmt
+        .query_map([], |row| {
+            Ok(InspectRecord {
+                id:            row.get(0)?,
+                activity_name: row.get(1)?,
+                student_name:  row.get(2)?,
+                area_name:     row.get(3)?,
+                grade:         row.get(4)?,
+                class_num:     row.get(5)?,
+                number:        row.get(6)?,
+                content:       row.get(7)?,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+
+    rows.map(|r| r.map_err(|e| e.to_string())).collect()
+}
+
 // ── 앱 진입점 ────────────────────────────────────────────────
 
 fn main() {
@@ -1765,6 +1961,13 @@ fn main() {
             delete_replace_rule,
             preview_replace,
             apply_replace,
+            get_synonym_groups,
+            create_synonym_group,
+            delete_synonym_group,
+            add_synonym_word,
+            delete_synonym_word,
+            seed_default_synonyms,
+            get_all_records_for_inspect,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

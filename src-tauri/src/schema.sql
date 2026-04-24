@@ -122,3 +122,24 @@ INSERT INTO ReplaceRule (old_text, new_text, priority) VALUES
     ('<', '''', 8),
     ('>', '''', 9),
     ('`', '''', 10);
+
+-- ================================================================
+-- 유의어 점검
+-- ================================================================
+
+CREATE TABLE IF NOT EXISTS SynonymGroup
+(
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    name       TEXT    NOT NULL UNIQUE,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
+
+CREATE TABLE IF NOT EXISTS SynonymItem
+(
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_id INTEGER NOT NULL,
+    word     TEXT    NOT NULL,
+    FOREIGN KEY (group_id) REFERENCES SynonymGroup (id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_synonym_item_group ON SynonymItem (group_id);
