@@ -20,8 +20,9 @@ export const useAreaStore = defineStore('area', () => {
     }
 
     async function createArea(name, byteLimit) {
-        await invoke('create_area', {name, byteLimit})
+        const id = await invoke('create_area', {name, byteLimit})
         await fetchAreas()
+        return id
     }
 
     async function updateArea(id, name, byteLimit) {
@@ -34,5 +35,10 @@ export const useAreaStore = defineStore('area', () => {
         await fetchAreas()
     }
 
-    return {areas, loading, error, fetchAreas, createArea, updateArea, deleteArea}
+    async function setAreaActivities(areaId, activityIds) {
+        await invoke('set_area_activities', {areaId, activityIds})
+        await fetchAreas()
+    }
+
+    return {areas, loading, error, fetchAreas, createArea, updateArea, deleteArea, setAreaActivities}
 })

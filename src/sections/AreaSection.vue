@@ -1,7 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from 'vue'
 import {Layers, Plus} from 'lucide-vue-next'
-import {invoke} from '@tauri-apps/api/core'
 import {useAreaStore} from '../stores/area'
 import {useActivityStore} from '../stores/activity'
 import {useStudentStore} from '../stores/student'
@@ -27,6 +26,9 @@ const areaModalRef = ref(null)
 const studentModalVisible = ref(false)
 const studentModalArea = ref(null)
 const studentModalInitialIds = ref([])
+const areaStudentModalRef = ref(null)
+
+const saving = ref(false)
 
 onMounted(() => {
   areaStore.fetchAreas()
@@ -52,20 +54,23 @@ function closeModal() {
 }
 
 async function handleSaved({name, byteLimit, activityIds}) {
+  if (saving.value) return
+  saving.value = true
   try {
     let areaId
     if (modalMode.value === 'add') {
-      areaId = await invoke('create_area', {name, byteLimit})
+      areaId = await areaStore.createArea(name, byteLimit)
     } else {
       areaId = selectedArea.value.id
-      await invoke('update_area', {id: areaId, name, byteLimit})
+      await areaStore.updateArea(areaId, name, byteLimit)
     }
-    await invoke('set_area_activities', {areaId, activityIds})
-    await areaStore.fetchAreas()
+    await areaStore.setAreaActivities(areaId, activityIds)
     await activityStore.fetchActivities()  // ActivityDetail.areas 갱신
     closeModal()
   } catch (e) {
     areaModalRef.value?.setServerError(String(e))
+  } finally {
+    saving.value = false
   }
 }
 
@@ -74,7 +79,7 @@ async function handleDeleted() {
     await areaStore.deleteArea(selectedArea.value.id)
     closeModal()
   } catch (e) {
-    console.error(e)
+    areaModalRef.value?.setServerError(String(e))
   }
 }
 
@@ -84,7 +89,8 @@ async function openStudentModal(area) {
     studentModalInitialIds.value = await invoke('get_area_students', {areaId: area.id})
   } catch (e) {
     studentModalInitialIds.value = []
-    console.error(e)
+    areaStore.error = `학생 목록을 불러오지 못했습니다: ${e}`
+    return
   }
   studentModalVisible.value = true
 }
@@ -99,7 +105,7 @@ async function handleStudentSaved(studentIds) {
     await invoke('set_area_students', {areaId: studentModalArea.value.id, studentIds})
     closeStudentModal()
   } catch (e) {
-    console.error(e)
+    areaStudentModalRef.value?.setServerError(String(e))
   }
 }
 </script>
@@ -172,6 +178,7 @@ async function handleStudentSaved(studentIds) {
     <!-- 학생 배정 모달 -->
     <transition name="modal">
       <AreaStudentModal
+          ref="areaStudentModalRef"
           v-if="studentModalVisible"
           :area="studentModalArea"
           :all-students="studentStore.students"

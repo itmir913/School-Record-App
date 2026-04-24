@@ -75,7 +75,16 @@ function toggleStudent(id) {
   selectedIds.value = next
 }
 
+const serverError = ref('')
+
+function setServerError(msg) {
+  serverError.value = msg
+}
+
+defineExpose({setServerError})
+
 function submit() {
+  serverError.value = ''
   emit('saved', [...selectedIds.value])
 }
 </script>
@@ -153,6 +162,7 @@ function submit() {
       <div class="modal-footer">
         <span class="selected-count">{{ selectedIds.size }}명 선택됨</span>
         <div class="footer-right">
+          <p v-if="serverError" class="server-error">{{ serverError }}</p>
           <button class="btn-cancel" @click="emit('close')">취소</button>
           <button class="btn-submit" @click="submit">저장</button>
         </div>
@@ -372,6 +382,12 @@ function submit() {
 .footer-right {
   display: flex;
   gap: 8px;
+}
+
+.server-error {
+  font-size: 13px;
+  color: #f87171;
+  margin: 0 12px 0 0;
 }
 
 .btn-cancel {
