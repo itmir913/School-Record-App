@@ -401,7 +401,7 @@ onMounted(async () => {
 .section-header {
   font-size: 22px;
   border-bottom: 1px solid #1a2035;
-  padding: 36px 40px;
+  padding: 36px 40px 24px;
 }
 
 .section-title {
