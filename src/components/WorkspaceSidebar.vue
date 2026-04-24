@@ -135,7 +135,7 @@ const navGroups = [
           title="스냅샷 관리"
       >
         <GitBranch :size="18" class="autosave-icon"/>
-        <span v-if="!collapsed" class="autosave-text">스냅샷</span>
+        <span v-if="!collapsed" class="autosave-text">스냅샷(Snapshot)</span>
       </button>
     </div>
   </aside>

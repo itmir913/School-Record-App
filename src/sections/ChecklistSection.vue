@@ -313,7 +313,7 @@ async function doExport() {
     <!-- 헤더 -->
     <div class="toolbar">
       <div class="section-header">
-        <h2 class="section-title">체크리스트(Checklist) 내보내기</h2>
+        <h2 class="section-title">체크리스트 내보내기(Checklist Export)</h2>
         <p class="section-desc">학교생활기록부 점검을 위해 활동(Activity)별 키워드 혹은 주제를 추출하여 내보냅니다.</p>
       </div>
       <div class="step-indicator">

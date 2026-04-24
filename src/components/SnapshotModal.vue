@@ -81,7 +81,7 @@ onMounted(loadSnapshots)
       <div class="modal-header">
         <div class="modal-title">
           <GitBranch :size="16" class="title-icon"/>
-          <span>스냅샷</span>
+          <span>스냅샷(Snapshot)</span>
         </div>
         <button class="btn-close" @click="emit('close')"><X :size="18"/></button>
       </div>
@@ -169,7 +169,8 @@ onMounted(loadSnapshots)
   background: #0d1220;
   border: 1px solid #1a2035;
   border-radius: 14px;
-  width: 560px;
+  width: 780px;
+  height: 560px;
   max-width: 95vw;
   max-height: 80vh;
   display: flex;
