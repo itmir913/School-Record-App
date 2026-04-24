@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from 'vue'
-import {Trash2, X} from 'lucide-vue-next'
+import {AlertTriangle, Trash2, X} from 'lucide-vue-next'
 
 const props = defineProps({
   mode: {type: String, default: 'add'}, // 'add' | 'edit'
@@ -127,6 +127,17 @@ function handleDelete() {
             <p class="field-hint">나이스 기준 최대 입력 가능한 바이트 수</p>
           </div>
 
+          <!-- 삭제 경고 (편집 + 확인 단계) -->
+          <div v-if="mode === 'edit' && confirmDelete" class="delete-warning">
+            <div class="warning-header">
+              <AlertTriangle :size="16" class="warning-icon"/>
+              <span class="warning-title">정말 삭제하시겠습니까?</span>
+            </div>
+            <p class="warning-body">
+              이 영역을 삭제하시겠습니까? 영역 정보만 삭제되며, 이 영역과 연결된 활동과 학생의 생기부 문장은 그대로 유지됩니다.
+            </p>
+          </div>
+
           <!-- 에러 -->
           <p v-if="error" class="form-error">{{ error }}</p>
         </div>
@@ -173,9 +184,8 @@ function handleDelete() {
               삭제
             </button>
             <div v-else class="confirm-row">
-              <span class="confirm-text">정말 삭제할까요?</span>
               <button class="btn-cancel-sm" @click="confirmDelete = false">취소</button>
-              <button class="btn-delete-confirm" @click="handleDelete">삭제</button>
+              <button class="btn-delete-confirm" @click="handleDelete">영구 삭제</button>
             </div>
           </template>
         </div>
@@ -454,15 +464,51 @@ function handleDelete() {
   background-color: rgba(239, 68, 68, 0.18);
 }
 
-.confirm-row {
+/* 삭제 경고 */
+.delete-warning {
+  background-color: rgba(239, 68, 68, 0.07);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.warning-header {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.confirm-text {
-  font-size: 15px;
+.warning-icon {
   color: #f87171;
+  flex-shrink: 0;
+}
+
+.warning-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f87171;
+}
+
+.warning-body {
+  font-size: 14px;
+  color: #fca5a5;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.warning-body strong {
+  color: #f87171;
+  font-weight: 600;
+}
+
+.confirm-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .btn-cancel-sm {
