@@ -29,8 +29,11 @@ export const useSynonymStore = defineStore('synonym', () => {
     }
   }
 
-  async function fetchRecords() {
-    records.value = await invoke('get_all_records_for_inspect')
+  async function fetchRecords(scopeType = 'all', areaIds = []) {
+    records.value = await invoke('get_all_records_for_inspect', {
+      scopeType,
+      areaIds,
+    })
   }
 
   async function createGroup(name) {

@@ -1914,41 +1914,71 @@ fn seed_default_synonyms(groups: Vec<SeedGroupInput>, state: State<DbState>) -> 
 }
 
 #[tauri::command]
-fn get_all_records_for_inspect(state: State<DbState>) -> Result<Vec<InspectRecord>, String> {
+fn get_all_records_for_inspect(
+    scope_type: String,
+    area_ids: Vec<i64>,
+    state: State<DbState>,
+) -> Result<Vec<InspectRecord>, String> {
     let guard = state.0.lock().unwrap();
     let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
 
-    let mut stmt = conn
-        .prepare(
-            "SELECT ar.id, act.name, s.name, COALESCE(a.name, '') AS area_name,
-                    s.grade, s.class_num, s.number, ar.content
-             FROM ActivityRecord ar
-             JOIN Activity act ON ar.activity_id = act.id
-             JOIN Student s ON ar.student_id = s.id
-             LEFT JOIN AreaActivity aa ON act.id = aa.activity_id
-             LEFT JOIN Area a ON aa.area_id = a.id
-             WHERE ar.content != ''
-             GROUP BY ar.id
-             ORDER BY a.id, act.id, s.grade, s.class_num, s.number",
-        )
-        .map_err(|e| e.to_string())?;
-
-    let rows = stmt
-        .query_map([], |row| {
-            Ok(InspectRecord {
-                id:            row.get(0)?,
-                activity_name: row.get(1)?,
-                student_name:  row.get(2)?,
-                area_name:     row.get(3)?,
-                grade:         row.get(4)?,
-                class_num:     row.get(5)?,
-                number:        row.get(6)?,
-                content:       row.get(7)?,
-            })
+    let map_row = |row: &rusqlite::Row| {
+        Ok(InspectRecord {
+            id:            row.get(0)?,
+            activity_name: row.get(1)?,
+            student_name:  row.get(2)?,
+            area_name:     row.get(3)?,
+            grade:         row.get(4)?,
+            class_num:     row.get(5)?,
+            number:        row.get(6)?,
+            content:       row.get(7)?,
         })
-        .map_err(|e| e.to_string())?;
+    };
 
-    rows.map(|r| r.map_err(|e| e.to_string())).collect()
+    match scope_type.as_str() {
+        "all" => {
+            let mut stmt = conn
+                .prepare(
+                    "SELECT ar.id, act.name, s.name, COALESCE(a.name, '') AS area_name,
+                            s.grade, s.class_num, s.number, ar.content
+                     FROM ActivityRecord ar
+                     JOIN Activity act ON ar.activity_id = act.id
+                     JOIN Student s ON ar.student_id = s.id
+                     LEFT JOIN AreaActivity aa ON act.id = aa.activity_id
+                     LEFT JOIN Area a ON aa.area_id = a.id
+                     WHERE ar.content != ''
+                     GROUP BY ar.id
+                     ORDER BY a.id, act.id, s.grade, s.class_num, s.number",
+                )
+                .map_err(|e| e.to_string())?;
+            let rows = stmt.query_map([], map_row).map_err(|e| e.to_string())?;
+            rows.map(|r| r.map_err(|e| e.to_string())).collect()
+        }
+        "areas" => {
+            if area_ids.is_empty() {
+                return Ok(vec![]);
+            }
+            let placeholders = area_ids.iter().map(|_| "?").collect::<Vec<_>>().join(", ");
+            let sql = format!(
+                "SELECT ar.id, act.name, s.name, COALESCE(a.name, '') AS area_name,
+                        s.grade, s.class_num, s.number, ar.content
+                 FROM ActivityRecord ar
+                 JOIN Activity act ON ar.activity_id = act.id
+                 JOIN Student s ON ar.student_id = s.id
+                 JOIN AreaActivity aa ON act.id = aa.activity_id
+                 JOIN Area a ON aa.area_id = a.id
+                 WHERE ar.content != '' AND aa.area_id IN ({placeholders})
+                 GROUP BY ar.id
+                 ORDER BY a.id, act.id, s.grade, s.class_num, s.number"
+            );
+            let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
+            let rows = stmt
+                .query_map(rusqlite::params_from_iter(area_ids.iter()), map_row)
+                .map_err(|e| e.to_string())?;
+            rows.map(|r| r.map_err(|e| e.to_string())).collect()
+        }
+        _ => Err(format!("알 수 없는 scope_type: {scope_type}")),
+    }
 }
 
 // ── 앱 진입점 ────────────────────────────────────────────────

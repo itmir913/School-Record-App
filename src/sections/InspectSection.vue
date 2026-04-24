@@ -16,9 +16,11 @@ import {
   X,
 } from 'lucide-vue-next'
 import {useSynonymStore} from '../stores/synonymStore'
+import {useAreaStore} from '../stores/area'
 import {performInspection} from '../services/synonymService'
 
 const store = useSynonymStore()
+const areaStore = useAreaStore()
 
 // ── 단계 ─────────────────────────────────────────────────────
 
@@ -132,24 +134,54 @@ const selectedWordCount = computed(() => {
   return wordSet.size
 })
 
+// ── Step 3: 범위 선택 ─────────────────────────────────────────
+
+const scopeMode = ref('all')        // 'all' | 'specific'
+const selectedAreaIds = ref([])
+
+function toggleArea(id) {
+  if (scopeMode.value !== 'specific') return
+  const idx = selectedAreaIds.value.indexOf(id)
+  if (idx === -1) selectedAreaIds.value.push(id)
+  else selectedAreaIds.value.splice(idx, 1)
+}
+
+function isAreaSelected(id) {
+  return selectedAreaIds.value.includes(id)
+}
+
+watch(scopeMode, () => {
+  selectedAreaIds.value = []
+})
+
+// ── 검색 실행 ──────────────────────────────────────────────────
+
 async function startSearch() {
   if (selectedGroupIds.value.length === 0) return
+  if (scopeMode.value === 'specific' && selectedAreaIds.value.length === 0) return
   searching.value = true
   try {
-    await store.fetchRecords()
+    await store.fetchRecords(
+      scopeMode.value === 'all' ? 'all' : 'areas',
+      scopeMode.value === 'specific' ? selectedAreaIds.value : [],
+    )
     inspectResults.value = performInspection(
         selectedGroupIds.value,
         store.groups,
         store.records,
     )
-    step.value = 3
+    step.value = 4
   } finally {
     searching.value = false
   }
 }
 
-function backToSelect() {
+function backToScope() {
   inspectResults.value = []
+  step.value = 3
+}
+
+function backToGroups() {
   step.value = 2
 }
 
@@ -229,6 +261,7 @@ async function exportToExcel() {
 
 onMounted(() => {
   store.fetchGroups()
+  areaStore.fetchAreas()
 })
 </script>
 
@@ -242,7 +275,7 @@ onMounted(() => {
         <p class="section-desc">중·고등학교 학교생활기록부 기재요령에 근거하여 유의어 및 금지어를 점검합니다.</p>
       </div>
       <div class="step-indicator">
-        <div v-for="n in 3" :key="n" class="step-dot"
+        <div v-for="n in 4" :key="n" class="step-dot"
              :class="{ 'step-dot--active': step === n, 'step-dot--done': step > n }">
           <Check v-if="step > n" :size="13"/>
           <span v-else>{{ n }}</span>
@@ -391,14 +424,67 @@ onMounted(() => {
           </label>
         </div>
 
-        <div v-if="selectedGroupIds.length > 0" class="search-summary">
+        <div class="search-summary">
           선택된 그룹: <strong>{{ selectedGroupIds.length }}개</strong> &nbsp;|&nbsp;
           중복 제거 단어: <strong>{{ selectedWordCount }}개</strong>
         </div>
+      </div>
 
+      <!-- ─── Step 3: 점검 범위 선택 ──────────────────────────── -->
+      <div v-if="step === 3" class="step-content">
+        <div class="step-header">
+          <h3 class="step-title">Step 3. 점검 범위 선택</h3>
+          <p class="step-desc">유의어를 점검할 생기부 범위를 선택하세요.</p>
+        </div>
+
+        <!-- 모드 카드 2개: 전체 영역 / 특정 영역 -->
+        <div class="scope-mode-cards">
+          <div
+              class="scope-mode-card"
+              :class="{ 'scope-mode-card--on': scopeMode === 'all' }"
+              @click="scopeMode = 'all'"
+          >
+            <Check v-if="scopeMode === 'all'" :size="14" class="scope-mode-check"/>
+            <span class="scope-mode-title">전체 영역</span>
+            <span class="scope-mode-desc">모든 생기부 기록을 점검합니다</span>
+          </div>
+          <div
+              class="scope-mode-card"
+              :class="{ 'scope-mode-card--on': scopeMode === 'specific' }"
+              @click="scopeMode = 'specific'"
+          >
+            <Check v-if="scopeMode === 'specific'" :size="14" class="scope-mode-check"/>
+            <span class="scope-mode-title">특정 영역</span>
+            <span class="scope-mode-desc">점검할 영역을 직접 선택합니다</span>
+          </div>
+        </div>
+
+        <!-- 개별 영역 카드 그리드 (scopeMode='specific'일 때 활성) -->
+        <div class="area-section" :class="{ 'area-section--disabled': scopeMode !== 'specific' }">
+          <p class="area-section-label">점검할 영역 선택</p>
+          <p v-if="areaStore.areas.length === 0" class="empty-hint">등록된 영역이 없습니다.</p>
+          <div v-else class="area-cards">
+            <div
+                v-for="area in areaStore.areas"
+                :key="area.id"
+                class="area-card"
+                :class="{ 'area-card--selected': isAreaSelected(area.id) }"
+                @click="toggleArea(area.id)"
+            >
+              <Check v-if="isAreaSelected(area.id)" :size="14" class="area-card-check"/>
+              <span class="area-card-name">{{ area.name }}</span>
+              <span class="area-card-meta">활동 {{ area.activities.length }}개</span>
+            </div>
+          </div>
+          <p class="area-summary">
+            {{ selectedAreaIds.length }}개 영역 선택됨
+          </p>
+        </div>
+
+        <!-- 검색 시작 버튼 -->
         <button
             class="btn-search"
-            :disabled="selectedGroupIds.length === 0 || searching"
+            :disabled="searching || (scopeMode === 'specific' && selectedAreaIds.length === 0)"
             @click="startSearch"
         >
           <Loader2 v-if="searching" :size="16" class="spin"/>
@@ -407,11 +493,11 @@ onMounted(() => {
         </button>
       </div>
 
-      <!-- ─── Step 3: 결과 보고 ──────────────────────────────── -->
-      <div v-if="step === 3" class="step-content">
+      <!-- ─── Step 4: 결과 보고 ──────────────────────────────── -->
+      <div v-if="step === 4" class="step-content">
         <div class="step-header result-header">
           <div>
-            <h3 class="step-title">Step 3. 점검 결과</h3>
+            <h3 class="step-title">Step 4. 점검 결과</h3>
             <p v-if="inspectResults.length > 0" class="step-desc">
               총 <strong>{{ inspectResults.length }}건</strong>의 기록에서 유의어가 탐지되었습니다.
             </p>
@@ -436,21 +522,24 @@ onMounted(() => {
           <table class="result-table">
             <thead>
             <tr>
+              <th>학년</th>
+              <th>반</th>
+              <th>번호</th>
+              <th>이름</th>
               <th>영역</th>
               <th>활동</th>
-              <th>학생</th>
-              <th class="col-content">원본 내용</th>
-              <th>탐지된 유의어</th>
+              <th>원본 내용</th>
+              <th>발견된 유의어</th>
             </tr>
             </thead>
             <tbody>
             <tr v-for="{ record, detectedWords } in inspectResults" :key="record.id">
+              <td class="cell-student">{{ record.grade || '' }}</td>
+              <td class="cell-student">{{ record.class_num || '' }}</td>
+              <td class="cell-student">{{ record.number || '—' }}</td>
+              <td class="cell-student">{{ record.student_name || '—' }}</td>
               <td class="cell-area">{{ record.area_name || '—' }}</td>
               <td class="cell-activity">{{ record.activity_name }}</td>
-              <td class="cell-student">
-                {{ record.grade }}-{{ record.class_num }}-{{ record.number }}<br/>
-                <span class="student-name">{{ record.student_name }}</span>
-              </td>
               <td class="cell-content">{{ record.content }}</td>
               <td class="cell-words">
                   <span
@@ -472,14 +561,15 @@ onMounted(() => {
       <button
           class="btn-prev"
           :disabled="step === 1"
-          @click="step === 3 ? backToSelect() : step--"
+          @click="step === 4 ? backToScope() : step === 3 ? backToGroups() : step--"
       >
         <ArrowLeft :size="15"/>
         이전
       </button>
       <button
-          v-if="step < 2"
+          v-if="step < 3"
           class="btn-next"
+          :disabled="step === 2 && selectedGroupIds.length === 0"
           @click="step++"
       >
         다음
@@ -986,7 +1076,128 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-/* ── Step 3: 결과 ────────────────────────────────────────── */
+/* ── Step 3: 범위 선택 ───────────────────────────────────── */
+.scope-mode-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.scope-mode-card {
+  position: relative;
+  border: 2px solid #1a2035;
+  border-radius: 10px;
+  padding: 18px 20px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.scope-mode-card:hover {
+  border-color: rgba(59, 91, 219, 0.4);
+  background-color: rgba(59, 91, 219, 0.03);
+}
+
+.scope-mode-card--on {
+  border-color: rgba(59, 91, 219, 0.7);
+  background-color: rgba(59, 91, 219, 0.06);
+}
+
+.scope-mode-check {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  color: #7ba8f0;
+}
+
+.scope-mode-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.scope-mode-desc {
+  font-size: 13px;
+  color: var(--clr-text-subtle);
+}
+
+.area-section {
+  margin-bottom: 20px;
+  transition: opacity 0.2s;
+}
+
+.area-section--disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.area-section-label {
+  font-size: 13px;
+  color: #7c8db5;
+  margin: 0 0 12px;
+}
+
+.area-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.area-card {
+  position: relative;
+  border: 2px solid #1a2035;
+  border-radius: 10px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.area-card:hover {
+  border-color: rgba(59, 91, 219, 0.4);
+  background-color: rgba(59, 91, 219, 0.03);
+}
+
+.area-card--selected {
+  border-color: rgba(59, 91, 219, 0.7);
+  background-color: rgba(59, 91, 219, 0.06);
+}
+
+.area-card-check {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  color: #7ba8f0;
+}
+
+.area-card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.area-card-meta {
+  font-size: 13px;
+  color: var(--clr-text-subtle);
+}
+
+.area-summary {
+  font-size: 13px;
+  color: #7c8db5;
+  margin-top: 12px;
+}
+
+.empty-hint {
+  font-size: 13px;
+  color: #4a5568;
+}
+
+/* ── Step 4: 결과 ────────────────────────────────────────── */
 .result-header {
   display: flex;
   align-items: flex-start;
