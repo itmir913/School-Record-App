@@ -57,7 +57,7 @@ pub struct BulkUpsertResult {
 
 // ── 치환 규칙 관련 ───────────────────────────────────────────
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone, Debug)]
 pub struct ReplaceRule {
     pub id: i64,
     pub old_text: String,

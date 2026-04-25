@@ -1,17 +1,9 @@
 use crate::state::DbState;
 use crate::types::SnapshotItem;
+use rusqlite::Connection;
 use tauri::State;
 
-#[tauri::command]
-pub fn create_snapshot(
-    memo: Option<String>,
-    state: State<DbState>,
-) -> Result<SnapshotItem, String> {
-    let guard = state.0.lock().unwrap();
-    let conn = guard
-        .as_ref()
-        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
-
+pub fn create_snapshot_impl(conn: &Connection, memo: Option<String>) -> Result<SnapshotItem, String> {
     conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
 
     let result: Result<SnapshotItem, String> = (|| {
@@ -58,13 +50,7 @@ pub fn create_snapshot(
     }
 }
 
-#[tauri::command]
-pub fn get_snapshots(state: State<DbState>) -> Result<Vec<SnapshotItem>, String> {
-    let guard = state.0.lock().unwrap();
-    let conn = guard
-        .as_ref()
-        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
-
+pub fn get_snapshots_impl(conn: &Connection) -> Result<Vec<SnapshotItem>, String> {
     let mut stmt = conn
         .prepare("SELECT id, memo, created_at FROM Snapshot ORDER BY created_at DESC")
         .map_err(|e| e.to_string())?;
@@ -84,16 +70,7 @@ pub fn get_snapshots(state: State<DbState>) -> Result<Vec<SnapshotItem>, String>
     Ok(items)
 }
 
-#[tauri::command]
-pub fn restore_snapshot(
-    snapshot_id: i64,
-    state: State<DbState>,
-) -> Result<i64, String> {
-    let guard = state.0.lock().unwrap();
-    let conn = guard
-        .as_ref()
-        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
-
+pub fn restore_snapshot_impl(conn: &Connection, snapshot_id: i64) -> Result<i64, String> {
     let snapshot_at: String = conn
         .query_row(
             "SELECT created_at FROM Snapshot WHERE id = ?1",
@@ -133,4 +110,37 @@ pub fn restore_snapshot(
             Err(e)
         }
     }
+}
+
+#[tauri::command]
+pub fn create_snapshot(
+    memo: Option<String>,
+    state: State<DbState>,
+) -> Result<SnapshotItem, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    create_snapshot_impl(conn, memo)
+}
+
+#[tauri::command]
+pub fn get_snapshots(state: State<DbState>) -> Result<Vec<SnapshotItem>, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    get_snapshots_impl(conn)
+}
+
+#[tauri::command]
+pub fn restore_snapshot(
+    snapshot_id: i64,
+    state: State<DbState>,
+) -> Result<i64, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    restore_snapshot_impl(conn, snapshot_id)
 }

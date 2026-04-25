@@ -2,16 +2,24 @@ use crate::engine::{apply_rules_cached, detect_conflicts, fetch_rules_from_db, g
 use crate::state::{DbState, ReplaceCacheState};
 use crate::types::{ReplaceApplyResult, ReplacePreviewItem, ReplaceRule};
 use regex::Regex;
+use rusqlite::Connection;
 use std::collections::HashMap;
 use tauri::State;
 
-#[tauri::command]
-pub fn get_replace_rules(state: State<DbState>) -> Result<Vec<ReplaceRule>, String> {
-    let guard = state.0.lock().unwrap();
-    let conn = guard
-        .as_ref()
-        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+pub fn validate_replace_rule(old_text: &str, new_text: &str, is_regex: bool) -> Result<(), String> {
+    if old_text.trim().is_empty() {
+        return Err("찾을 텍스트를 입력해주세요.".to_string());
+    }
+    if old_text == new_text {
+        return Err("찾을 텍스트와 바꿀 텍스트가 동일합니다.".to_string());
+    }
+    if is_regex {
+        Regex::new(old_text).map_err(|e| format!("정규식 오류: {}", e))?;
+    }
+    Ok(())
+}
 
+pub fn get_replace_rules_impl(conn: &Connection) -> Result<Vec<ReplaceRule>, String> {
     let mut rules = fetch_rules_from_db(conn)?;
     let conflicts = detect_conflicts(&rules);
     for rule in rules.iter_mut() {
@@ -20,6 +28,132 @@ pub fn get_replace_rules(state: State<DbState>) -> Result<Vec<ReplaceRule>, Stri
         }
     }
     Ok(rules)
+}
+
+pub fn create_replace_rule_db(
+    conn: &Connection,
+    old_text: &str,
+    new_text: &str,
+    is_regex: bool,
+    priority: i64,
+) -> Result<ReplaceRule, String> {
+    let is_regex_int: i64 = if is_regex { 1 } else { 0 };
+    conn.execute(
+        "INSERT OR IGNORE INTO ReplaceRule (old_text, new_text, is_regex, priority) VALUES (?1, ?2, ?3, ?4)",
+        rusqlite::params![old_text, new_text, is_regex_int, priority],
+    )
+    .map_err(|e| e.to_string())?;
+
+    if conn.changes() == 0 {
+        return Err("이미 동일한 규칙이 존재합니다.".to_string());
+    }
+
+    let id = conn.last_insert_rowid();
+    conn.query_row(
+        "SELECT id, old_text, new_text, is_regex, enabled, priority, created_at, updated_at
+         FROM ReplaceRule WHERE id = ?1",
+        rusqlite::params![id],
+        |row| {
+            Ok(ReplaceRule {
+                id: row.get(0)?,
+                old_text: row.get(1)?,
+                new_text: row.get(2)?,
+                is_regex: row.get::<_, i64>(3)? != 0,
+                enabled: row.get::<_, i64>(4)? != 0,
+                priority: row.get(5)?,
+                created_at: row.get(6)?,
+                updated_at: row.get(7)?,
+                conflicts: vec![],
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+pub fn update_replace_rule_db(
+    conn: &Connection,
+    id: i64,
+    old_text: &str,
+    new_text: &str,
+    is_regex: bool,
+    enabled: bool,
+    priority: i64,
+) -> Result<ReplaceRule, String> {
+    let enabled_int: i64 = if enabled { 1 } else { 0 };
+    let is_regex_int: i64 = if is_regex { 1 } else { 0 };
+    conn.execute(
+        "UPDATE ReplaceRule
+         SET old_text=?1, new_text=?2, is_regex=?3, enabled=?4, priority=?5,
+             updated_at=datetime('now','localtime')
+         WHERE id=?6",
+        rusqlite::params![old_text, new_text, is_regex_int, enabled_int, priority, id],
+    )
+    .map_err(|e| e.to_string())?;
+
+    conn.query_row(
+        "SELECT id, old_text, new_text, is_regex, enabled, priority, created_at, updated_at
+         FROM ReplaceRule WHERE id = ?1",
+        rusqlite::params![id],
+        |row| {
+            Ok(ReplaceRule {
+                id: row.get(0)?,
+                old_text: row.get(1)?,
+                new_text: row.get(2)?,
+                is_regex: row.get::<_, i64>(3)? != 0,
+                enabled: row.get::<_, i64>(4)? != 0,
+                priority: row.get(5)?,
+                created_at: row.get(6)?,
+                updated_at: row.get(7)?,
+                conflicts: vec![],
+            })
+        },
+    )
+    .map_err(|e| e.to_string())
+}
+
+pub fn delete_replace_rule_impl(conn: &Connection, id: i64) -> Result<(), String> {
+    conn.execute("DELETE FROM ReplaceRule WHERE id = ?1", rusqlite::params![id])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+pub fn seed_default_replace_rules_impl(
+    conn: &Connection,
+    rules: &[serde_json::Value],
+) -> Result<(), String> {
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM ReplaceRule", [], |r| r.get(0))
+        .map_err(|e| e.to_string())?;
+
+    if count > 0 {
+        return Ok(());
+    }
+
+    conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
+    for rule in rules {
+        let old_text = rule["oldText"].as_str().ok_or("oldText 누락")?;
+        let new_text = rule["newText"].as_str().ok_or("newText 누락")?;
+        let priority = rule["priority"].as_i64().ok_or("priority 누락")?;
+        let is_regex: i64 = if rule["isRegex"].as_bool().unwrap_or(false) { 1 } else { 0 };
+        conn.execute(
+            "INSERT OR IGNORE INTO ReplaceRule (old_text, new_text, is_regex, priority) VALUES (?1, ?2, ?3, ?4)",
+            rusqlite::params![old_text, new_text, is_regex, priority],
+        )
+        .map_err(|e| {
+            let _ = conn.execute_batch("ROLLBACK");
+            e.to_string()
+        })?;
+    }
+    conn.execute_batch("COMMIT").map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn get_replace_rules(state: State<DbState>) -> Result<Vec<ReplaceRule>, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    get_replace_rules_impl(conn)
 }
 
 #[tauri::command]
@@ -31,55 +165,15 @@ pub fn create_replace_rule(
     state: State<DbState>,
     cache: State<ReplaceCacheState>,
 ) -> Result<ReplaceRule, String> {
-    if old_text.trim().is_empty() {
-        return Err("찾을 텍스트를 입력해주세요.".to_string());
-    }
-    if old_text == new_text {
-        return Err("찾을 텍스트와 바꿀 텍스트가 동일합니다.".to_string());
-    }
-    if is_regex {
-        Regex::new(&old_text).map_err(|e| format!("정규식 오류: {}", e))?;
-    }
+    validate_replace_rule(&old_text, &new_text, is_regex)?;
 
-    let rule = {
-        let guard = state.0.lock().unwrap();
-        let conn = guard
-            .as_ref()
-            .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
 
-        let is_regex_int: i64 = if is_regex { 1 } else { 0 };
-        conn.execute(
-            "INSERT OR IGNORE INTO ReplaceRule (old_text, new_text, is_regex, priority) VALUES (?1, ?2, ?3, ?4)",
-            rusqlite::params![old_text, new_text, is_regex_int, priority],
-        )
-        .map_err(|e| e.to_string())?;
-
-        if conn.changes() == 0 {
-            return Err("이미 동일한 규칙이 존재합니다.".to_string());
-        }
-
-        let id = conn.last_insert_rowid();
-        conn.query_row(
-            "SELECT id, old_text, new_text, is_regex, enabled, priority, created_at, updated_at
-             FROM ReplaceRule WHERE id = ?1",
-            rusqlite::params![id],
-            |row| {
-                Ok(ReplaceRule {
-                    id: row.get(0)?,
-                    old_text: row.get(1)?,
-                    new_text: row.get(2)?,
-                    is_regex: row.get::<_, i64>(3)? != 0,
-                    enabled: row.get::<_, i64>(4)? != 0,
-                    priority: row.get(5)?,
-                    created_at: row.get(6)?,
-                    updated_at: row.get(7)?,
-                    conflicts: vec![],
-                })
-            },
-        )
-        .map_err(|e| e.to_string())?
-    };
-
+    let rule = create_replace_rule_db(conn, &old_text, &new_text, is_regex, priority)?;
+    drop(guard);
     cache.lock().unwrap().ruleset_version += 1;
     Ok(rule)
 }
@@ -95,54 +189,15 @@ pub fn update_replace_rule(
     state: State<DbState>,
     cache: State<ReplaceCacheState>,
 ) -> Result<ReplaceRule, String> {
-    if old_text.trim().is_empty() {
-        return Err("찾을 텍스트를 입력해주세요.".to_string());
-    }
-    if old_text == new_text {
-        return Err("찾을 텍스트와 바꿀 텍스트가 동일합니다.".to_string());
-    }
-    if is_regex {
-        Regex::new(&old_text).map_err(|e| format!("정규식 오류: {}", e))?;
-    }
+    validate_replace_rule(&old_text, &new_text, is_regex)?;
 
-    let rule = {
-        let guard = state.0.lock().unwrap();
-        let conn = guard
-            .as_ref()
-            .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
 
-        let enabled_int: i64 = if enabled { 1 } else { 0 };
-        let is_regex_int: i64 = if is_regex { 1 } else { 0 };
-        conn.execute(
-            "UPDATE ReplaceRule
-             SET old_text=?1, new_text=?2, is_regex=?3, enabled=?4, priority=?5,
-                 updated_at=datetime('now','localtime')
-             WHERE id=?6",
-            rusqlite::params![old_text, new_text, is_regex_int, enabled_int, priority, id],
-        )
-        .map_err(|e| e.to_string())?;
-
-        conn.query_row(
-            "SELECT id, old_text, new_text, is_regex, enabled, priority, created_at, updated_at
-             FROM ReplaceRule WHERE id = ?1",
-            rusqlite::params![id],
-            |row| {
-                Ok(ReplaceRule {
-                    id: row.get(0)?,
-                    old_text: row.get(1)?,
-                    new_text: row.get(2)?,
-                    is_regex: row.get::<_, i64>(3)? != 0,
-                    enabled: row.get::<_, i64>(4)? != 0,
-                    priority: row.get(5)?,
-                    created_at: row.get(6)?,
-                    updated_at: row.get(7)?,
-                    conflicts: vec![],
-                })
-            },
-        )
-        .map_err(|e| e.to_string())?
-    };
-
+    let rule = update_replace_rule_db(conn, id, &old_text, &new_text, is_regex, enabled, priority)?;
+    drop(guard);
     cache.lock().unwrap().ruleset_version += 1;
     Ok(rule)
 }
@@ -158,9 +213,7 @@ pub fn delete_replace_rule(
         .as_ref()
         .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
 
-    conn.execute("DELETE FROM ReplaceRule WHERE id = ?1", rusqlite::params![id])
-        .map_err(|e| e.to_string())?;
-
+    delete_replace_rule_impl(conn, id)?;
     drop(guard);
     cache.lock().unwrap().ruleset_version += 1;
     Ok(())
@@ -175,31 +228,7 @@ pub fn seed_default_replace_rules(
     let guard = state.0.lock().unwrap();
     let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
 
-    let count: i64 = conn
-        .query_row("SELECT COUNT(*) FROM ReplaceRule", [], |r| r.get(0))
-        .map_err(|e| e.to_string())?;
-
-    if count > 0 {
-        return Ok(());
-    }
-
-    conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
-    for rule in &rules {
-        let old_text = rule["oldText"].as_str().ok_or("oldText 누락")?;
-        let new_text = rule["newText"].as_str().ok_or("newText 누락")?;
-        let priority = rule["priority"].as_i64().ok_or("priority 누락")?;
-        let is_regex: i64 = if rule["isRegex"].as_bool().unwrap_or(false) { 1 } else { 0 };
-        conn.execute(
-            "INSERT OR IGNORE INTO ReplaceRule (old_text, new_text, is_regex, priority) VALUES (?1, ?2, ?3, ?4)",
-            rusqlite::params![old_text, new_text, is_regex, priority],
-        )
-        .map_err(|e| {
-            let _ = conn.execute_batch("ROLLBACK");
-            e.to_string()
-        })?;
-    }
-    conn.execute_batch("COMMIT").map_err(|e| e.to_string())?;
-
+    seed_default_replace_rules_impl(conn, &rules)?;
     drop(guard);
     cache.lock().unwrap().ruleset_version += 1;
     Ok(())
