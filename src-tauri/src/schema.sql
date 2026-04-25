@@ -102,6 +102,7 @@ CREATE TABLE IF NOT EXISTS ReplaceRule
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     old_text   TEXT    NOT NULL,
     new_text   TEXT    NOT NULL,
+    is_regex   INTEGER NOT NULL DEFAULT 0,
     enabled    INTEGER NOT NULL DEFAULT 1,
     priority   INTEGER NOT NULL DEFAULT 0,
     created_at TEXT    NOT NULL DEFAULT (datetime('now', 'localtime')),

@@ -26,13 +26,13 @@ export const useReplaceRuleStore = defineStore('replaceRule', () => {
     }
   }
 
-  async function createRule(oldText, newText, priority) {
-    await invoke('create_replace_rule', { oldText, newText, priority })
+  async function createRule(oldText, newText, priority, isRegex = false) {
+    await invoke('create_replace_rule', { oldText, newText, isRegex, priority })
     await fetchRules()
   }
 
-  async function updateRule(id, oldText, newText, enabled, priority) {
-    await invoke('update_replace_rule', { id, oldText, newText, enabled, priority })
+  async function updateRule(id, oldText, newText, enabled, priority, isRegex = false) {
+    await invoke('update_replace_rule', { id, oldText, newText, isRegex, enabled, priority })
     await fetchRules()
   }
 

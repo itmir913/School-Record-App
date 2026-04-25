@@ -2,6 +2,7 @@ export interface DefaultReplaceRule {
   oldText: string
   newText: string
   priority: number
+  isRegex?: boolean
 }
 
 export const DEFAULT_REPLACE_RULES: DefaultReplaceRule[] = [
@@ -16,4 +17,6 @@ export const DEFAULT_REPLACE_RULES: DefaultReplaceRule[] = [
   { oldText: '<', newText: "'", priority: 8 },
   { oldText: '>', newText: "'", priority: 9 },
   { oldText: '`', newText: "'", priority: 10 },
+  { oldText: '\\n+', newText: ' ', priority: 11, isRegex: true },
+  { oldText: ' {2,}', newText: ' ', priority: 12, isRegex: true },
 ]

@@ -32,14 +32,14 @@ watch(step, () => {
 
 // ── 규칙 인라인 편집 ───────────────────────────────────────
 const editingId = ref(null)
-const editForm = ref({oldText: '', newText: '', priority: 0})
+const editForm = ref({oldText: '', newText: '', priority: 0, isRegex: false})
 const editError = ref('')
 const operationError = ref('')
 const isAdjusting = ref(false)
 
 function startEdit(rule) {
   editingId.value = rule.id
-  editForm.value = {oldText: rule.old_text, newText: rule.new_text, priority: rule.priority}
+  editForm.value = {oldText: rule.old_text, newText: rule.new_text, priority: rule.priority, isRegex: rule.is_regex}
 }
 
 function cancelEdit() {
@@ -55,6 +55,7 @@ async function commitEdit(rule) {
         editForm.value.newText,
         rule.enabled,
         editForm.value.priority,
+        editForm.value.isRegex,
     )
     editingId.value = null
   } catch (e) {
@@ -66,7 +67,7 @@ async function toggleEnabled(rule) {
   operationError.value = ''
   try {
     await ruleStore.updateRule(
-        rule.id, rule.old_text, rule.new_text, !rule.enabled, rule.priority,
+        rule.id, rule.old_text, rule.new_text, !rule.enabled, rule.priority, rule.is_regex,
     )
   } catch (e) {
     operationError.value = e?.toString() ?? '수정 실패'
@@ -80,7 +81,7 @@ async function adjustPriority(rule, delta) {
   operationError.value = ''
   try {
     await ruleStore.updateRule(
-        rule.id, rule.old_text, rule.new_text, rule.enabled, newPriority,
+        rule.id, rule.old_text, rule.new_text, rule.enabled, newPriority, rule.is_regex,
     )
   } catch (e) {
     operationError.value = e?.toString() ?? '수정 실패'
@@ -100,14 +101,14 @@ async function deleteRule(id) {
 
 // ── 규칙 추가 폼 ───────────────────────────────────────────
 const showAddForm = ref(false)
-const newRule = ref({oldText: '', newText: '', priority: 0})
+const newRule = ref({oldText: '', newText: '', priority: 0, isRegex: false})
 const addError = ref('')
 
 async function submitAdd() {
   addError.value = ''
   try {
-    await ruleStore.createRule(newRule.value.oldText, newRule.value.newText, newRule.value.priority)
-    newRule.value = {oldText: '', newText: '', priority: 0}
+    await ruleStore.createRule(newRule.value.oldText, newRule.value.newText, newRule.value.priority, newRule.value.isRegex)
+    newRule.value = {oldText: '', newText: '', priority: 0, isRegex: false}
     showAddForm.value = false
   } catch (e) {
     addError.value = e?.toString() ?? '추가 실패'
@@ -198,7 +199,7 @@ function resetWizard() {
   operationError.value = ''
   isAdjusting.value = false
   showAddForm.value = false
-  newRule.value = {oldText: '', newText: '', priority: 0}
+  newRule.value = {oldText: '', newText: '', priority: 0, isRegex: false}
   addError.value = ''
   scopeMode.value = 'all'
   selectedAreaIds.value = []
@@ -277,6 +278,10 @@ onMounted(async () => {
                 placeholder="우선순위"
                 @keydown.enter="submitAdd"
             />
+            <label class="regex-toggle-label">
+              <input type="checkbox" v-model="newRule.isRegex"/>
+              정규식
+            </label>
             <button class="btn-icon btn-confirm" @click="submitAdd" title="추가">
               <Check :size="14"/>
             </button>
@@ -316,6 +321,10 @@ onMounted(async () => {
                   <input v-model="editForm.oldText" class="input-sm" placeholder="찾을 텍스트"/>
                   <span class="arrow-label">→</span>
                   <input v-model="editForm.newText" class="input-sm" placeholder="바꿀 텍스트"/>
+                  <label class="regex-toggle-label">
+                    <input type="checkbox" v-model="editForm.isRegex"/>
+                    정규식
+                  </label>
                   <button class="btn-icon btn-confirm" @click="commitEdit(rule)" title="저장">
                     <Check :size="15"/>
                   </button>
@@ -339,6 +348,7 @@ onMounted(async () => {
                 </div>
 
                 <div class="col-old">
+                  <span v-if="rule.is_regex" class="badge-regex">정규식</span>
                   <span class="old-text">{{ rule.old_text }}</span>
                   <span
                       v-if="rule.conflicts?.length > 0"
@@ -989,6 +999,29 @@ onMounted(async () => {
   cursor: help;
   display: flex;
   align-items: center;
+}
+
+.badge-regex {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.regex-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #475569;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .action-btns {
