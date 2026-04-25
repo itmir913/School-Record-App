@@ -4,12 +4,7 @@ import {AlertCircle, CheckCircle2, Download, FileSpreadsheet, Upload, X} from 'l
 import {Workbook} from 'exceljs'
 import {useStudentStore} from '../stores/student.js'
 import {save} from '@tauri-apps/plugin-dialog'
-
-const SAMPLE_CSV = `학년,반,번호,이름
-3,1,1,홍길동(예시)
-3,1,2,김철수(예시)
-3,2,1,이영희(예시)
-`
+import {SAMPLE_CSV} from '../data/sampleStudentCsv.ts'
 
 const COL_ALIASES = {
   grade: ['학년', 'grade'],
