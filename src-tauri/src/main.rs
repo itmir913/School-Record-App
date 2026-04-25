@@ -1361,7 +1361,7 @@ fn fetch_rules_from_db(conn: &Connection) -> Result<Vec<ReplaceRule>, String> {
     let mut stmt = conn
         .prepare(
             "SELECT id, old_text, new_text, is_regex, enabled, priority, created_at, updated_at
-             FROM ReplaceRule ORDER BY priority ASC, id ASC",
+             FROM ReplaceRule ORDER BY priority ASC, old_text ASC, new_text ASC",
         )
         .map_err(|e| e.to_string())?;
 
