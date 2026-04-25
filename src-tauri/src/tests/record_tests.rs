@@ -90,6 +90,69 @@ fn test_get_area_grid_empty_returns_empty_records() {
     assert!(grid.records.is_empty());
 }
 
+#[test]
+fn test_get_area_grid_activities_only_empty_records() {
+    let conn = setup_test_db();
+    let area_id = insert_area(&conn, "국어", 500);
+    let act_id = insert_activity(&conn, "독서");
+    conn.execute(
+        "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
+        rusqlite::params![area_id, act_id],
+    )
+    .unwrap();
+
+    let grid = get_area_grid_impl(&conn, area_id).unwrap();
+
+    assert_eq!(grid.activities.len(), 1);
+    assert_eq!(grid.activities[0].name, "독서");
+    assert!(grid.students.is_empty());
+    assert!(grid.records.is_empty(), "학생 없음 → records 조회 분기 스킵 → 빈 Vec");
+}
+
+#[test]
+fn test_get_area_grid_activities_sorted_by_name() {
+    let conn = setup_test_db();
+    let area_id = insert_area(&conn, "수학", 300);
+    let act_z = insert_activity(&conn, "Z발표");
+    let act_a = insert_activity(&conn, "A발표");
+    for act_id in [act_z, act_a] {
+        conn.execute(
+            "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
+            rusqlite::params![area_id, act_id],
+        )
+        .unwrap();
+    }
+
+    let grid = get_area_grid_impl(&conn, area_id).unwrap();
+
+    assert_eq!(grid.activities.len(), 2);
+    assert_eq!(grid.activities[0].name, "A발표");
+    assert_eq!(grid.activities[1].name, "Z발표");
+}
+
+#[test]
+fn test_get_area_grid_students_sorted() {
+    let conn = setup_test_db();
+    let area_id = insert_area(&conn, "영어", 400);
+    let stu_c = insert_student(&conn, 2, 2, 3, "다학생");
+    let stu_a = insert_student(&conn, 1, 1, 2, "가학생");
+    let stu_b = insert_student(&conn, 1, 2, 1, "나학생");
+    for stu_id in [stu_c, stu_a, stu_b] {
+        conn.execute(
+            "INSERT INTO AreaStudent (area_id, student_id) VALUES (?1, ?2)",
+            rusqlite::params![area_id, stu_id],
+        )
+        .unwrap();
+    }
+
+    let grid = get_area_grid_impl(&conn, area_id).unwrap();
+
+    assert_eq!(grid.students.len(), 3);
+    assert_eq!(grid.students[0].name, "가학생"); // (1,1,2)
+    assert_eq!(grid.students[1].name, "나학생"); // (1,2,1)
+    assert_eq!(grid.students[2].name, "다학생"); // (2,2,3)
+}
+
 // ── get_record_history ─────────────────────────────────────────
 
 #[test]
@@ -247,6 +310,22 @@ fn test_save_snapshot_updates_note_when_exists() {
         )
         .unwrap();
     assert_eq!(note.as_deref(), Some("수정 노트"));
+}
+
+#[test]
+fn test_save_snapshot_no_record_is_noop() {
+    let conn = setup_test_db();
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+    // ActivityRecord 미삽입 — 의도적
+
+    let result = save_snapshot_internal(&conn, act_id, stu_id, Some("노트"));
+
+    assert!(result.is_ok());
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM ActivityRecordHistory", [], |row| row.get(0))
+        .unwrap();
+    assert_eq!(count, 0, "ActivityRecord 없으면 히스토리 0행");
 }
 
 // ── bulk_import_records ────────────────────────────────────────
