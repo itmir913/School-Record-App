@@ -83,7 +83,11 @@ async function downloadSample() {
     filters: [{name: 'CSV', extensions: ['csv']}],
   })
   if (!path) return
-  await studentStore.writeSampleFile(path, '\uFEFF' + SAMPLE_CSV)
+  try {
+    await studentStore.writeSampleFile(path, '\uFEFF' + SAMPLE_CSV)
+  } catch (e) {
+    parseError.value = '샘플 파일 저장 실패: ' + String(e)
+  }
 }
 
 function onDragOver(e) {

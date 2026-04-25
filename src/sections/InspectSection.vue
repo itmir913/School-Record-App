@@ -86,8 +86,12 @@ function setWordInput(groupId, val) {
 async function submitWord(groupId) {
   const word = (newWordInputs.value[groupId] ?? '').trim()
   if (!word) return
-  await store.addWord(groupId, word)
-  newWordInputs.value[groupId] = ''
+  try {
+    await store.addWord(groupId, word)
+    newWordInputs.value[groupId] = ''
+  } catch (e) {
+    store.error = String(e)
+  }
 }
 
 // CSV 일괄 업로드 (그룹별)
@@ -114,6 +118,8 @@ async function submitCsv(groupId) {
   try {
     await store.addWordsBatch(groupId, words)
     csvInputs.value[groupId] = ''
+  } catch (e) {
+    store.error = String(e)
   } finally {
     csvUploading.value[groupId] = false
   }
@@ -281,6 +287,8 @@ async function exportToExcel() {
       rowCount: inspectResults.value.length,
     }
     step.value++
+  } catch (e) {
+    store.error = String(e)
   } finally {
     exporting.value = false
   }
