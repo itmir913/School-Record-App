@@ -72,7 +72,22 @@ const pendingRecords = ref([])
 const previewRows = computed(() => rawData.value.slice(0, 5))
 
 const hasDuplicateCols = computed(() => {
-  const vals = Object.values(colMap.value).filter(v => v !== null)
+  // 1. 각 모드별로 검사할 대상 키 목록을 정의합니다.
+  const targetKeys = {
+    fields: ['grade', 'classNum', 'number', 'name', 'activityName', 'activityContent'],
+    studentId: ['studentId', 'name', 'activityName', 'activityContent']
+  }
+
+  // 2. 현재 활성화된 모드에 해당하는 키 배열을 가져옵니다.
+  const currentKeys = targetKeys[idMode.value] || []
+
+  // 3. colMap에서 해당 키들의 값만 추출한 뒤, 빈 값을 필터링합니다.
+  const vals = currentKeys
+      .map(key => colMap.value[key])
+      .filter(v => v !== null && v !== undefined && v !== '')
+  // 유효한 값이 항상 문자열이라면 .filter(Boolean)으로 짧게 줄일 수 있습니다.
+
+  // 4. 유효한 값들 중 중복이 있는지 확인합니다.
   return vals.length !== new Set(vals).size
 })
 
