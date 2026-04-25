@@ -103,8 +103,8 @@ npm run tauri dev
 ### 테스트
 
 ```bash
-# Cargo Test
-cargo test --manifest-path src-tauri/Cargo.toml
+# 전체 단위 테스트
+npm run test
 ```
 
 ### 빌드

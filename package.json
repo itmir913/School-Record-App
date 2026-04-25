@@ -10,8 +10,10 @@
     "tauri": "tauri",
     "tauri:portable": "tauri build --no-bundle",
     "tauri:installer": "tauri build --bundles nsis",
+    "clean": "npm run clean:rust",
     "clean:rust": "cargo clean --manifest-path src-tauri/Cargo.toml",
-    "clean": "npm run clean:rust"
+    "test": "npm run test:rust",
+    "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
