@@ -19,16 +19,6 @@ export const useActivityStore = defineStore('activity', () => {
         }
     }
 
-    async function createActivity(name) {
-        await invoke('create_activity', {name})
-        await fetchActivities()
-    }
-
-    async function updateActivity(id, name) {
-        await invoke('update_activity', {id, name})
-        await fetchActivities()
-    }
-
     async function deleteActivity(id) {
         await invoke('delete_activity', {id})
         await fetchActivities()
@@ -55,5 +45,5 @@ export const useActivityStore = defineStore('activity', () => {
         }
     }
 
-    return {activities, loading, error, fetchActivities, createActivity, updateActivity, deleteActivity, saveActivity}
+    return {activities, loading, error, fetchActivities, deleteActivity, saveActivity}
 })
