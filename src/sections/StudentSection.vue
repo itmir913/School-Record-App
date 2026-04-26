@@ -3,7 +3,7 @@ import {computed, onMounted, ref} from 'vue'
 import {Pencil, Plus, TableProperties, Users} from 'lucide-vue-next'
 import {useStudentStore} from '../stores/student'
 import StudentModal from '../components/StudentModal.vue'
-import BulkStudentImportModal from '../components/BulkStudentImportModal.vue'
+import StudentBulkImportModal from '../components/StudentBulkImportModal.vue'
 
 const studentStore = useStudentStore()
 
@@ -169,7 +169,7 @@ async function handleDeleted() {
 
     <!-- 일괄 추가 모달 -->
     <transition name="modal">
-      <BulkStudentImportModal
+      <StudentBulkImportModal
           v-if="bulkModalVisible"
           @close="bulkModalVisible = false"
           @imported="studentStore.fetchStudents()"
