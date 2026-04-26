@@ -1,5 +1,13 @@
 {
   "name": "school-record-app",
+  "description": "All-in-One 학교생활기록부 에디터 — 교사를 위한 데스크톱 애플리케이션",
+  "author": "itmir913 (luminousky.com)",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "homepage": "https://luminousky.com/teacher-utility-kit/neis-editor/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/itmir913/School-Record-App.git"
+  },
   "private": true,
   "version": "0.0.0",
   "type": "module",
