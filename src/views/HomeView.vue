@@ -172,7 +172,13 @@ function closeUpdateModal() {
           </div>
         </transition>
 
-        <p class="version">v{{ currentVersion }}</p>
+        <p class="version">
+          v{{ currentVersion }}
+          |
+          <a href="https://github.com/itmir913/School-Record-App/blob/master/LICENSE.md" target="_blank">
+            Noncommercial Only
+          </a>
+        </p>
       </div>
     </div>
 
