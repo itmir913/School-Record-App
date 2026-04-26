@@ -5,8 +5,6 @@ import {save} from '@tauri-apps/plugin-dialog'
 import {revealItemInDir} from '@tauri-apps/plugin-opener'
 import {Workbook} from 'exceljs'
 import {
-  ArrowLeft,
-  ArrowRight,
   Check,
   ChevronRight,
   FileDown,
@@ -20,6 +18,7 @@ import {useSynonymStore} from '../stores/synonymStore'
 import {useAreaStore} from '../stores/area'
 import {performInspection} from '../services/synonymService'
 import DiffView from '../components/DiffView.vue'
+import WizardLayout from '../components/WizardLayout.vue'
 
 const store = useSynonymStore()
 const areaStore = useAreaStore()
@@ -27,7 +26,6 @@ const areaStore = useAreaStore()
 // ── 단계 ─────────────────────────────────────────────────────
 
 const step = ref(1)
-const bodyRef = ref(null)
 
 function buildBeforeText(content, detectedWords) {
   let result = content
@@ -36,10 +34,6 @@ function buildBeforeText(content, detectedWords) {
   }
   return result
 }
-
-watch(step, () => {
-  bodyRef.value?.scrollTo({top: 0, behavior: 'smooth'})
-})
 
 // ── Step 1: 그룹 관리 ─────────────────────────────────────────
 
@@ -174,6 +168,23 @@ function isAreaSelected(id) {
 watch(scopeMode, () => {
   selectedAreaIds.value = []
 })
+
+// ── 위저드 네비게이션 ─────────────────────────────────────────
+
+const canGoNext = computed(() => {
+  if (step.value === 2) return selectedGroupIds.value.length > 0
+  return true
+})
+
+function goPrev() {
+  if (step.value === 4) backToScope()
+  else if (step.value === 3) backToGroups()
+  else step.value--
+}
+
+function goNext() {
+  step.value++
+}
 
 // ── 검색 실행 ──────────────────────────────────────────────────
 
@@ -323,17 +334,18 @@ onMounted(() => {
         <h2 class="section-title">유의어 점검(Inspect)</h2>
         <p class="section-desc">중·고등학교 학교생활기록부 기재요령에 근거하여 유의어 및 금지어를 점검합니다.</p>
       </div>
-      <div class="step-indicator">
-        <div v-for="n in 4" :key="n" class="step-dot"
-             :class="{ 'step-dot--active': step === n, 'step-dot--done': step > n }">
-          <Check v-if="step > n" :size="13"/>
-          <span v-else>{{ n }}</span>
-        </div>
-      </div>
     </div>
 
+    <WizardLayout
+        :stepCount="3"
+        :currentStep="step"
+        :canGoNext="canGoNext"
+        :isNavigating="false"
+        :showFooter="!exportResult"
+        @prev="goPrev"
+        @next="goNext"
+    >
     <!-- 본문 -->
-    <div class="wizard-body" ref="bodyRef">
 
       <!-- ─── Step 1: 유의어 그룹 관리 ─────────────────────── -->
       <div v-if="step === 1" class="step-content">
@@ -637,28 +649,7 @@ onMounted(() => {
         </div>
       </div>
 
-    </div>
-
-    <!-- 하단 네비게이션 -->
-    <div v-if="!exportResult" class="wizard-footer">
-      <button
-          class="btn-prev"
-          :disabled="step === 1"
-          @click="step === 4 ? backToScope() : step === 3 ? backToGroups() : step--"
-      >
-        <ArrowLeft :size="15"/>
-        이전
-      </button>
-      <button
-          v-if="step < 3"
-          class="btn-next"
-          :disabled="step === 2 && selectedGroupIds.length === 0"
-          @click="step++"
-      >
-        다음
-        <ArrowRight :size="15"/>
-      </button>
-    </div>
+    </WizardLayout>
 
   </div>
 </template>
@@ -706,12 +697,6 @@ onMounted(() => {
   margin: 0;
 }
 
-.wizard-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 32px 40px 48px;
-}
-
 .step-content {
 }
 
@@ -730,40 +715,6 @@ onMounted(() => {
   font-size: 15px;
   color: #7c8db5;
   margin: 0 0 24px;
-}
-
-/* ── 단계 표시기 ─────────────────────────────────────────── */
-.step-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.step-dot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  font-size: 13px;
-  font-weight: 600;
-  border: 1px solid #1a2035;
-  color: var(--clr-text-hint);
-  background: transparent;
-  transition: all 0.2s;
-}
-
-.step-dot--active {
-  border-color: rgba(59, 91, 219, 0.8);
-  color: #7ba8f0;
-  background: rgba(59, 91, 219, 0.12);
-}
-
-.step-dot--done {
-  border-color: rgba(52, 211, 153, 0.5);
-  color: #34d399;
-  background: rgba(52, 211, 153, 0.08);
 }
 
 /* ── 상태 박스 ───────────────────────────────────────────── */
@@ -1409,52 +1360,6 @@ onMounted(() => {
   border-radius: 12px;
   font-size: 12px;
   color: #a5b4fc;
-}
-
-/* ── 하단 네비게이션 ─────────────────────────────────────── */
-.wizard-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 40px;
-  border-top: 1px solid #1a2035;
-  flex-shrink: 0;
-}
-
-.btn-prev,
-.btn-next {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 18px;
-  border-radius: 8px;
-  border: 1px solid #1a2035;
-  background: none;
-  color: var(--clr-text-subtle);
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.btn-prev:hover:not(:disabled),
-.btn-next:hover:not(:disabled) {
-  background: #1a2035;
-  color: #cbd5e1;
-}
-
-.btn-prev:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.btn-next {
-  border-color: #3b5bdb;
-  color: #a5b4fc;
-}
-
-.btn-next:hover:not(:disabled) {
-  background: rgba(59, 91, 219, 0.15);
-  color: #c7d2fe;
 }
 
 /* ── Step 3: 빈 상태 ─────────────────────────────────────── */

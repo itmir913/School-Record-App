@@ -4,8 +4,6 @@ import {useReplaceRuleStore} from '../stores/replaceRule'
 import {useAreaStore} from '../stores/area'
 import DiffView from '../components/DiffView.vue'
 import {
-  ArrowLeft,
-  ArrowRight,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -18,17 +16,13 @@ import {
   TriangleAlert,
   X,
 } from 'lucide-vue-next'
+import WizardLayout from '../components/WizardLayout.vue'
 
 const ruleStore = useReplaceRuleStore()
 const areaStore = useAreaStore()
 
 // ── 단계 ──────────────────────────────────────────────────────
 const step = ref(1)
-const bodyRef = ref(null)
-
-watch(step, () => {
-  bodyRef.value?.scrollTo({top: 0, behavior: 'smooth'})
-})
 
 // ── 규칙 인라인 편집 ───────────────────────────────────────
 const editingId = ref(null)
@@ -134,6 +128,21 @@ watch(scopeMode, () => {
   selectedAreaIds.value = []
 })
 
+// ── 위저드 네비게이션 ─────────────────────────────────────────
+
+const canGoNext = computed(() => {
+  if (step.value === 2) return !(scopeMode.value === 'specific' && selectedAreaIds.value.length === 0)
+  return true
+})
+
+function goPrev() {
+  step.value--
+}
+
+function goNext() {
+  step.value++
+}
+
 // ── 미리보기 ───────────────────────────────────────────────
 const previewItems = ref([])
 const previewError = ref('')
@@ -228,17 +237,18 @@ onMounted(async () => {
         <h2 class="section-title">텍스트 치환(Replace)</h2>
         <p class="section-desc">학교생활기록부 문장의 특수문자, 텍스트 등을 일괄 교체합니다.</p>
       </div>
-      <div class="step-indicator">
-        <div v-for="n in 3" :key="n" class="step-dot"
-             :class="{ 'step-dot--active': step === n, 'step-dot--done': step > n }">
-          <Check v-if="step > n" :size="13"/>
-          <span v-else>{{ n }}</span>
-        </div>
-      </div>
     </div>
 
+    <WizardLayout
+        :stepCount="3"
+        :currentStep="step"
+        :canGoNext="canGoNext"
+        :isNavigating="false"
+        :showFooter="!applyResult"
+        @prev="goPrev"
+        @next="goNext"
+    >
     <!-- 본문 -->
-    <div class="wizard-body" ref="bodyRef">
 
       <!-- ─── Step 1: 규칙 관리 ─────────────────────────────── -->
       <div v-if="step === 1" class="step-content">
@@ -548,28 +558,7 @@ onMounted(async () => {
 
       </div>
 
-    </div>
-
-    <!-- 하단 네비게이션 -->
-    <div v-if="!applyResult" class="wizard-footer">
-      <button
-          class="btn-prev"
-          :disabled="step === 1"
-          @click="step--"
-      >
-        <ArrowLeft :size="15"/>
-        이전
-      </button>
-      <button
-          v-if="step < 3"
-          class="btn-next"
-          :disabled="step === 2 && scopeMode === 'specific' && selectedAreaIds.length === 0"
-          @click="step++"
-      >
-        다음
-        <ArrowRight :size="15"/>
-      </button>
-    </div>
+    </WizardLayout>
 
   </div>
 </template>
@@ -611,12 +600,6 @@ onMounted(async () => {
   margin: 0;
 }
 
-.wizard-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 32px 40px 48px;
-}
-
 .step-content {
 }
 
@@ -635,91 +618,6 @@ onMounted(async () => {
   font-size: 15px;
   color: #7c8db5;
   margin: 0 0 24px;
-}
-
-/* ── 단계 표시기 ─────────────────────────────────────────── */
-.step-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.step-dot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  font-size: 13px;
-  font-weight: 600;
-  border: 1px solid #1a2035;
-  color: var(--clr-text-hint);
-  background: transparent;
-  transition: all 0.2s;
-}
-
-.step-dot--active {
-  border-color: rgba(59, 91, 219, 0.8);
-  color: #7ba8f0;
-  background: rgba(59, 91, 219, 0.12);
-}
-
-.step-dot--done {
-  border-color: rgba(52, 211, 153, 0.5);
-  color: #34d399;
-  background: rgba(52, 211, 153, 0.08);
-}
-
-/* ── 하단 네비게이션 ─────────────────────────────────────── */
-.wizard-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 40px;
-  border-top: 1px solid #1a2035;
-  flex-shrink: 0;
-}
-
-.btn-prev,
-.btn-next {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 18px;
-  border-radius: 8px;
-  border: 1px solid #1a2035;
-  background: none;
-  color: var(--clr-text-subtle);
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.btn-prev:hover:not(:disabled),
-.btn-next:hover:not(:disabled) {
-  background: #1a2035;
-  color: #cbd5e1;
-}
-
-.btn-prev:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.btn-next {
-  border-color: #3b5bdb;
-  color: #a5b4fc;
-}
-
-.btn-next:hover:not(:disabled) {
-  background: rgba(59, 91, 219, 0.15);
-  color: #c7d2fe;
-}
-
-.btn-next:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
 }
 
 /* ── Step 2: 범위 선택 카드 ──────────────────────────────── */
