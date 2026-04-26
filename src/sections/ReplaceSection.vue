@@ -381,8 +381,8 @@ onMounted(async () => {
                   <button class="btn-icon" @click="startEdit(rule)" title="편집">
                     <Pencil :size="15"/>
                   </button>
-                  <button class="btn-icon btn-danger" @click="deleteRule(rule.id)" title="삭제">
-                    <Trash2 :size="15"/>
+                  <button class="btn-icon" @click="deleteRule(rule.id)" title="삭제">
+                    <Trash2 :size="15" color="rgba(248, 113, 113, 0.7)"/>
                   </button>
                 </div>
               </template>
