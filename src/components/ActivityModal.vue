@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref, watch} from 'vue'
-import {AlertTriangle, Info, Trash2, X} from 'lucide-vue-next'
+import {AlertTriangle, Info, Trash2} from 'lucide-vue-next'
+import BaseModal from './BaseModal.vue'
 
 const props = defineProps({
   mode: {type: String, default: 'add'}, // 'add' | 'edit'
@@ -72,132 +73,113 @@ function handleDelete() {
 </script>
 
 <template>
-  <div class="modal-overlay">
-    <div class="modal modal-container">
+  <BaseModal
+      :title="mode === 'add' ? '활동 추가' : '활동 수정'"
+      max-width="920px"
+      @close="emit('close')"
+  >
+    <!-- 2단 바디 -->
+    <div class="modal-body">
 
-      <!-- 헤더 -->
-      <div class="modal-hdr">
-        <h2 class="modal-title">{{ mode === 'add' ? '활동 추가' : '활동 수정' }}</h2>
-        <button class="modal-close" @click="emit('close')">
-          <X :size="18"/>
-        </button>
-      </div>
+      <!-- 좌측: 기본 정보 -->
+      <div class="pane pane-left">
+        <p class="pane-title">기본 정보</p>
 
-      <!-- 2단 바디 -->
-      <div class="modal-body">
-
-        <!-- 좌측: 기본 정보 -->
-        <div class="pane pane-left">
-          <p class="pane-title">기본 정보</p>
-
-          <div class="field">
-            <label class="field-label">활동 이름 <span class="required">*</span></label>
-            <input
-                v-model="name"
-                class="ui-input field-input"
-                placeholder="예: 학급자치활동"
-                @keydown.enter="submit"
-            />
-            <p class="field-hint">
-              영역(Area) 안에 포함될 세부 활동명입니다.
-            </p>
-          </div>
-
-          <!-- 삭제 경고 (편집 + 확인 단계) -->
-          <div v-if="mode === 'edit' && confirmDelete" class="delete-warning">
-            <div class="warning-header">
-              <AlertTriangle :size="16" class="warning-icon"/>
-              <span class="warning-title">정말 삭제하시겠습니까?</span>
-            </div>
-            <p class="warning-body">
-              이 활동을 삭제하면 이 활동에 속한 <strong>학생의 생기부 문장도 함께 삭제</strong>되며 복구할 수 없습니다.
-            </p>
-          </div>
-
-          <!-- 에러 -->
-          <p v-if="error" class="msg-error">{{ error }}</p>
-        </div>
-
-        <!-- 구분선 -->
-        <div class="pane-divider"/>
-
-        <!-- 우측: 영역 선택 -->
-        <div class="pane pane-right">
-          <div class="pane-title-row">
-            <p class="pane-title">포함할 영역</p>
-            <span v-if="allAreas.length > 0" class="selected-count">
-              {{ selectedAreaIds.size }}개 선택
-            </span>
-          </div>
-
-          <p v-if="allAreas.length === 0" class="empty-hint">
-            등록된 영역이 없습니다.<br>영역 관리에서 먼저 추가하세요.
+        <div class="field">
+          <label class="field-label">활동 이름 <span class="required">*</span></label>
+          <input
+              v-model="name"
+              class="ui-input field-input"
+              placeholder="예: 학급자치활동"
+              @keydown.enter="submit"
+          />
+          <p class="field-hint">
+            영역(Area) 안에 포함될 세부 활동명입니다.
           </p>
-          <div v-else class="chip-scroll">
-            <button
-                v-for="area in sortedAreas"
-                :key="area.id"
-                type="button"
-                class="area-chip"
-                :class="{'area-chip--on': selectedAreaIds.has(area.id)}"
-                @click="toggleArea(area.id)"
-            >{{ area.name }}
-            </button>
-          </div>
-
-          <!-- 복수 영역 선택 시 안내 -->
-          <div v-if="multiAreaWarning" class="multi-area-notice">
-            <Info :size="15" class="notice-icon"/>
-            <p class="notice-text">
-              일반적으로 하나의 활동은 하나의 영역에만 포함됩니다. 여러 영역에 중복 배치하는 경우는 드문 편이므로, 의도된 구성인지 확인하세요.
-            </p>
-          </div>
         </div>
+
+        <!-- 삭제 경고 (편집 + 확인 단계) -->
+        <div v-if="mode === 'edit' && confirmDelete" class="delete-warning">
+          <div class="warning-header">
+            <AlertTriangle :size="16" class="warning-icon"/>
+            <span class="warning-title">정말 삭제하시겠습니까?</span>
+          </div>
+          <p class="warning-body">
+            이 활동을 삭제하면 이 활동에 속한 <strong>학생의 생기부 문장도 함께 삭제</strong>되며 복구할 수 없습니다.
+          </p>
+        </div>
+
+        <!-- 에러 -->
+        <p v-if="error" class="msg-error">{{ error }}</p>
       </div>
 
-      <!-- 푸터 -->
-      <div class="modal-ftr modal-footer">
-        <div class="footer-left">
-          <template v-if="mode === 'edit'">
-            <button
-                v-if="!confirmDelete"
-                class="btn-danger btn-delete"
-                @click="handleDelete"
-            >
-              <Trash2 :size="15"/>
-              삭제
-            </button>
-            <div v-else class="confirm-row">
-              <button class="btn-cancel-sm" @click="confirmDelete = false">취소</button>
-              <button class="btn-delete-confirm" @click="handleDelete">영구 삭제</button>
-            </div>
-          </template>
+      <!-- 구분선 -->
+      <div class="pane-divider"/>
+
+      <!-- 우측: 영역 선택 -->
+      <div class="pane pane-right">
+        <div class="pane-title-row">
+          <p class="pane-title">포함할 영역</p>
+          <span v-if="allAreas.length > 0" class="selected-count">
+            {{ selectedAreaIds.size }}개 선택
+          </span>
         </div>
 
-        <div class="footer-right">
-          <button class="btn-secondary" @click="emit('close')">취소</button>
-          <button class="btn-primary" :disabled="submitting" @click="submit">
-            {{ mode === 'add' ? '추가' : '저장' }}
+        <p v-if="allAreas.length === 0" class="empty-hint">
+          등록된 영역이 없습니다.<br>영역 관리에서 먼저 추가하세요.
+        </p>
+        <div v-else class="chip-scroll">
+          <button
+              v-for="area in sortedAreas"
+              :key="area.id"
+              type="button"
+              class="area-chip"
+              :class="{'area-chip--on': selectedAreaIds.has(area.id)}"
+              @click="toggleArea(area.id)"
+          >{{ area.name }}
           </button>
+        </div>
+
+        <!-- 복수 영역 선택 시 안내 -->
+        <div v-if="multiAreaWarning" class="multi-area-notice">
+          <Info :size="15" class="notice-icon"/>
+          <p class="notice-text">
+            일반적으로 하나의 활동은 하나의 영역에만 포함됩니다. 여러 영역에 중복 배치하는 경우는 드문 편이므로, 의도된 구성인지 확인하세요.
+          </p>
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- 푸터 -->
+    <template #footer>
+      <div class="footer-left">
+        <template v-if="mode === 'edit'">
+          <button
+              v-if="!confirmDelete"
+              class="btn-danger btn-delete"
+              @click="handleDelete"
+          >
+            <Trash2 :size="15"/>
+            삭제
+          </button>
+          <div v-else class="confirm-row">
+            <button class="btn-cancel-sm" @click="confirmDelete = false">취소</button>
+            <button class="btn-delete-confirm" @click="handleDelete">영구 삭제</button>
+          </div>
+        </template>
+      </div>
+
+      <div class="footer-right">
+        <button class="btn-secondary" @click="emit('close')">취소</button>
+        <button class="btn-primary" :disabled="submitting" @click="submit">
+          {{ mode === 'add' ? '추가' : '저장' }}
+        </button>
+      </div>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped>
-.modal {
-  max-width: 920px;
-  overflow: hidden;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0;
-}
-
 /* 2단 바디 */
 .modal-body {
   display: flex;
@@ -278,7 +260,7 @@ function handleDelete() {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: auto
+  margin-top: auto;
 }
 
 .warning-header {
@@ -332,7 +314,6 @@ function handleDelete() {
   overflow-y: auto;
   padding-right: 4px;
 }
-
 
 .area-chip {
   padding: 7px 16px;
@@ -388,11 +369,6 @@ function handleDelete() {
 }
 
 /* 푸터 */
-.modal-footer {
-  padding-bottom: 20px;
-  gap: 12px;
-}
-
 .footer-left {
   display: flex;
   align-items: center;
@@ -448,5 +424,4 @@ function handleDelete() {
 .btn-delete-confirm:hover {
   background-color: #ef4444;
 }
-
 </style>

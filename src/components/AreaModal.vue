@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref, watch} from 'vue'
-import {AlertTriangle, Trash2, X} from 'lucide-vue-next'
+import {AlertTriangle, Trash2} from 'lucide-vue-next'
+import BaseModal from './BaseModal.vue'
 
 const props = defineProps({
   mode: {type: String, default: 'add'}, // 'add' | 'edit'
@@ -20,7 +21,6 @@ const sortedActivities = computed(() =>
     [...props.allActivities].sort((a, b) => a.name.localeCompare(b.name, 'ko'))
 )
 
-// 편집 모드 진입 시 기존 값 채우기
 watch(
     () => props.area,
     (a) => {
@@ -84,137 +84,118 @@ function handleDelete() {
 </script>
 
 <template>
-  <div class="modal-overlay">
-    <div class="modal modal-container">
+  <BaseModal
+      :title="mode === 'add' ? '영역 추가' : '영역 수정'"
+      max-width="920px"
+      @close="emit('close')"
+  >
+    <!-- 2단 바디 -->
+    <div class="modal-body">
 
-      <!-- 헤더 -->
-      <div class="modal-hdr">
-        <h2 class="modal-title">{{ mode === 'add' ? '영역 추가' : '영역 수정' }}</h2>
-        <button class="modal-close" @click="emit('close')">
-          <X :size="18"/>
-        </button>
-      </div>
+      <!-- 좌측: 기본 정보 -->
+      <div class="pane pane-left">
+        <p class="pane-title">기본 정보</p>
 
-      <!-- 2단 바디 -->
-      <div class="modal-body">
+        <div class="field">
+          <label class="field-label">영역 이름 <span class="required">*</span></label>
+          <input
+              v-model="name"
+              class="ui-input field-input"
+              placeholder="예: 자율활동, 진로활동"
+              @keydown.enter="submit"
+          />
+        </div>
 
-        <!-- 좌측: 기본 정보 -->
-        <div class="pane pane-left">
-          <p class="pane-title">기본 정보</p>
-
-          <div class="field">
-            <label class="field-label">영역 이름 <span class="required">*</span></label>
+        <div class="field">
+          <label class="field-label">바이트 수 제한 <span class="required">*</span></label>
+          <div class="input-row">
             <input
-                v-model="name"
+                v-model.number="byteLimit"
+                type="number"
+                min="1"
                 class="ui-input field-input"
-                placeholder="예: 자율활동, 진로활동"
+                placeholder="1500"
                 @keydown.enter="submit"
             />
+            <span class="input-unit">Bytes</span>
           </div>
-
-          <div class="field">
-            <label class="field-label">바이트 수 제한 <span class="required">*</span></label>
-            <div class="input-row">
-              <input
-                  v-model.number="byteLimit"
-                  type="number"
-                  min="1"
-                  class="ui-input field-input"
-                  placeholder="1500"
-                  @keydown.enter="submit"
-              />
-              <span class="input-unit">Bytes</span>
-            </div>
-            <p class="field-hint">나이스 기준 최대 입력 가능한 바이트 수</p>
-          </div>
-
-          <!-- 삭제 경고 (편집 + 확인 단계) -->
-          <div v-if="mode === 'edit' && confirmDelete" class="delete-warning">
-            <div class="warning-header">
-              <AlertTriangle :size="16" class="warning-icon"/>
-              <span class="warning-title">정말 삭제하시겠습니까?</span>
-            </div>
-            <p class="warning-body">
-              이 영역을 삭제하시겠습니까? 영역 정보만 삭제되며, 이 영역과 연결된 활동과 학생의 생기부 문장은 그대로 유지됩니다.
-            </p>
-          </div>
-
-          <!-- 에러 -->
-          <p v-if="error" class="msg-error">{{ error }}</p>
+          <p class="field-hint">나이스 기준 최대 입력 가능한 바이트 수</p>
         </div>
 
-        <!-- 구분선 -->
-        <div class="pane-divider"/>
-
-        <!-- 우측: 활동 선택 -->
-        <div class="pane pane-right">
-          <div class="pane-title-row">
-            <p class="pane-title">포함할 활동</p>
-            <span v-if="allActivities.length > 0" class="selected-count">
-              {{ selectedIds.size }}개 선택됨
-            </span>
+        <!-- 삭제 경고 (편집 + 확인 단계) -->
+        <div v-if="mode === 'edit' && confirmDelete" class="delete-warning">
+          <div class="warning-header">
+            <AlertTriangle :size="16" class="warning-icon"/>
+            <span class="warning-title">정말 삭제하시겠습니까?</span>
           </div>
-
-          <p v-if="allActivities.length === 0" class="empty-hint">
-            등록된 활동이 없습니다.<br>활동 관리에서 먼저 추가하세요.
+          <p class="warning-body">
+            이 영역을 삭제하시겠습니까? 영역 정보만 삭제되며, 이 영역과 연결된 활동과 학생의 생기부 문장은 그대로 유지됩니다.
           </p>
-          <div v-else class="chip-scroll">
-            <button
-                v-for="act in sortedActivities"
-                :key="act.id"
-                type="button"
-                class="act-chip"
-                :class="{'act-chip--on': selectedIds.has(act.id)}"
-                @click="toggleActivity(act.id)"
-            >{{ act.name }}
-            </button>
-          </div>
         </div>
+
+        <!-- 에러 -->
+        <p v-if="error" class="msg-error">{{ error }}</p>
       </div>
 
-      <!-- 푸터 -->
-      <div class="modal-ftr modal-footer">
-        <div class="footer-left">
-          <template v-if="mode === 'edit'">
-            <button
-                v-if="!confirmDelete"
-                class="btn-danger btn-delete"
-                @click="handleDelete"
-            >
-              <Trash2 :size="15"/>
-              삭제
-            </button>
-            <div v-else class="confirm-row">
-              <button class="btn-cancel-sm" @click="confirmDelete = false">취소</button>
-              <button class="btn-delete-confirm" @click="handleDelete">영구 삭제</button>
-            </div>
-          </template>
+      <!-- 구분선 -->
+      <div class="pane-divider"/>
+
+      <!-- 우측: 활동 선택 -->
+      <div class="pane pane-right">
+        <div class="pane-title-row">
+          <p class="pane-title">포함할 활동</p>
+          <span v-if="allActivities.length > 0" class="selected-count">
+            {{ selectedIds.size }}개 선택됨
+          </span>
         </div>
 
-        <div class="footer-right">
-          <button class="btn-secondary" @click="emit('close')">취소</button>
-          <button class="btn-primary" :disabled="submitting" @click="submit">
-            {{ mode === 'add' ? '추가' : '저장' }}
+        <p v-if="allActivities.length === 0" class="empty-hint">
+          등록된 활동이 없습니다.<br>활동 관리에서 먼저 추가하세요.
+        </p>
+        <div v-else class="chip-scroll">
+          <button
+              v-for="act in sortedActivities"
+              :key="act.id"
+              type="button"
+              class="act-chip"
+              :class="{'act-chip--on': selectedIds.has(act.id)}"
+              @click="toggleActivity(act.id)"
+          >{{ act.name }}
           </button>
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- 푸터 -->
+    <template #footer>
+      <div class="footer-left">
+        <template v-if="mode === 'edit'">
+          <button
+              v-if="!confirmDelete"
+              class="btn-danger btn-delete"
+              @click="handleDelete"
+          >
+            <Trash2 :size="15"/>
+            삭제
+          </button>
+          <div v-else class="confirm-row">
+            <button class="btn-cancel-sm" @click="confirmDelete = false">취소</button>
+            <button class="btn-delete-confirm" @click="handleDelete">영구 삭제</button>
+          </div>
+        </template>
+      </div>
+
+      <div class="footer-right">
+        <button class="btn-secondary" @click="emit('close')">취소</button>
+        <button class="btn-primary" :disabled="submitting" @click="submit">
+          {{ mode === 'add' ? '추가' : '저장' }}
+        </button>
+      </div>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped>
-.modal {
-  max-width: 920px;
-  overflow: hidden;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0;
-}
-
 /* 2단 바디 */
 .modal-body {
   display: flex;
@@ -322,10 +303,8 @@ function handleDelete() {
   gap: 8px;
   flex: 1;
   overflow-y: auto;
-  overflow-y: auto;
   padding-right: 4px;
 }
-
 
 .act-chip {
   padding: 7px 16px;
@@ -353,31 +332,6 @@ function handleDelete() {
 
 .act-chip--on:hover {
   background-color: rgba(59, 91, 219, 0.22);
-}
-
-/* 푸터 */
-.modal-footer {
-  padding-bottom: 20px;
-  gap: 12px;
-}
-
-.footer-left {
-  display: flex;
-  align-items: center;
-}
-
-.footer-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-delete {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border-radius: 10px;
-  font-weight: 500;
 }
 
 /* 삭제 경고 */
@@ -421,6 +375,26 @@ function handleDelete() {
   font-weight: 600;
 }
 
+/* 푸터 */
+.footer-left {
+  display: flex;
+  align-items: center;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-delete {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
 .confirm-row {
   display: flex;
   align-items: center;
@@ -457,5 +431,4 @@ function handleDelete() {
 .btn-delete-confirm:hover {
   background-color: #ef4444;
 }
-
 </style>

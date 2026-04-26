@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref, watch} from 'vue'
-import {ChevronDown, ChevronRight, X} from 'lucide-vue-next'
+import {ChevronDown, ChevronRight} from 'lucide-vue-next'
+import BaseModal from './BaseModal.vue'
 
 const props = defineProps({
   area: {type: Object, required: true},
@@ -90,124 +91,85 @@ function submit() {
 </script>
 
 <template>
-  <div class="modal-overlay">
-    <div class="modal modal-container">
+  <BaseModal
+      title="학생 배정"
+      :label="area.name"
+      max-width="480px"
+      max-height="80vh"
+      @close="emit('close')"
+  >
+    <!-- 바디 -->
+    <div class="modal-body">
+      <p v-if="allStudents.length === 0" class="empty-hint">
+        등록된 학생이 없습니다.<br>학생 관리에서 먼저 추가하세요.
+      </p>
 
-      <!-- 헤더 -->
-      <div class="modal-hdr modal-header">
-        <div class="header-text">
-          <span class="area-label">{{ area.name }}</span>
-          <h2 class="modal-title">학생 배정</h2>
-        </div>
-        <button class="modal-close" @click="emit('close')">
-          <X :size="18"/>
-        </button>
-      </div>
-
-      <!-- 바디 -->
-      <div class="modal-body">
-        <p v-if="allStudents.length === 0" class="empty-hint">
-          등록된 학생이 없습니다.<br>학생 관리에서 먼저 추가하세요.
-        </p>
-
-        <div v-else class="group-list">
-          <div
-              v-for="g in groups"
-              :key="groupKey(g)"
-              class="group"
-          >
-            <!-- 그룹 헤더 -->
-            <div class="group-header" @click="toggleGroup(groupKey(g))">
-              <div class="group-header-left">
-                <input
-                    type="checkbox"
-                    class="group-checkbox"
-                    :checked="isGroupAllSelected(g)"
-                    :indeterminate="isGroupPartialSelected(g)"
-                    @change.stop="toggleGroupAll(g)"
-                    @click.stop
-                />
-                <span class="group-name">{{ g.grade }}학년 {{ g.classNum }}반</span>
-                <span class="group-count">{{ g.students.length }}명</span>
-                <span v-if="isGroupPartialSelected(g) || isGroupAllSelected(g)" class="group-selected-count">
-                  {{ g.students.filter(s => selectedIds.has(s.id)).length }}명 선택
-                </span>
-              </div>
-              <ChevronDown v-if="isGroupExpanded(groupKey(g))" :size="16" class="chevron"/>
-              <ChevronRight v-else :size="16" class="chevron"/>
+      <div v-else class="group-list">
+        <div
+            v-for="g in groups"
+            :key="groupKey(g)"
+            class="group"
+        >
+          <!-- 그룹 헤더 -->
+          <div class="group-header" @click="toggleGroup(groupKey(g))">
+            <div class="group-header-left">
+              <input
+                  type="checkbox"
+                  class="group-checkbox"
+                  :checked="isGroupAllSelected(g)"
+                  :indeterminate="isGroupPartialSelected(g)"
+                  @change.stop="toggleGroupAll(g)"
+                  @click.stop
+              />
+              <span class="group-name">{{ g.grade }}학년 {{ g.classNum }}반</span>
+              <span class="group-count">{{ g.students.length }}명</span>
+              <span v-if="isGroupPartialSelected(g) || isGroupAllSelected(g)" class="group-selected-count">
+                {{ g.students.filter(s => selectedIds.has(s.id)).length }}명 선택
+              </span>
             </div>
+            <ChevronDown v-if="isGroupExpanded(groupKey(g))" :size="16" class="chevron"/>
+            <ChevronRight v-else :size="16" class="chevron"/>
+          </div>
 
-            <!-- 학생 목록 (펼쳐졌을 때) -->
-            <div v-if="isGroupExpanded(groupKey(g))" class="student-list">
-              <label
-                  v-for="s in g.students"
-                  :key="s.id"
-                  class="student-item"
-              >
-                <input
-                    type="checkbox"
-                    class="student-checkbox"
-                    :checked="selectedIds.has(s.id)"
-                    @change="toggleStudent(s.id)"
-                />
-                <span class="student-number">{{ s.number }}번</span>
-                <span class="student-name">{{ s.name }}</span>
-              </label>
-            </div>
+          <!-- 학생 목록 (펼쳐졌을 때) -->
+          <div v-if="isGroupExpanded(groupKey(g))" class="student-list">
+            <label
+                v-for="s in g.students"
+                :key="s.id"
+                class="student-item"
+            >
+              <input
+                  type="checkbox"
+                  class="student-checkbox"
+                  :checked="selectedIds.has(s.id)"
+                  @change="toggleStudent(s.id)"
+              />
+              <span class="student-number">{{ s.number }}번</span>
+              <span class="student-name">{{ s.name }}</span>
+            </label>
           </div>
         </div>
       </div>
-
-      <!-- 푸터 -->
-      <div class="modal-ftr modal-footer">
-        <span class="selected-count">{{ selectedIds.size }}명 선택됨</span>
-        <div class="footer-right">
-          <p v-if="serverError" class="server-error">{{ serverError }}</p>
-          <button class="btn-secondary" @click="emit('close')">취소</button>
-          <button class="btn-primary" @click="submit">저장</button>
-        </div>
-      </div>
     </div>
-  </div>
+
+    <!-- 푸터 -->
+    <template #footer>
+      <span class="selected-count">{{ selectedIds.size }}명 선택됨</span>
+      <div class="footer-right">
+        <p v-if="serverError" class="server-error">{{ serverError }}</p>
+        <button class="btn-secondary" @click="emit('close')">취소</button>
+        <button class="btn-primary" @click="submit">저장</button>
+      </div>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped>
-.modal {
-  max-width: 480px;
-  max-height: 80vh;
-  overflow: hidden;
-}
-
-.modal-header {
-  align-items: flex-start;
-  padding-bottom: 16px;
-}
-
-.header-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.area-label {
-  font-size: 13px;
-  color: #7ba8f0;
-  font-weight: 500;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0;
-}
-
 .modal-body {
   flex: 1;
   overflow-y: auto;
   padding: 12px 0;
 }
-
 
 .empty-hint {
   font-size: 15px;
@@ -323,10 +285,6 @@ function submit() {
 }
 
 /* 푸터 */
-.modal-footer {
-  padding: 14px 24px 18px;
-}
-
 .selected-count {
   font-size: 15px;
   color: #7ba3d4;
@@ -342,5 +300,4 @@ function submit() {
   color: #f87171;
   margin: 0 12px 0 0;
 }
-
 </style>

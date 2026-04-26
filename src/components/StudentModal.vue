@@ -1,6 +1,7 @@
 <script setup>
 import {ref, watch} from 'vue'
-import {AlertTriangle, Trash2, X} from 'lucide-vue-next'
+import {AlertTriangle, Trash2} from 'lucide-vue-next'
+import BaseModal from './BaseModal.vue'
 
 const props = defineProps({
   mode: {type: String, default: 'add'}, // 'add' | 'edit'
@@ -77,119 +78,100 @@ function handleDelete() {
 </script>
 
 <template>
-  <div class="modal-overlay">
-    <div class="modal modal-container">
+  <BaseModal
+      :title="mode === 'add' ? '학생 추가' : '학생 수정'"
+      max-width="460px"
+      @close="emit('close')"
+  >
+    <!-- 바디 -->
+    <div class="modal-body">
 
-      <!-- 헤더 -->
-      <div class="modal-hdr">
-        <h2 class="modal-title">{{ mode === 'add' ? '학생 추가' : '학생 수정' }}</h2>
-        <button class="modal-close" @click="emit('close')">
-          <X :size="18"/>
-        </button>
-      </div>
-
-      <!-- 바디 -->
-      <div class="modal-body">
-
-        <div class="row-fields">
-          <div class="field field-sm">
-            <label class="field-label">학년 <span class="required">*</span></label>
-            <input
-                v-model="grade"
-                class="ui-input field-input"
-                type="number"
-                min="1"
-                placeholder="3"
-                @keydown.enter="submit"
-            />
-          </div>
-          <div class="field field-sm">
-            <label class="field-label">반 <span class="required">*</span></label>
-            <input
-                v-model="classNum"
-                class="ui-input field-input"
-                type="number"
-                min="1"
-                placeholder="2"
-                @keydown.enter="submit"
-            />
-          </div>
-          <div class="field field-sm">
-            <label class="field-label">번호 <span class="required">*</span></label>
-            <input
-                v-model="number"
-                class="ui-input field-input"
-                type="number"
-                min="1"
-                placeholder="15"
-                @keydown.enter="submit"
-            />
-          </div>
-        </div>
-
-        <div class="field">
-          <label class="field-label">이름 <span class="required">*</span></label>
+      <div class="row-fields">
+        <div class="field field-sm">
+          <label class="field-label">학년 <span class="required">*</span></label>
           <input
-              v-model="name"
+              v-model="grade"
               class="ui-input field-input"
-              placeholder="홍길동"
+              type="number"
+              min="1"
+              placeholder="3"
               @keydown.enter="submit"
           />
         </div>
-
-        <!-- 삭제 경고 -->
-        <div v-if="mode === 'edit' && confirmDelete" class="delete-warning">
-          <div class="warning-header">
-            <AlertTriangle :size="16" class="warning-icon"/>
-            <span class="warning-title">정말 삭제하시겠습니까?</span>
-          </div>
-          <p class="warning-body">
-            이 학생을 삭제하면 <strong>모든 활동 기록이 함께 삭제</strong>되며 복구할 수 없습니다.
-          </p>
+        <div class="field field-sm">
+          <label class="field-label">반 <span class="required">*</span></label>
+          <input
+              v-model="classNum"
+              class="ui-input field-input"
+              type="number"
+              min="1"
+              placeholder="2"
+              @keydown.enter="submit"
+          />
         </div>
-
-        <p v-if="error" class="msg-error">{{ error }}</p>
-      </div>
-
-      <!-- 푸터 -->
-      <div class="modal-ftr modal-footer">
-        <div class="footer-left">
-          <template v-if="mode === 'edit'">
-            <button v-if="!confirmDelete" class="btn-danger btn-delete" @click="handleDelete">
-              <Trash2 :size="15"/>
-              삭제
-            </button>
-            <div v-else class="confirm-row">
-              <button class="btn-secondary btn-cancel-sm" @click="confirmDelete = false">취소</button>
-              <button class="btn-delete-confirm" @click="handleDelete">영구 삭제</button>
-            </div>
-          </template>
-        </div>
-
-        <div class="footer-right">
-          <button class="btn-secondary" @click="emit('close')">취소</button>
-          <button class="btn-primary" :disabled="submitting" @click="submit">
-            {{ mode === 'add' ? '추가' : '저장' }}
-          </button>
+        <div class="field field-sm">
+          <label class="field-label">번호 <span class="required">*</span></label>
+          <input
+              v-model="number"
+              class="ui-input field-input"
+              type="number"
+              min="1"
+              placeholder="15"
+              @keydown.enter="submit"
+          />
         </div>
       </div>
+
+      <div class="field">
+        <label class="field-label">이름 <span class="required">*</span></label>
+        <input
+            v-model="name"
+            class="ui-input field-input"
+            placeholder="홍길동"
+            @keydown.enter="submit"
+        />
+      </div>
+
+      <!-- 삭제 경고 -->
+      <div v-if="mode === 'edit' && confirmDelete" class="delete-warning">
+        <div class="warning-header">
+          <AlertTriangle :size="16" class="warning-icon"/>
+          <span class="warning-title">정말 삭제하시겠습니까?</span>
+        </div>
+        <p class="warning-body">
+          이 학생을 삭제하면 <strong>모든 활동 기록이 함께 삭제</strong>되며 복구할 수 없습니다.
+        </p>
+      </div>
+
+      <p v-if="error" class="msg-error">{{ error }}</p>
     </div>
-  </div>
+
+    <!-- 푸터 -->
+    <template #footer>
+      <div class="footer-left">
+        <template v-if="mode === 'edit'">
+          <button v-if="!confirmDelete" class="btn-danger btn-delete" @click="handleDelete">
+            <Trash2 :size="15"/>
+            삭제
+          </button>
+          <div v-else class="confirm-row">
+            <button class="btn-secondary btn-cancel-sm" @click="confirmDelete = false">취소</button>
+            <button class="btn-delete-confirm" @click="handleDelete">영구 삭제</button>
+          </div>
+        </template>
+      </div>
+
+      <div class="footer-right">
+        <button class="btn-secondary" @click="emit('close')">취소</button>
+        <button class="btn-primary" :disabled="submitting" @click="submit">
+          {{ mode === 'add' ? '추가' : '저장' }}
+        </button>
+      </div>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped>
-.modal {
-  max-width: 460px;
-  overflow: hidden;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0;
-}
-
 .modal-body {
   display: flex;
   flex-direction: column;
@@ -269,11 +251,6 @@ function handleDelete() {
 }
 
 /* 푸터 */
-.modal-footer {
-  padding-bottom: 20px;
-  margin-top: 8px;
-}
-
 .footer-left,
 .footer-right {
   display: flex;
