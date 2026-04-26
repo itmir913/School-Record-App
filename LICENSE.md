@@ -1,5 +1,7 @@
 # PolyForm Noncommercial License 1.0.0
 
+Copyright 2026 itmir913 (luminousky.com)
+
 <https://polyformproject.org/licenses/noncommercial/1.0.0>
 
 ## Acceptance
