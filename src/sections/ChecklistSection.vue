@@ -1,12 +1,12 @@
 <script setup>
-import {computed, onMounted, ref, watch} from 'vue'
+import {computed, onMounted, ref} from 'vue'
 import {save} from '@tauri-apps/plugin-dialog'
 import {useAreaStore} from '../stores/area.js'
 import {useRecordStore} from '../stores/record.js'
 import {useFileStore} from '../stores/file.js'
 import {revealItemInDir} from '@tauri-apps/plugin-opener'
-import {ArrowLeft, ArrowRight} from 'lucide-vue-next'
 import {Workbook} from 'exceljs'
+import WizardLayout from '../components/WizardLayout.vue'
 
 // ── 스토어 ────────────────────────────────────────────────────
 
@@ -17,12 +17,6 @@ const fileStore = useFileStore()
 // ── 상태 ──────────────────────────────────────────────────────
 
 const step = ref(1)
-const wizardBodyRef = ref(null)
-
-watch(step, () => {
-  wizardBodyRef.value?.scrollTo({top: 0, behavior: 'smooth'})
-})
-
 const selectedAreaId = ref(null)
 const gridData = ref(null)
 const previewEnabled = ref(true)
@@ -323,16 +317,18 @@ async function doExport() {
         <h2 class="section-title">체크리스트 내보내기(Checklist Export)</h2>
         <p class="section-desc">학교생활기록부 점검을 위해 활동(Activity)별 키워드 혹은 주제를 추출하여 내보냅니다.</p>
       </div>
-      <div class="step-indicator">
-        <div v-for="n in 3" :key="n" class="step-dot"
-             :class="{ 'step-dot--active': step === n, 'step-dot--done': step > n }">
-          {{ step > n ? '✓' : n }}
-        </div>
-      </div>
     </div>
 
+    <WizardLayout
+        :stepCount="3"
+        :currentStep="step"
+        :canGoNext="canGoNext"
+        :isNavigating="isNavigating"
+        :showFooter="!exportResult"
+        @prev="goPrev"
+        @next="goNext"
+    >
     <!-- 본문 -->
-    <div class="wizard-body" ref="wizardBodyRef">
 
       <!-- Step 1: 영역 선택 -->
       <div v-if="step === 1" class="step-content">
@@ -484,19 +480,7 @@ async function doExport() {
         </div>
       </div>
 
-    </div>
-
-    <!-- 하단 네비게이션 -->
-    <div v-if="!exportResult" class="wizard-footer">
-      <button class="btn-prev" :disabled="step === 1" @click="goPrev">
-        <ArrowLeft :size="15"/>
-        이전
-      </button>
-      <button v-if="step < 3" class="btn-next" :disabled="!canGoNext || isNavigating" @click="goNext">
-        {{ isNavigating ? '불러오는 중…' : '다음' }}
-        <ArrowRight :size="15"/>
-      </button>
-    </div>
+    </WizardLayout>
 
   </div>
 </template>
@@ -537,45 +521,6 @@ async function doExport() {
   font-size: 16px;
   color: #7ba3d4;
   margin: 0;
-}
-
-.step-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.step-dot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  font-size: 13px;
-  font-weight: 600;
-  border: 1px solid #1a2035;
-  color: var(--clr-text-hint);
-  background: transparent;
-  transition: all 0.2s;
-}
-
-.step-dot--active {
-  border-color: rgba(59, 91, 219, 0.8);
-  color: #7ba8f0;
-  background: rgba(59, 91, 219, 0.12);
-}
-
-.step-dot--done {
-  border-color: rgba(52, 211, 153, 0.5);
-  color: #34d399;
-  background: rgba(52, 211, 153, 0.08);
-}
-
-.wizard-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 32px 40px;
 }
 
 .step-content {
@@ -1021,50 +966,4 @@ async function doExport() {
   color: #93afd4;
 }
 
-/* 하단 네비게이션 */
-.wizard-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 40px;
-  border-top: 1px solid #1a2035;
-  flex-shrink: 0;
-}
-
-.btn-prev,
-.btn-next {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 18px;
-  border-radius: 8px;
-  border: 1px solid #1a2035;
-  background: none;
-  color: var(--clr-text-subtle);
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.btn-prev:hover:not(:disabled),
-.btn-next:hover:not(:disabled) {
-  background: #1a2035;
-  color: #93afd4;
-}
-
-.btn-prev:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.btn-next:not(:disabled) {
-  color: #7ba8f0;
-  border-color: rgba(59, 91, 219, 0.3);
-  background: rgba(59, 91, 219, 0.06);
-}
-
-.btn-next:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
 </style>

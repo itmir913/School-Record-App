@@ -1,10 +1,11 @@
 <script setup>
-import {computed, ref, watch} from 'vue'
+import {computed, ref} from 'vue'
 import {save} from '@tauri-apps/plugin-dialog'
 import {useActivityStore} from '../stores/activity.js'
 import {useRecordStore} from '../stores/record.js'
 import {useFileStore} from '../stores/file.js'
-import {ArrowLeft, ArrowRight, Download, FileSpreadsheet} from 'lucide-vue-next'
+import {Download, FileSpreadsheet} from 'lucide-vue-next'
+import WizardLayout from '../components/WizardLayout.vue'
 import DiffView from '../components/DiffView.vue'
 import {Workbook} from 'exceljs'
 import {SAMPLE_A_ROWS, SAMPLE_B_COLS, SAMPLE_B_ROWS} from '../data/sampleImportData'
@@ -39,12 +40,7 @@ const REQUIRED_B = ['grade', 'classNum', 'number']
 
 const step = ref(1)
 const previewCollapsed = ref(false)
-const wizardBodyRef = ref(null)
 const idMode = ref('fields') // 'fields' | 'studentId'
-
-watch(step, () => {
-  wizardBodyRef.value?.scrollTo({top: 0, behavior: 'smooth'})
-})
 const dragging = ref(false)
 const fileName = ref('')
 const parseError = ref('')
@@ -679,19 +675,18 @@ function resetWizard() {
         <h2 class="section-title">데이터 가져오기(Import)</h2>
         <p class="section-desc">다양한 형식의 학교생활기록부 기재 문장을 본 프로그램으로 가져옵니다.</p>
       </div>
-
-      <div class="step-indicator">
-        <span
-            v-for="n in 6"
-            :key="n"
-            class="step-dot"
-            :class="{ 'step-dot--active': step === n, 'step-dot--done': step > n }"
-        >{{ n }}</span>
-      </div>
     </div>
 
+    <WizardLayout
+        :stepCount="6"
+        :currentStep="step"
+        :canGoNext="canGoNext"
+        :isNavigating="isNavigating"
+        :showFooter="!importResult"
+        @prev="goPrev"
+        @next="goNext"
+    >
     <!-- 본문 -->
-    <div class="wizard-body" ref="wizardBodyRef">
 
       <!-- Step 1: 파일 업로드 -->
       <div v-if="step === 1" class="step-content">
@@ -1293,20 +1288,7 @@ function resetWizard() {
         </div>
       </div>
 
-
-    </div>
-
-    <!-- 하단 네비게이션 -->
-    <div v-if="!importResult" class="wizard-footer">
-      <button class="btn-prev" :disabled="step === 1" @click="goPrev">
-        <ArrowLeft :size="15"/>
-        이전
-      </button>
-      <button v-if="step < 6" class="btn-next" :disabled="!canGoNext || isNavigating" @click="goNext">
-        {{ isNavigating ? '불러오는 중…' : '다음' }}
-        <ArrowRight :size="15"/>
-      </button>
-    </div>
+    </WizardLayout>
 
   </div>
 </template>
@@ -1349,47 +1331,6 @@ function resetWizard() {
   color: #7ba3d4;
   margin: 0;
 }
-
-.step-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.step-dot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  font-size: 13px;
-  font-weight: 600;
-  border: 1px solid #1a2035;
-  color: var(--clr-text-hint);
-  background: transparent;
-  transition: all 0.2s;
-}
-
-.step-dot--active {
-  border-color: rgba(59, 91, 219, 0.8);
-  color: #7ba8f0;
-  background: rgba(59, 91, 219, 0.12);
-}
-
-.step-dot--done {
-  border-color: rgba(52, 211, 153, 0.5);
-  color: #34d399;
-  background: rgba(52, 211, 153, 0.08);
-}
-
-/* 본문 */
-.wizard-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 32px 40px;
-}
-
 
 .step-content {
 }
@@ -1984,52 +1925,6 @@ function resetWizard() {
   color: #93afd4;
 }
 
-/* 하단 네비게이션 */
-.wizard-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 40px;
-  border-top: 1px solid #1a2035;
-  flex-shrink: 0;
-}
-
-.btn-prev,
-.btn-next {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 18px;
-  border-radius: 8px;
-  border: 1px solid #1a2035;
-  background: none;
-  color: var(--clr-text-subtle);
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.btn-prev:hover:not(:disabled),
-.btn-next:hover:not(:disabled) {
-  background: #1a2035;
-  color: #93afd4;
-}
-
-.btn-prev:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.btn-next:not(:disabled) {
-  color: #7ba8f0;
-  border-color: rgba(59, 91, 219, 0.3);
-  background: rgba(59, 91, 219, 0.06);
-}
-
-.btn-next:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
 
 /* Step 5: Diff 미리보기 */
 .diff-loading {
