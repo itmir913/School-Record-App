@@ -175,7 +175,7 @@ function closeUpdateModal() {
         <p class="version">
           v{{ currentVersion }} |
           <a href="https://github.com/itmir913/School-Record-App/#%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4" target="_blank">
-            Educational Use Only
+            <u>Educational Use Only</u>
           </a>
         </p>
       </div>
