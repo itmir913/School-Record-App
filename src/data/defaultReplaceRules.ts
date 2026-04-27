@@ -17,6 +17,7 @@ export const DEFAULT_REPLACE_RULES: DefaultReplaceRule[] = [
   { oldText: '<', newText: "'", priority: 8 },
   { oldText: '>', newText: "'", priority: 9 },
   { oldText: '`', newText: "'", priority: 10 },
-  { oldText: '\\n+', newText: ' ', priority: 11, isRegex: true },
-  { oldText: ' {2,}', newText: ' ', priority: 12, isRegex: true },
+  { oldText: '~', newText: "-", priority: 11 },
+  { oldText: '\\n+', newText: ' ', priority: 12, isRegex: true },
+  { oldText: ' {2,}', newText: ' ', priority: 13, isRegex: true },
 ]
