@@ -105,7 +105,7 @@ function handleDelete() {
             <span class="warning-title">정말 삭제하시겠습니까?</span>
           </div>
           <p class="warning-body">
-            이 활동을 삭제하면 이 활동에 속한 <strong>학생의 생기부 문장도 함께 삭제</strong>되며 복구할 수 없습니다.
+            이 활동을 삭제하면 이 활동에 속한 <strong>학생의 생기부 문장과 스냅샷 정보가 모두 삭제</strong>되며, 스냅샷으로도 복구할 수 없습니다.
           </p>
         </div>
 

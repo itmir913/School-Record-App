@@ -139,7 +139,7 @@ function handleDelete() {
           <span class="warning-title">정말 삭제하시겠습니까?</span>
         </div>
         <p class="warning-body">
-          이 학생을 삭제하면 <strong>모든 활동 기록이 함께 삭제</strong>되며 복구할 수 없습니다.
+          이 학생을 삭제하면 <strong>모든 활동 기록과 스냅샷 정보가 함께 삭제</strong>되며, 이후 스냅샷을 이용한 복구도 불가능합니다.
         </p>
       </div>
 
