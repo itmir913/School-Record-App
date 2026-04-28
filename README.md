@@ -120,10 +120,16 @@ npm run test
 npm run tauri build
 
 # 포터블 실행 파일 빌드
-npm run tauri:portable
+npm run tauri:windows:portable
 
 # 설치 파일 (NSIS) 빌드
-npm run tauri:installer
+npm run tauri:windows:installer
+
+# MacOS ARM
+npm run tauri:macos:arm
+
+# MacOS Intel CPU
+npm run tauri:macos:intel
 ```
 
 ---
