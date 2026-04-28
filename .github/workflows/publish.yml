@@ -15,16 +15,10 @@ jobs:
       matrix:
         include:
           - platform: "macos-latest"
-            script: "tauri:macos:arm"
-            rust_target: "aarch64-apple-darwin"
-            bundle_path: "src-tauri/target/aarch64-apple-darwin/release/bundle/dmg"
-            artifact_name: "macos-arm64"
-            artifact_ext: "dmg"
-          - platform: "macos-latest"
-            script: "tauri:macos:intel"
-            rust_target: "x86_64-apple-darwin"
-            bundle_path: "src-tauri/target/x86_64-apple-darwin/release/bundle/dmg"
-            artifact_name: "macos-x64"
+            script: "tauri:macos"
+            rust_target: "aarch64-apple-darwin,x86_64-apple-darwin"
+            bundle_path: "src-tauri/target/universal-apple-darwin/release/bundle/dmg"
+            artifact_name: "macos"
             artifact_ext: "dmg"
           - platform: "windows-latest"
             script: "tauri:windows:installer"
@@ -35,10 +29,10 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: 'npm'
@@ -102,21 +96,21 @@ jobs:
 
       - name: upload installer artifact (macOS)
         if: matrix.platform == 'macos-latest'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact_name }}-setup
           path: school-record-app-${{ steps.version.outputs.VERSION }}-${{ matrix.artifact_name }}-setup.dmg
 
       - name: upload installer artifact (Windows)
         if: matrix.platform == 'windows-latest'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact_name }}-setup
           path: school-record-app-${{ steps.version.outputs.VERSION }}-${{ matrix.artifact_name }}-setup.zip
 
       - name: upload portable artifact (Windows only)
         if: matrix.platform == 'windows-latest'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-x64-portable
           path: school-record-app-${{ steps.version.outputs.VERSION }}-windows-x64-portable.zip
@@ -127,7 +121,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: get version
         id: version
@@ -136,7 +130,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
           merge-multiple: true
