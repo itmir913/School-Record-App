@@ -9,7 +9,7 @@ on:
 jobs:
   ci:
     permissions:
-      contents: write
+      contents: read
 
     runs-on: ubuntu-22.04
     steps:
