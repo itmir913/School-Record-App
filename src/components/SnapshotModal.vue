@@ -74,7 +74,7 @@ onMounted(loadSnapshots)
 </script>
 
 <template>
-  <div class="modal-overlay" @click.self="emit('close')">
+  <div class="modal-overlay">
     <div class="modal">
 
       <!-- 헤더 -->
