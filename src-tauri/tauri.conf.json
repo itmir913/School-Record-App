@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "school-record-app",
+  "productName": "All-in-One 학교생활기록부 에디터",
   "version": "0.2.11",
   "identifier": "com.luminousky.school-record-app",
   "build": {

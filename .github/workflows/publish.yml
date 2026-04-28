@@ -1,0 +1,128 @@
+name: "publish"
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest"
+            script: "tauri:macos:arm"
+            rust_target: "aarch64-apple-darwin"
+            bundle_path: "src-tauri/target/aarch64-apple-darwin/release/bundle/dmg"
+            artifact_name: "macos-arm64"
+            artifact_ext: "dmg"
+          - platform: "macos-latest"
+            script: "tauri:macos:intel"
+            rust_target: "x86_64-apple-darwin"
+            bundle_path: "src-tauri/target/x86_64-apple-darwin/release/bundle/dmg"
+            artifact_name: "macos-x64"
+            artifact_ext: "dmg"
+          - platform: "windows-latest"
+            script: "tauri:windows:installer"
+            rust_target: ""
+            bundle_path: "src-tauri/target/release/bundle/nsis"
+            artifact_name: "windows-x64"
+            artifact_ext: "exe"
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: install frontend dependencies
+        run: npm install
+
+      - name: build
+        run: npm run ${{ matrix.script }}
+
+      - name: build portable (Windows only)
+        if: matrix.platform == 'windows-latest'
+        run: npm run tauri:windows:portable
+
+      - name: get version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(node -p 'require("./src-tauri/tauri.conf.json").version')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: rename installer artifact
+        shell: bash
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          SRC=$(ls "${{ matrix.bundle_path }}"/*.${{ matrix.artifact_ext }} | head -1)
+          cp "$SRC" "school-record-app-v${VERSION}-${{ matrix.artifact_name }}-setup.${{ matrix.artifact_ext }}"
+
+      - name: rename portable artifact (Windows only)
+        if: matrix.platform == 'windows-latest'
+        shell: bash
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          cp "src-tauri/target/release/school-record-app.exe" \
+             "school-record-app-v${VERSION}-windows-x64-portable.exe"
+
+      - name: upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}-setup
+          path: school-record-app-v${{ steps.version.outputs.VERSION }}-${{ matrix.artifact_name }}-setup.${{ matrix.artifact_ext }}
+
+      - name: upload portable artifact (Windows only)
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64-portable
+          path: school-record-app-v${{ steps.version.outputs.VERSION }}-windows-x64-portable.exe
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: get version
+        id: version
+        run: |
+          VERSION=$(node -p 'require("./src-tauri/tauri.conf.json").version')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: create draft release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.version.outputs.VERSION }}" \
+            --title "v${{ steps.version.outputs.VERSION }}" \
+            --notes "See the assets to download this version and install." \
+            --draft \
+            artifacts/*
