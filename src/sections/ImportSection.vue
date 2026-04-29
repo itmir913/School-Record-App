@@ -602,18 +602,19 @@ async function downloadSampleA() {
     defaultPath: '예시_A타입.xlsx',
     filters: [{name: 'Excel 파일', extensions: ['xlsx']}],
   })
+
   if (!filePath) return
 
-  const headers = ['학년', '반', '번호', '이름', '활동명', '활동내용']
-  const workbook = new Workbook()
-  const worksheet = workbook.addWorksheet('예시')
-  worksheet.addRow(headers)
-  for (const row of SAMPLE_A_ROWS) {
-    worksheet.addRow(headers.map(h => row[h]))
-  }
-  const buffer = await workbook.xlsx.writeBuffer()
-  const data = bufferToBase64(buffer)
   try {
+    const headers = ['학년', '반', '번호', '이름', '활동명', '활동내용']
+    const workbook = new Workbook()
+    const worksheet = workbook.addWorksheet('예시')
+    worksheet.addRow(headers)
+    for (const row of SAMPLE_A_ROWS) {
+      worksheet.addRow(headers.map(h => row[h]))
+    }
+    const buffer = await workbook.xlsx.writeBuffer()
+    const data = bufferToBase64(buffer)
     await fileStore.writeBytesFile(filePath, data)
   } catch (e) {
     parseError.value = `파일 저장 실패: ${e}`
@@ -627,16 +628,15 @@ async function downloadSampleB() {
     filters: [{name: 'Excel 파일', extensions: ['xlsx']}],
   })
   if (!filePath) return
-
-  const workbook = new Workbook()
-  const worksheet = workbook.addWorksheet('예시')
-  worksheet.addRow(SAMPLE_B_COLS)
-  for (const row of SAMPLE_B_ROWS) {
-    worksheet.addRow(SAMPLE_B_COLS.map(c => row[c]))
-  }
-  const buffer = await workbook.xlsx.writeBuffer()
-  const data = bufferToBase64(buffer)
   try {
+    const workbook = new Workbook()
+    const worksheet = workbook.addWorksheet('예시')
+    worksheet.addRow(SAMPLE_B_COLS)
+    for (const row of SAMPLE_B_ROWS) {
+      worksheet.addRow(SAMPLE_B_COLS.map(c => row[c]))
+    }
+    const buffer = await workbook.xlsx.writeBuffer()
+    const data = bufferToBase64(buffer)
     await fileStore.writeBytesFile(filePath, data)
   } catch (e) {
     parseError.value = `파일 저장 실패: ${e}`

@@ -94,16 +94,18 @@ async function downloadSample() {
     defaultPath: '예시_학생_명렬표.xlsx',
     filters: [{name: 'Excel 파일', extensions: ['xlsx']}],
   })
+
   if (!path) return
-  const csvRows = parseCsv(SAMPLE_CSV)
-  const workbook = new Workbook()
-  const worksheet = workbook.addWorksheet('예시')
-  for (const row of csvRows) {
-    worksheet.addRow(row)
-  }
-  const buffer = await workbook.xlsx.writeBuffer()
-  const data = bufferToBase64(buffer)
+
   try {
+    const csvRows = parseCsv(SAMPLE_CSV)
+    const workbook = new Workbook()
+    const worksheet = workbook.addWorksheet('예시')
+    for (const row of csvRows) {
+      worksheet.addRow(row)
+    }
+    const buffer = await workbook.xlsx.writeBuffer()
+    const data = bufferToBase64(buffer)
     await fileStore.writeBytesFile(path, data)
   } catch (e) {
     parseError.value = '샘플 파일 저장 실패: ' + String(e)
