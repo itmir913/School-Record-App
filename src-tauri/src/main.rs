@@ -49,7 +49,6 @@ fn main() {
             save_history_snapshot,
             bulk_import_records,
             preview_import_records,
-            write_text_file,
             write_bytes_file,
             create_snapshot,
             get_snapshots,
