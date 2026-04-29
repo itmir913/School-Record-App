@@ -3,6 +3,7 @@ import {computed, ref} from 'vue'
 import {AlertCircle, CheckCircle2, Download, FileSpreadsheet, Upload, X} from 'lucide-vue-next'
 import {Workbook} from 'exceljs'
 import {useStudentStore} from '../stores/student.js'
+import {useFileStore} from '../stores/file.js'
 import {save} from '@tauri-apps/plugin-dialog'
 import {SAMPLE_CSV} from '../data/sampleStudentCsv.ts'
 
@@ -16,6 +17,7 @@ const COL_ALIASES = {
 const emit = defineEmits(['close', 'imported'])
 
 const studentStore = useStudentStore()
+const fileStore = useFileStore()
 
 const dragging = ref(false)
 const fileName = ref('')
@@ -76,15 +78,33 @@ const livePreviewRows = computed(() => {
   }))
 })
 
+function bufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer)
+  let binary = ''
+  const chunk = 8192
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk))
+  }
+  return btoa(binary)
+}
+
 async function downloadSample() {
   const path = await save({
     title: '샘플 파일 저장',
-    defaultPath: '예시_학생_명렬표.csv',
-    filters: [{name: 'CSV', extensions: ['csv']}],
+    defaultPath: '예시_학생_명렬표.xlsx',
+    filters: [{name: 'Excel 파일', extensions: ['xlsx']}],
   })
   if (!path) return
+  const csvRows = parseCsv(SAMPLE_CSV)
+  const workbook = new Workbook()
+  const worksheet = workbook.addWorksheet('예시')
+  for (const row of csvRows) {
+    worksheet.addRow(row)
+  }
+  const buffer = await workbook.xlsx.writeBuffer()
+  const data = bufferToBase64(buffer)
   try {
-    await studentStore.writeSampleFile(path, '\uFEFF' + SAMPLE_CSV)
+    await fileStore.writeBytesFile(path, data)
   } catch (e) {
     parseError.value = '샘플 파일 저장 실패: ' + String(e)
   }
