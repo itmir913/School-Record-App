@@ -214,6 +214,15 @@ function onFileChange(e) {
   e.target.value = ''
 }
 
+function decodeCSVBytes(buffer) {
+  const bytes = new Uint8Array(buffer)
+  if (bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF)
+    return new TextDecoder('utf-8').decode(bytes.subarray(3))
+  for (const enc of ['utf-8', 'euc-kr'])
+    try { return new TextDecoder(enc, { fatal: true }).decode(bytes) } catch {}
+  return new TextDecoder('utf-8').decode(bytes)
+}
+
 function parseCsv(text) {
   const rows = []
   const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
@@ -288,7 +297,7 @@ function processFile(file) {
     try {
       let rows
       if (ext === 'csv') {
-        rows = parseCsv(new TextDecoder('utf-8').decode(new Uint8Array(ev.target.result)))
+        rows = parseCsv(decodeCSVBytes(ev.target.result))
       } else {
         const workbook = new Workbook()
         await workbook.xlsx.load(ev.target.result)
