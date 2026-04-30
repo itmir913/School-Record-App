@@ -21,10 +21,13 @@ const collapsedActivities = ref(new Set())
 const FONT_SIZE_MIN = 10
 const FONT_SIZE_MAX = 28
 
-function changeFontSize(delta) {
+async function changeFontSize(delta) {
   const next = Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, configStore.recordCellFontSize + delta))
-  if (next !== configStore.recordCellFontSize) {
-    configStore.setRecordCellFontSize(next)
+  if (next === configStore.recordCellFontSize) return
+  configStore.setRecordCellFontSize(next)
+  if (!compactCell.value) {
+    await nextTick()
+    document.querySelectorAll('.cell-input').forEach(el => autoResize(el))
   }
 }
 
