@@ -49,7 +49,7 @@ onMounted(async () => {
   } catch {
     // 창 리사이즈 실패는 비치명적이므로 무시
   }
-  await config.loadAll()
+  try { await config.loadAll() } catch { }
 })
 </script>
 
