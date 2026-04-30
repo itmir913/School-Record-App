@@ -67,6 +67,8 @@ fn main() {
             delete_synonym_word,
             seed_default_synonyms,
             get_all_records_for_inspect,
+            get_config,
+            set_config,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

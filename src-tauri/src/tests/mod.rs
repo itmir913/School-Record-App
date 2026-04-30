@@ -4,6 +4,7 @@ pub mod engine_tests;
 pub mod db_tests;
 pub mod area_tests;
 pub mod activity_tests;
+pub mod config_tests;
 pub mod student_tests;
 pub mod record_tests;
 pub mod snapshot_tests;

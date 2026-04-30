@@ -3,6 +3,7 @@ import {computed, onMounted, ref} from 'vue'
 import {getCurrentWindow} from '@tauri-apps/api/window'
 import {LogicalSize} from '@tauri-apps/api/dpi'
 import {useProjectStore} from '../stores/project'
+import {useConfigStore} from '../stores/configStore'
 import WorkspaceSidebar from '../components/WorkspaceSidebar.vue'
 import OverviewSection from '../sections/OverviewSection.vue'
 import AreaSection from '../sections/AreaSection.vue'
@@ -17,6 +18,7 @@ import InspectSection from '../sections/InspectSection.vue'
 import SnapshotModal from '../components/SnapshotModal.vue'
 
 const project = useProjectStore()
+const config = useConfigStore()
 const collapsed = ref(false)
 const activeSection = ref('overview')
 const sectionKey = ref(0)
@@ -47,6 +49,7 @@ onMounted(async () => {
   } catch {
     // 창 리사이즈 실패는 비치명적이므로 무시
   }
+  await config.loadAll()
 })
 </script>
 

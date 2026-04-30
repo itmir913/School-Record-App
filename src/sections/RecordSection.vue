@@ -1,12 +1,14 @@
 <script setup>
 import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
-import {ArrowLeftRight, CircleAlert, Minimize2, Pin, PinOff} from 'lucide-vue-next'
+import {ALargeSmall, ArrowLeftRight, CircleAlert, Minimize2, Pin, PinOff} from 'lucide-vue-next'
 import {useAreaStore} from '../stores/area'
 import {useRecordStore} from '../stores/record'
+import {useConfigStore} from '../stores/configStore'
 import CellHistoryModal from '../components/CellHistoryModal.vue'
 
 const areaStore = useAreaStore()
 const recordStore = useRecordStore()
+const configStore = useConfigStore()
 
 const selectedAreaId = ref(null)
 const loadError = ref('')
@@ -15,6 +17,16 @@ const smartScroll = ref(true)
 const compactCell = ref(true)
 const highlightEmpty = ref(false)
 const collapsedActivities = ref(new Set())
+
+const FONT_SIZE_MIN = 10
+const FONT_SIZE_MAX = 28
+
+function changeFontSize(delta) {
+  const next = Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, configStore.recordCellFontSize + delta))
+  if (next !== configStore.recordCellFontSize) {
+    configStore.setRecordCellFontSize(next)
+  }
+}
 
 function toggleActivity(actId) {
   const next = new Set(collapsedActivities.value)
@@ -248,7 +260,7 @@ function isNewGroup(students, index) {
 </script>
 
 <template>
-  <div class="activity-section-wrapper">
+  <div class="activity-section-wrapper" :style="{ '--cell-fs': configStore.recordCellFontSize + 'px' }">
     <div class="section" :class="{ 'section--frozen': freezeColumns }">
 
       <!-- 상단 컨트롤 -->
@@ -269,6 +281,22 @@ function isNewGroup(students, index) {
         </div>
 
         <div class="toolbar-secondary">
+          <!-- 글자 크기 -->
+          <div class="font-size-control" title="셀 글자 크기">
+            <ALargeSmall :size="15" class="font-size-icon"/>
+            <button
+                class="btn-font-step"
+                :disabled="configStore.recordCellFontSize <= FONT_SIZE_MIN"
+                @click="changeFontSize(-1)"
+            >−</button>
+            <span class="font-size-label">{{ configStore.recordCellFontSize }}px</span>
+            <button
+                class="btn-font-step"
+                :disabled="configStore.recordCellFontSize >= FONT_SIZE_MAX"
+                @click="changeFontSize(+1)"
+            >+</button>
+          </div>
+
           <button
               class="btn-freeze"
               :class="freezeColumns ? 'btn-freeze--on' : ''"
@@ -541,6 +569,58 @@ function isNewGroup(students, index) {
   border-color: rgba(59, 91, 219, 0.5);
 }
 
+.font-size-control {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(59, 91, 219, 0.3);
+  background-color: rgba(59, 91, 219, 0.08);
+  color: #a8c8ff;
+}
+
+.font-size-icon {
+  flex-shrink: 0;
+  margin-right: 2px;
+  opacity: 0.7;
+}
+
+.btn-font-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: none;
+  background: none;
+  color: #a0bcd8;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.12s, color 0.12s;
+  flex-shrink: 0;
+}
+
+.btn-font-step:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #c8ddf0;
+}
+
+.btn-font-step:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.font-size-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8aaaf8;
+  min-width: 32px;
+  text-align: center;
+}
+
 .btn-freeze {
   display: flex;
   align-items: center;
@@ -679,7 +759,7 @@ thead .sticky {
 
 /* 데이터 행 */
 .grid-table td {
-  font-size: 14px;
+  font-size: var(--cell-fs, 14px);
   color: #dce8f8;
   padding: 6px 10px;
   border-bottom: 1px solid rgba(40, 55, 90, 0.6);
@@ -802,7 +882,7 @@ thead .sticky {
   width: 100%;
   box-sizing: border-box;
   padding: 6px 8px;
-  font-size: 16px;
+  font-size: calc(var(--cell-fs, 14px) + 2px);
   line-height: 1.5;
   background-color: transparent;
   border: 1px solid rgba(100, 140, 240, 0.5);

@@ -1,5 +1,6 @@
 pub mod activity;
 pub mod area;
+pub mod config;
 pub mod file;
 pub mod project;
 pub mod record;
@@ -10,6 +11,7 @@ pub mod synonym;
 
 pub use activity::*;
 pub use area::*;
+pub use config::*;
 pub use file::*;
 pub use project::*;
 pub use record::*;
