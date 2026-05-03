@@ -1,5 +1,5 @@
 use crate::commands::config::{get_config_impl, set_config_impl};
-use crate::crypto::{decrypt, derive_key, encrypt, generate_salt};
+use crate::crypto::{decrypt, derive_key, encrypt, generate_salt, maybe_decrypt, maybe_encrypt};
 use crate::state::{
     clear_crypto_state, current_crypto_key, set_crypto_state, CryptoStateHandle, DbPathState,
     DbState,
@@ -102,8 +102,8 @@ fn transform_all_data(
         let update_sql = update_column_sql(spec);
         for (id, value) in rows {
             let transformed = match transform {
-                DataTransform::Encrypt => encrypt(&value, &key)?,
-                DataTransform::Decrypt => decrypt(&value, &key)?,
+                DataTransform::Encrypt => maybe_encrypt(&value, Some(key))?,
+                DataTransform::Decrypt => maybe_decrypt(value, Some(key))?,
             };
             conn.execute(&update_sql, rusqlite::params![transformed, id])
                 .map_err(|e| e.to_string())?;
