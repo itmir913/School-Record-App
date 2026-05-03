@@ -1,3 +1,4 @@
+use crate::commands::crypto::resolve_data_key;
 use crate::crypto::{maybe_decrypt, maybe_encrypt};
 use crate::state::{CryptoStateHandle, DbState};
 use crate::types::{
@@ -25,7 +26,10 @@ pub fn get_area_grid_impl(
 
     let activities = stmt
         .query_map(rusqlite::params![area_id], |row| {
-            Ok(ActivityItem { id: row.get(0)?, name: row.get(1)? })
+            Ok(ActivityItem {
+                id: row.get(0)?,
+                name: row.get(1)?,
+            })
         })
         .map_err(|e| e.to_string())?
         .collect::<Result<Vec<_>, _>>()
@@ -90,11 +94,19 @@ pub fn get_area_grid_impl(
                AND student_id IN ({})",
             act_placeholders, stu_placeholders
         );
-        let params: Vec<i64> = activity_ids.iter().chain(student_ids.iter()).copied().collect();
+        let params: Vec<i64> = activity_ids
+            .iter()
+            .chain(student_ids.iter())
+            .copied()
+            .collect();
         let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
         let raw_rows = stmt
             .query_map(rusqlite::params_from_iter(params.iter()), |row| {
-                Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?, row.get::<_, String>(2)?))
+                Ok((
+                    row.get::<_, i64>(0)?,
+                    row.get::<_, i64>(1)?,
+                    row.get::<_, String>(2)?,
+                ))
             })
             .map_err(|e| e.to_string())?
             .collect::<Result<Vec<_>, _>>()
@@ -111,7 +123,11 @@ pub fn get_area_grid_impl(
         rows
     };
 
-    Ok(AreaGridData { activities, students, records })
+    Ok(AreaGridData {
+        activities,
+        students,
+        records,
+    })
 }
 
 #[tauri::command]
@@ -120,9 +136,11 @@ pub fn get_area_grid(
     state: State<DbState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<AreaGridData, String> {
-    let key = crypto.lock().ok().and_then(|g| g.key);
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let key = resolve_data_key(conn, &crypto)?;
     get_area_grid_impl(conn, area_id, key)
 }
 
@@ -154,9 +172,11 @@ pub fn upsert_record(
     state: State<DbState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<(), String> {
-    let key = crypto.lock().ok().and_then(|g| g.key);
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let key = resolve_data_key(conn, &crypto)?;
     upsert_record_impl(conn, activity_id, student_id, &content, key)
 }
 
@@ -180,14 +200,17 @@ pub fn get_record_history_impl(
         .map_err(|e| e.to_string())?;
 
     let raw = stmt
-        .query_map(rusqlite::params![activity_id, student_id, limit, offset], |row| {
-            Ok((
-                row.get::<_, i64>(0)?,
-                row.get::<_, String>(1)?,
-                row.get::<_, String>(2)?,
-                row.get::<_, Option<String>>(3)?,
-            ))
-        })
+        .query_map(
+            rusqlite::params![activity_id, student_id, limit, offset],
+            |row| {
+                Ok((
+                    row.get::<_, i64>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, Option<String>>(3)?,
+                ))
+            },
+        )
         .map_err(|e| e.to_string())?
         .collect::<Result<Vec<_>, _>>()
         .map_err(|e| e.to_string())?;
@@ -213,9 +236,11 @@ pub fn get_record_history(
     state: State<DbState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<Vec<HistoryEntry>, String> {
-    let key = crypto.lock().ok().and_then(|g| g.key);
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let key = resolve_data_key(conn, &crypto)?;
     get_record_history_impl(conn, activity_id, student_id, limit, offset, key)
 }
 
@@ -265,7 +290,9 @@ pub fn save_history_snapshot(
     state: State<DbState>,
 ) -> Result<(), String> {
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
     save_snapshot_internal(conn, activity_id, student_id, note.as_deref())
 }
 
@@ -336,7 +363,9 @@ pub fn bulk_import_records_impl(
             student_cache.insert(cache_key, student_id);
         }
 
-        let &student_id = student_cache.get(&cache_key).ok_or_else(|| "캐시 오류".to_string())?;
+        let &student_id = student_cache
+            .get(&cache_key)
+            .ok_or_else(|| "캐시 오류".to_string())?;
         let stored_content = maybe_encrypt(&r.content, key)?;
 
         conn.execute(
@@ -367,7 +396,11 @@ pub fn bulk_import_records_impl(
         records_saved += 1;
     }
 
-    Ok(BulkImportResult { students_created, students_updated, records_saved })
+    Ok(BulkImportResult {
+        students_created,
+        students_updated,
+        records_saved,
+    })
 }
 
 #[tauri::command]
@@ -376,9 +409,11 @@ pub fn bulk_import_records(
     state: State<DbState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<BulkImportResult, String> {
-    let key = crypto.lock().ok().and_then(|g| g.key);
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let key = resolve_data_key(conn, &crypto)?;
 
     conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
     match bulk_import_records_impl(conn, &records, key) {
@@ -432,9 +467,7 @@ pub fn preview_import_records_impl(
                 .optional()
                 .map_err(|e| e.to_string())?;
             let info = info
-                .map(|(id, enc_name)| {
-                    maybe_decrypt(enc_name, key).map(|name| (id, name))
-                })
+                .map(|(id, enc_name)| maybe_decrypt(enc_name, key).map(|name| (id, name)))
                 .transpose()?;
             student_cache.insert(cache_key, info.clone());
             info
@@ -483,8 +516,10 @@ pub fn preview_import_records(
     state: State<DbState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<Vec<PreviewImportItem>, String> {
-    let key = crypto.lock().ok().and_then(|g| g.key);
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let key = resolve_data_key(conn, &crypto)?;
     preview_import_records_impl(conn, &records, key)
 }

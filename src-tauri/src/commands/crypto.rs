@@ -1,6 +1,8 @@
 use crate::commands::config::{get_config_impl, set_config_impl};
 use crate::crypto::{decrypt, derive_key, encrypt, generate_salt};
-use crate::state::{CryptoStateHandle, DbState};
+use crate::state::{
+    clear_crypto_state, current_crypto_key, set_crypto_state, CryptoStateHandle, DbState,
+};
 use base64::{engine::general_purpose::STANDARD as B64, Engine};
 use rusqlite::Connection;
 use tauri::State;
@@ -16,6 +18,53 @@ pub struct EncryptionStatus {
     pub unlocked: bool,
 }
 
+#[derive(Clone, Copy)]
+enum DataTransform {
+    Encrypt,
+    Decrypt,
+}
+
+struct EncryptedColumn {
+    table: &'static str,
+    column: &'static str,
+    skip_empty: bool,
+}
+
+const ENCRYPTED_COLUMNS: &[EncryptedColumn] = &[
+    EncryptedColumn {
+        table: "Student",
+        column: "name",
+        skip_empty: false,
+    },
+    EncryptedColumn {
+        table: "ActivityRecord",
+        column: "content",
+        skip_empty: true,
+    },
+    EncryptedColumn {
+        table: "ActivityRecordHistory",
+        column: "content",
+        skip_empty: true,
+    },
+];
+
+fn run_transaction<T>(
+    conn: &Connection,
+    action: impl FnOnce() -> Result<T, String>,
+) -> Result<T, String> {
+    conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
+    match action() {
+        Ok(value) => {
+            conn.execute_batch("COMMIT").map_err(|e| e.to_string())?;
+            Ok(value)
+        }
+        Err(e) => {
+            let _ = conn.execute_batch("ROLLBACK");
+            Err(e)
+        }
+    }
+}
+
 fn fetch_id_text(conn: &Connection, sql: &str) -> Result<Vec<(i64, String)>, String> {
     let mut stmt = conn.prepare(sql).map_err(|e| e.to_string())?;
     let rows = stmt
@@ -26,80 +75,193 @@ fn fetch_id_text(conn: &Connection, sql: &str) -> Result<Vec<(i64, String)>, Str
     Ok(rows)
 }
 
-fn encrypt_all_data(conn: &Connection, key: [u8; 32]) -> Result<(), String> {
-    let students = fetch_id_text(conn, "SELECT id, name FROM Student")?;
-    for (id, name) in students {
-        let encrypted = encrypt(&name, &key)?;
-        conn.execute(
-            "UPDATE Student SET name=?1 WHERE id=?2",
-            rusqlite::params![encrypted, id],
+fn select_column_sql(spec: &EncryptedColumn) -> String {
+    if spec.skip_empty {
+        format!(
+            "SELECT id, {} FROM {} WHERE {} != ''",
+            spec.column, spec.table, spec.column
         )
-        .map_err(|e| e.to_string())?;
+    } else {
+        format!("SELECT id, {} FROM {}", spec.column, spec.table)
     }
+}
 
-    let records =
-        fetch_id_text(conn, "SELECT id, content FROM ActivityRecord WHERE content != ''")?;
-    for (id, content) in records {
-        let encrypted = encrypt(&content, &key)?;
-        conn.execute(
-            "UPDATE ActivityRecord SET content=?1 WHERE id=?2",
-            rusqlite::params![encrypted, id],
-        )
-        .map_err(|e| e.to_string())?;
+fn update_column_sql(spec: &EncryptedColumn) -> String {
+    format!("UPDATE {} SET {}=?1 WHERE id=?2", spec.table, spec.column)
+}
+
+fn transform_all_data(
+    conn: &Connection,
+    key: [u8; 32],
+    transform: DataTransform,
+) -> Result<(), String> {
+    for spec in ENCRYPTED_COLUMNS {
+        let rows = fetch_id_text(conn, &select_column_sql(spec))?;
+        let update_sql = update_column_sql(spec);
+        for (id, value) in rows {
+            let transformed = match transform {
+                DataTransform::Encrypt => encrypt(&value, &key)?,
+                DataTransform::Decrypt => decrypt(&value, &key)?,
+            };
+            conn.execute(&update_sql, rusqlite::params![transformed, id])
+                .map_err(|e| e.to_string())?;
+        }
     }
-
-    let history = fetch_id_text(
-        conn,
-        "SELECT id, content FROM ActivityRecordHistory WHERE content != ''",
-    )?;
-    for (id, content) in history {
-        let encrypted = encrypt(&content, &key)?;
-        conn.execute(
-            "UPDATE ActivityRecordHistory SET content=?1 WHERE id=?2",
-            rusqlite::params![encrypted, id],
-        )
-        .map_err(|e| e.to_string())?;
-    }
-
     Ok(())
 }
 
-fn decrypt_all_data(conn: &Connection, key: [u8; 32]) -> Result<(), String> {
-    let students = fetch_id_text(conn, "SELECT id, name FROM Student")?;
-    for (id, encrypted_name) in students {
-        let plain = decrypt(&encrypted_name, &key)?;
-        conn.execute(
-            "UPDATE Student SET name=?1 WHERE id=?2",
-            rusqlite::params![plain, id],
-        )
-        .map_err(|e| e.to_string())?;
+pub(crate) fn encrypt_all_data(conn: &Connection, key: [u8; 32]) -> Result<(), String> {
+    transform_all_data(conn, key, DataTransform::Encrypt)
+}
+
+pub(crate) fn decrypt_all_data(conn: &Connection, key: [u8; 32]) -> Result<(), String> {
+    transform_all_data(conn, key, DataTransform::Decrypt)
+}
+
+pub(crate) fn is_encryption_enabled(conn: &Connection) -> Result<bool, String> {
+    Ok(get_config_impl(conn, KEY_ENCRYPTION_ENABLED)?.as_deref() == Some("true"))
+}
+
+fn encryption_material(conn: &Connection) -> Result<(Vec<u8>, String), String> {
+    let salt_b64 = get_config_impl(conn, KEY_PBKDF2_SALT)?.ok_or("암호화 설정이 없습니다.")?;
+    let salt = B64
+        .decode(&salt_b64)
+        .map_err(|e| format!("salt 디코딩 실패: {e}"))?;
+    let token = get_config_impl(conn, KEY_VERIFY_TOKEN)?.ok_or("검증 토큰이 없습니다.")?;
+    Ok((salt, token))
+}
+
+fn verify_password(
+    password: &str,
+    salt: &[u8],
+    verify_token: &str,
+    error_message: &str,
+) -> Result<[u8; 32], String> {
+    let key = derive_key(password, salt);
+    let verified = decrypt(verify_token, &key)
+        .map(|s| s == VERIFY_PLAINTEXT)
+        .unwrap_or(false);
+    if verified {
+        Ok(key)
+    } else {
+        Err(error_message.to_string())
+    }
+}
+
+pub(crate) fn resolve_data_key(
+    conn: &Connection,
+    crypto: &CryptoStateHandle,
+) -> Result<Option<[u8; 32]>, String> {
+    if !is_encryption_enabled(conn)? {
+        return Ok(None);
     }
 
-    let records =
-        fetch_id_text(conn, "SELECT id, content FROM ActivityRecord WHERE content != ''")?;
-    for (id, content) in records {
-        let plain = decrypt(&content, &key)?;
-        conn.execute(
-            "UPDATE ActivityRecord SET content=?1 WHERE id=?2",
-            rusqlite::params![plain, id],
-        )
-        .map_err(|e| e.to_string())?;
-    }
+    current_crypto_key(crypto)?
+        .map(Some)
+        .ok_or_else(|| "암호화가 잠금 상태입니다.".to_string())
+}
 
-    let history = fetch_id_text(
-        conn,
-        "SELECT id, content FROM ActivityRecordHistory WHERE content != ''",
+pub(crate) fn get_encryption_status_impl(
+    conn: &Connection,
+    crypto: &CryptoStateHandle,
+) -> Result<EncryptionStatus, String> {
+    let enabled = is_encryption_enabled(conn)?;
+    let unlocked = enabled && current_crypto_key(crypto)?.is_some();
+    Ok(EncryptionStatus { enabled, unlocked })
+}
+
+pub(crate) fn unlock_encryption_impl(
+    conn: &Connection,
+    crypto: &CryptoStateHandle,
+    password: &str,
+) -> Result<(), String> {
+    let (salt, verify_token) = encryption_material(conn)?;
+    let key = verify_password(
+        password,
+        &salt,
+        &verify_token,
+        "비밀번호가 올바르지 않습니다.",
     )?;
-    for (id, content) in history {
-        let plain = decrypt(&content, &key)?;
-        conn.execute(
-            "UPDATE ActivityRecordHistory SET content=?1 WHERE id=?2",
-            rusqlite::params![plain, id],
-        )
-        .map_err(|e| e.to_string())?;
+    set_crypto_state(crypto, key, salt)
+}
+
+pub(crate) fn enable_encryption_impl(
+    conn: &Connection,
+    crypto: &CryptoStateHandle,
+    password: &str,
+) -> Result<(), String> {
+    let salt = generate_salt();
+    let key = derive_key(password, &salt);
+    let salt_b64 = B64.encode(salt);
+    let verify_token = encrypt(VERIFY_PLAINTEXT, &key)?;
+
+    if is_encryption_enabled(conn)? {
+        return Err("이미 암호화가 활성화되어 있습니다.".to_string());
     }
 
-    Ok(())
+    run_transaction(conn, || {
+        encrypt_all_data(conn, key)?;
+        set_config_impl(conn, KEY_PBKDF2_SALT, &salt_b64)?;
+        set_config_impl(conn, KEY_VERIFY_TOKEN, &verify_token)?;
+        set_config_impl(conn, KEY_ENCRYPTION_ENABLED, "true")?;
+        Ok(())
+    })?;
+
+    set_crypto_state(crypto, key, salt.to_vec())
+}
+
+pub(crate) fn disable_encryption_impl(
+    conn: &Connection,
+    crypto: &CryptoStateHandle,
+) -> Result<(), String> {
+    let key = resolve_data_key(conn, crypto)?.ok_or("암호화가 활성화되어 있지 않습니다.")?;
+
+    run_transaction(conn, || {
+        decrypt_all_data(conn, key)?;
+        conn.execute(
+            "DELETE FROM APP_CONFIGS WHERE config_key IN (?1, ?2, ?3)",
+            rusqlite::params![KEY_ENCRYPTION_ENABLED, KEY_PBKDF2_SALT, KEY_VERIFY_TOKEN],
+        )
+        .map_err(|e| e.to_string())?;
+        Ok(())
+    })?;
+
+    clear_crypto_state(crypto)
+}
+
+pub(crate) fn change_encryption_password_impl(
+    conn: &Connection,
+    crypto: &CryptoStateHandle,
+    old_password: &str,
+    new_password: &str,
+) -> Result<(), String> {
+    let (salt, verify_token) = encryption_material(conn)?;
+    let old_key = verify_password(
+        old_password,
+        &salt,
+        &verify_token,
+        "현재 비밀번호가 올바르지 않습니다.",
+    )?;
+    let new_salt = generate_salt();
+    let new_key = derive_key(new_password, &new_salt);
+    let new_salt_b64 = B64.encode(new_salt);
+    let new_verify_token = encrypt(VERIFY_PLAINTEXT, &new_key)?;
+
+    run_transaction(conn, || {
+        decrypt_all_data(conn, old_key)?;
+        encrypt_all_data(conn, new_key)?;
+        set_config_impl(conn, KEY_PBKDF2_SALT, &new_salt_b64)?;
+        set_config_impl(conn, KEY_VERIFY_TOKEN, &new_verify_token)?;
+        Ok(())
+    })?;
+
+    set_crypto_state(crypto, new_key, new_salt.to_vec())
+}
+
+fn db_conn<'a>(guard: &'a Option<Connection>) -> Result<&'a Connection, String> {
+    guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())
 }
 
 #[tauri::command]
@@ -107,16 +269,8 @@ pub fn get_encryption_status(
     db: State<DbState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<EncryptionStatus, String> {
-    let enabled = {
-        let guard = db.0.lock().map_err(|e| e.to_string())?;
-        let conn = guard.as_ref().ok_or("DB가 열려있지 않습니다.")?;
-        get_config_impl(conn, KEY_ENCRYPTION_ENABLED)?.as_deref() == Some("true")
-    };
-    let unlocked = {
-        let guard = crypto.lock().map_err(|e| e.to_string())?;
-        guard.key.is_some()
-    };
-    Ok(EncryptionStatus { enabled, unlocked })
+    let guard = db.0.lock().map_err(|e| e.to_string())?;
+    get_encryption_status_impl(db_conn(&guard)?, &crypto)
 }
 
 #[tauri::command]
@@ -125,30 +279,8 @@ pub fn unlock_encryption(
     db: State<DbState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<(), String> {
-    let (salt, verify_token) = {
-        let guard = db.0.lock().map_err(|e| e.to_string())?;
-        let conn = guard.as_ref().ok_or("DB가 열려있지 않습니다.")?;
-        let salt_b64 = get_config_impl(conn, KEY_PBKDF2_SALT)?
-            .ok_or("암호화 설정이 없습니다.")?;
-        let salt = B64.decode(&salt_b64).map_err(|e| format!("salt 디코딩 실패: {e}"))?;
-        let token = get_config_impl(conn, KEY_VERIFY_TOKEN)?
-            .ok_or("검증 토큰이 없습니다.")?;
-        (salt, token)
-    };
-
-    let key = derive_key(&password, &salt);
-
-    let verified = decrypt(&verify_token, &key)
-        .map(|s| s == VERIFY_PLAINTEXT)
-        .unwrap_or(false);
-    if !verified {
-        return Err("비밀번호가 올바르지 않습니다.".to_string());
-    }
-
-    let mut guard = crypto.lock().map_err(|e| e.to_string())?;
-    guard.key = Some(key);
-    guard.salt = Some(salt);
-    Ok(())
+    let guard = db.0.lock().map_err(|e| e.to_string())?;
+    unlock_encryption_impl(db_conn(&guard)?, &crypto, &password)
 }
 
 #[tauri::command]
@@ -157,40 +289,8 @@ pub fn enable_encryption(
     db: State<DbState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<(), String> {
-    let salt = generate_salt();
-    let key = derive_key(&password, &salt);
-    let salt_b64 = B64.encode(salt);
-    let verify_token = encrypt(VERIFY_PLAINTEXT, &key)?;
-
-    {
-        let guard = db.0.lock().map_err(|e| e.to_string())?;
-        let conn = guard.as_ref().ok_or("DB가 열려있지 않습니다.")?;
-
-        if get_config_impl(conn, KEY_ENCRYPTION_ENABLED)?.as_deref() == Some("true") {
-            return Err("이미 암호화가 활성화되어 있습니다.".to_string());
-        }
-
-        conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
-        let result = (|| -> Result<(), String> {
-            encrypt_all_data(conn, key)?;
-            set_config_impl(conn, KEY_PBKDF2_SALT, &salt_b64)?;
-            set_config_impl(conn, KEY_VERIFY_TOKEN, &verify_token)?;
-            set_config_impl(conn, KEY_ENCRYPTION_ENABLED, "true")?;
-            Ok(())
-        })();
-        match result {
-            Ok(_) => conn.execute_batch("COMMIT").map_err(|e| e.to_string())?,
-            Err(e) => {
-                let _ = conn.execute_batch("ROLLBACK");
-                return Err(e);
-            }
-        }
-    }
-
-    let mut guard = crypto.lock().map_err(|e| e.to_string())?;
-    guard.key = Some(key);
-    guard.salt = Some(B64.decode(&salt_b64).unwrap_or_default());
-    Ok(())
+    let guard = db.0.lock().map_err(|e| e.to_string())?;
+    enable_encryption_impl(db_conn(&guard)?, &crypto, &password)
 }
 
 #[tauri::command]
@@ -198,37 +298,8 @@ pub fn disable_encryption(
     db: State<DbState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<(), String> {
-    let key = {
-        let guard = crypto.lock().map_err(|e| e.to_string())?;
-        guard.key.ok_or("암호화가 잠금 상태입니다.")?
-    };
-
-    {
-        let guard = db.0.lock().map_err(|e| e.to_string())?;
-        let conn = guard.as_ref().ok_or("DB가 열려있지 않습니다.")?;
-        conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
-        let result = (|| -> Result<(), String> {
-            decrypt_all_data(conn, key)?;
-            conn.execute(
-                "DELETE FROM APP_CONFIGS WHERE config_key IN (?1, ?2, ?3)",
-                rusqlite::params![KEY_ENCRYPTION_ENABLED, KEY_PBKDF2_SALT, KEY_VERIFY_TOKEN],
-            )
-            .map_err(|e| e.to_string())?;
-            Ok(())
-        })();
-        match result {
-            Ok(_) => conn.execute_batch("COMMIT").map_err(|e| e.to_string())?,
-            Err(e) => {
-                let _ = conn.execute_batch("ROLLBACK");
-                return Err(e);
-            }
-        }
-    }
-
-    let mut guard = crypto.lock().map_err(|e| e.to_string())?;
-    guard.key = None;
-    guard.salt = None;
-    Ok(())
+    let guard = db.0.lock().map_err(|e| e.to_string())?;
+    disable_encryption_impl(db_conn(&guard)?, &crypto)
 }
 
 #[tauri::command]
@@ -238,51 +309,6 @@ pub fn change_encryption_password(
     db: State<DbState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<(), String> {
-    let (salt, verify_token) = {
-        let guard = db.0.lock().map_err(|e| e.to_string())?;
-        let conn = guard.as_ref().ok_or("DB가 열려있지 않습니다.")?;
-        let salt_b64 = get_config_impl(conn, KEY_PBKDF2_SALT)?
-            .ok_or("암호화 설정이 없습니다.")?;
-        let salt = B64.decode(&salt_b64).map_err(|e| e.to_string())?;
-        let token = get_config_impl(conn, KEY_VERIFY_TOKEN)?
-            .ok_or("검증 토큰이 없습니다.")?;
-        (salt, token)
-    };
-    let old_key = derive_key(&old_password, &salt);
-    let verified = decrypt(&verify_token, &old_key)
-        .map(|s| s == VERIFY_PLAINTEXT)
-        .unwrap_or(false);
-    if !verified {
-        return Err("현재 비밀번호가 올바르지 않습니다.".to_string());
-    }
-
-    let new_salt = generate_salt();
-    let new_key = derive_key(&new_password, &new_salt);
-    let new_salt_b64 = B64.encode(new_salt);
-    let new_verify_token = encrypt(VERIFY_PLAINTEXT, &new_key)?;
-
-    {
-        let guard = db.0.lock().map_err(|e| e.to_string())?;
-        let conn = guard.as_ref().ok_or("DB가 열려있지 않습니다.")?;
-        conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
-        let result = (|| -> Result<(), String> {
-            decrypt_all_data(conn, old_key)?;
-            encrypt_all_data(conn, new_key)?;
-            set_config_impl(conn, KEY_PBKDF2_SALT, &new_salt_b64)?;
-            set_config_impl(conn, KEY_VERIFY_TOKEN, &new_verify_token)?;
-            Ok(())
-        })();
-        match result {
-            Ok(_) => conn.execute_batch("COMMIT").map_err(|e| e.to_string())?,
-            Err(e) => {
-                let _ = conn.execute_batch("ROLLBACK");
-                return Err(e);
-            }
-        }
-    }
-
-    let mut guard = crypto.lock().map_err(|e| e.to_string())?;
-    guard.key = Some(new_key);
-    guard.salt = Some(B64.decode(&new_salt_b64).unwrap_or_default());
-    Ok(())
+    let guard = db.0.lock().map_err(|e| e.to_string())?;
+    change_encryption_password_impl(db_conn(&guard)?, &crypto, &old_password, &new_password)
 }

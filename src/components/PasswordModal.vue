@@ -18,6 +18,9 @@ const showPassword = ref(false)
 const showNewPassword = ref(false)
 const localError = ref('')
 
+const isSetupMode = computed(() => props.mode === 'setup')
+const isChangeMode = computed(() => props.mode === 'change')
+
 const title = computed(() => {
   if (props.mode === 'unlock') return '비밀번호 확인'
   if (props.mode === 'setup') return '암호화 비밀번호 설정'
@@ -40,29 +43,25 @@ function validate() {
     localError.value = '비밀번호를 입력해주세요.'
     return false
   }
-  if (props.mode === 'setup' || props.mode === 'change') {
-    if (props.mode === 'change' && !newPassword.value) {
+
+  if (isSetupMode.value) {
+    if (password.value !== confirmPassword.value) {
+      localError.value = '비밀번호와 확인 비밀번호가 일치하지 않습니다.'
+      return false
+    }
+  }
+
+  if (isChangeMode.value) {
+    if (!newPassword.value) {
       localError.value = '새 비밀번호를 입력해주세요.'
       return false
     }
-    const target = props.mode === 'setup' ? newPassword.value || password.value : newPassword.value
-    const confirm = confirmPassword.value
-    if (props.mode === 'setup') {
-      if (!password.value) {
-        localError.value = '비밀번호를 입력해주세요.'
-        return false
-      }
-      if (password.value !== confirmPassword.value) {
-        localError.value = '비밀번호와 확인 비밀번호가 일치하지 않습니다.'
-        return false
-      }
-    } else {
-      if (newPassword.value !== confirmPassword.value) {
-        localError.value = '새 비밀번호와 확인 비밀번호가 일치하지 않습니다.'
-        return false
-      }
+    if (newPassword.value !== confirmPassword.value) {
+      localError.value = '새 비밀번호와 확인 비밀번호가 일치하지 않습니다.'
+      return false
     }
   }
+
   return true
 }
 

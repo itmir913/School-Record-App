@@ -11,12 +11,19 @@ export const useConfigStore = defineStore('config', () => {
     const encryptionUnlocked = ref(false)
 
     async function loadAll() {
+        await loadPreferences()
+        await refreshEncryptionStatus()
+    }
+
+    async function loadPreferences() {
         const val = await invoke('get_config', { key: RECORD_CELL_SIZE_KEY })
         if (val !== null && val !== undefined) {
             const parsed = parseInt(val, 10)
             if (!isNaN(parsed)) recordCellFontSize.value = parsed
         }
+    }
 
+    async function refreshEncryptionStatus() {
         const status = await invoke('get_encryption_status')
         encryptionEnabled.value = status.enabled
         encryptionUnlocked.value = status.unlocked
@@ -29,23 +36,22 @@ export const useConfigStore = defineStore('config', () => {
 
     async function unlockEncryption(password) {
         await invoke('unlock_encryption', { password })
-        encryptionUnlocked.value = true
+        await refreshEncryptionStatus()
     }
 
     async function enableEncryption(password) {
         await invoke('enable_encryption', { password })
-        encryptionEnabled.value = true
-        encryptionUnlocked.value = true
+        await refreshEncryptionStatus()
     }
 
     async function disableEncryption() {
         await invoke('disable_encryption')
-        encryptionEnabled.value = false
-        encryptionUnlocked.value = false
+        await refreshEncryptionStatus()
     }
 
     async function changeEncryptionPassword(oldPassword, newPassword) {
         await invoke('change_encryption_password', { oldPassword, newPassword })
+        await refreshEncryptionStatus()
     }
 
     return {
@@ -53,6 +59,8 @@ export const useConfigStore = defineStore('config', () => {
         encryptionEnabled,
         encryptionUnlocked,
         loadAll,
+        loadPreferences,
+        refreshEncryptionStatus,
         setRecordCellFontSize,
         unlockEncryption,
         enableEncryption,

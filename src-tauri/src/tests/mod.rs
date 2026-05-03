@@ -2,6 +2,7 @@ use rusqlite::Connection;
 
 pub mod engine_tests;
 pub mod db_tests;
+pub mod project_tests;
 pub mod area_tests;
 pub mod activity_tests;
 pub mod config_tests;

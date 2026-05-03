@@ -1,16 +1,26 @@
+use super::{insert_activity, insert_area, insert_student, setup_test_db};
+use crate::commands::config::set_config_impl;
+use crate::commands::crypto::{
+    change_encryption_password_impl, disable_encryption_impl, enable_encryption_impl,
+    get_encryption_status_impl, resolve_data_key, unlock_encryption_impl,
+};
 use crate::commands::record::{
-    get_area_grid_impl, get_record_history_impl, upsert_record_impl,
+    get_area_grid_impl, get_record_history_impl, save_snapshot_internal, upsert_record_impl,
 };
 use crate::commands::student::{
     bulk_upsert_students_impl, create_student_impl, get_students_impl, update_student_impl,
 };
 use crate::crypto::derive_key;
 use crate::engine::get_records_for_scope;
+use crate::state::{clear_crypto_state, CryptoState, CryptoStateHandle};
 use crate::types::StudentInput;
-use super::{insert_activity, insert_area, insert_student, setup_test_db};
 
 fn test_key() -> [u8; 32] {
     derive_key("password", &[42u8; 16])
+}
+
+fn crypto_state(key: Option<[u8; 32]>) -> CryptoStateHandle {
+    std::sync::Mutex::new(CryptoState { key, salt: None })
 }
 
 // ── 학생 이름 암호화 ──────────────────────────────────────────────
@@ -80,8 +90,18 @@ fn test_bulk_upsert_students_with_key() {
     let conn = setup_test_db();
     let key = test_key();
     let inputs = vec![
-        StudentInput { grade: 1, class_num: 1, number: 1, name: "가".to_string() },
-        StudentInput { grade: 1, class_num: 1, number: 2, name: "나".to_string() },
+        StudentInput {
+            grade: 1,
+            class_num: 1,
+            number: 1,
+            name: "가".to_string(),
+        },
+        StudentInput {
+            grade: 1,
+            class_num: 1,
+            number: 2,
+            name: "나".to_string(),
+        },
     ];
     let result = bulk_upsert_students_impl(&conn, &inputs, Some(key)).unwrap();
     assert_eq!(result.inserted, 2);
@@ -99,15 +119,27 @@ fn test_bulk_upsert_students_update_overwrites_with_encryption() {
     // 1차 삽입
     bulk_upsert_students_impl(
         &conn,
-        &[StudentInput { grade: 1, class_num: 1, number: 1, name: "원래".to_string() }],
+        &[StudentInput {
+            grade: 1,
+            class_num: 1,
+            number: 1,
+            name: "원래".to_string(),
+        }],
         Some(key),
-    ).unwrap();
+    )
+    .unwrap();
     // 2차 갱신
     bulk_upsert_students_impl(
         &conn,
-        &[StudentInput { grade: 1, class_num: 1, number: 1, name: "변경".to_string() }],
+        &[StudentInput {
+            grade: 1,
+            class_num: 1,
+            number: 1,
+            name: "변경".to_string(),
+        }],
         Some(key),
-    ).unwrap();
+    )
+    .unwrap();
 
     let students = get_students_impl(&conn, Some(key)).unwrap();
     assert_eq!(students[0].name, "변경");
@@ -122,7 +154,14 @@ fn test_upsert_record_with_key_stores_encrypted_content() {
     let act_id = insert_activity(&conn, "발표");
     let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
 
-    upsert_record_impl(&conn, act_id, stu_id, "리더십이 뛰어난 학생입니다.", Some(key)).unwrap();
+    upsert_record_impl(
+        &conn,
+        act_id,
+        stu_id,
+        "리더십이 뛰어난 학생입니다.",
+        Some(key),
+    )
+    .unwrap();
 
     let raw: String = conn
         .query_row(
@@ -131,7 +170,10 @@ fn test_upsert_record_with_key_stores_encrypted_content() {
             |r| r.get(0),
         )
         .unwrap();
-    assert_ne!(raw, "리더십이 뛰어난 학생입니다.", "DB에 평문이 저장되면 안 된다");
+    assert_ne!(
+        raw, "리더십이 뛰어난 학생입니다.",
+        "DB에 평문이 저장되면 안 된다"
+    );
     assert!(raw.contains(':'), "nonce:ciphertext 형식이어야 한다");
 }
 
@@ -165,11 +207,13 @@ fn test_get_area_grid_with_key_decrypts_content_and_name() {
     conn.execute(
         "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
         rusqlite::params![area_id, act_id],
-    ).unwrap();
+    )
+    .unwrap();
     conn.execute(
         "INSERT INTO AreaStudent (area_id, student_id) VALUES (?1, ?2)",
         rusqlite::params![area_id, stu_id],
-    ).unwrap();
+    )
+    .unwrap();
     upsert_record_impl(&conn, act_id, stu_id, "독후감 내용", Some(key)).unwrap();
 
     let grid = get_area_grid_impl(&conn, area_id, Some(key)).unwrap();
@@ -199,11 +243,15 @@ fn test_get_record_history_with_key_decrypts_content() {
          SELECT id, content, '2024-01-01 10:00:00', NULL FROM ActivityRecord
          WHERE activity_id=?1 AND student_id=?2",
         rusqlite::params![act_id, stu_id],
-    ).unwrap();
+    )
+    .unwrap();
 
     let history = get_record_history_impl(&conn, act_id, stu_id, 10, 0, Some(key)).unwrap();
     assert_eq!(history.len(), 1);
-    assert_eq!(history[0].content, "발표 내용", "복호화된 히스토리 content여야 한다");
+    assert_eq!(
+        history[0].content, "발표 내용",
+        "복호화된 히스토리 content여야 한다"
+    );
     // DB에는 여전히 암호화 값이 저장되어 있어야 한다
     assert!(encrypted_content.contains(':'));
 }
@@ -233,7 +281,10 @@ fn test_get_records_for_scope_all_without_key_returns_encrypted() {
 
     let records = get_records_for_scope(&conn, "all", &[], None).unwrap();
     assert_eq!(records.len(), 1);
-    assert_ne!(records[0].content, "기록 내용", "키 없이 조회하면 암호화된 값이 나와야 한다");
+    assert_ne!(
+        records[0].content, "기록 내용",
+        "키 없이 조회하면 암호화된 값이 나와야 한다"
+    );
 }
 
 #[test]
@@ -246,11 +297,13 @@ fn test_get_records_for_scope_areas_with_key_decrypts() {
     conn.execute(
         "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
         rusqlite::params![area_id, act_id],
-    ).unwrap();
+    )
+    .unwrap();
     conn.execute(
         "INSERT INTO AreaStudent (area_id, student_id) VALUES (?1, ?2)",
         rusqlite::params![area_id, stu_id],
-    ).unwrap();
+    )
+    .unwrap();
     upsert_record_impl(&conn, act_id, stu_id, "영역별 내용", Some(key)).unwrap();
 
     let records = get_records_for_scope(&conn, "areas", &[area_id], Some(key)).unwrap();
@@ -303,28 +356,27 @@ fn test_decrypt_plaintext_with_key_returns_error() {
 
 #[test]
 fn test_encrypt_then_decrypt_all_data_restores_plaintext() {
-    use crate::crypto::{decrypt, encrypt};
-
     let conn = setup_test_db();
-    let key = test_key();
+    let crypto = crypto_state(None);
 
     // 1. 평문으로 데이터 삽입
     let act_id = insert_activity(&conn, "활동");
     let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
-    conn.execute(
-        "INSERT INTO ActivityRecord (activity_id, student_id, content) VALUES (?1, ?2, ?3)",
-        rusqlite::params![act_id, stu_id, "활동 기록"],
-    ).unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "활동 기록", None).unwrap();
+    save_snapshot_internal(&conn, act_id, stu_id, Some("before encryption")).unwrap();
 
-    // 2. 수동으로 각 테이블 암호화 (enable_encryption의 핵심 로직)
+    enable_encryption_impl(&conn, &crypto, "password").unwrap();
+    let status = get_encryption_status_impl(&conn, &crypto).unwrap();
+    assert!(status.enabled);
+    assert!(status.unlocked);
+
     let raw_name: String = conn
-        .query_row("SELECT name FROM Student WHERE id=?1", rusqlite::params![stu_id], |r| r.get(0))
+        .query_row(
+            "SELECT name FROM Student WHERE id=?1",
+            rusqlite::params![stu_id],
+            |r| r.get(0),
+        )
         .unwrap();
-    conn.execute(
-        "UPDATE Student SET name=?1 WHERE id=?2",
-        rusqlite::params![encrypt(&raw_name, &key).unwrap(), stu_id],
-    ).unwrap();
-
     let raw_content: String = conn
         .query_row(
             "SELECT content FROM ActivityRecord WHERE activity_id=?1 AND student_id=?2",
@@ -332,25 +384,65 @@ fn test_encrypt_then_decrypt_all_data_restores_plaintext() {
             |r| r.get(0),
         )
         .unwrap();
-    conn.execute(
-        "UPDATE ActivityRecord SET content=?1 WHERE activity_id=?2 AND student_id=?3",
-        rusqlite::params![encrypt(&raw_content, &key).unwrap(), act_id, stu_id],
-    ).unwrap();
+    let raw_history: String = conn
+        .query_row(
+            "SELECT content FROM ActivityRecordHistory LIMIT 1",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_ne!(raw_name, "홍길동");
+    assert_ne!(raw_content, "활동 기록");
+    assert_ne!(raw_history, "활동 기록");
 
-    // 3. 암호화 상태에서 _impl 으로 읽기
-    let students = get_students_impl(&conn, Some(key)).unwrap();
+    // 2. 암호화 상태에서 _impl 으로 읽기
+    let key = resolve_data_key(&conn, &crypto).unwrap();
+    let students = get_students_impl(&conn, key).unwrap();
     assert_eq!(students[0].name, "홍길동");
 
-    // 4. 수동으로 복호화 (disable_encryption의 핵심 로직)
-    let enc_name: String = conn
-        .query_row("SELECT name FROM Student WHERE id=?1", rusqlite::params![stu_id], |r| r.get(0))
-        .unwrap();
-    conn.execute(
-        "UPDATE Student SET name=?1 WHERE id=?2",
-        rusqlite::params![decrypt(&enc_name, &key).unwrap(), stu_id],
-    ).unwrap();
+    // 3. 복호화 후 None 키로 읽으면 평문이 나와야 한다
+    disable_encryption_impl(&conn, &crypto).unwrap();
+    let status = get_encryption_status_impl(&conn, &crypto).unwrap();
+    assert!(!status.enabled);
+    assert!(!status.unlocked);
 
-    // 5. 복호화 후 None 키로 읽으면 평문이 나와야 한다
     let students = get_students_impl(&conn, None).unwrap();
+    assert_eq!(students[0].name, "홍길동");
+    let content: String = conn
+        .query_row(
+            "SELECT content FROM ActivityRecord WHERE activity_id=?1 AND student_id=?2",
+            rusqlite::params![act_id, stu_id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(content, "활동 기록");
+}
+
+#[test]
+fn test_resolve_data_key_requires_unlock_when_enabled() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    set_config_impl(&conn, "encryption_enabled", "true").unwrap();
+
+    let err = resolve_data_key(&conn, &crypto).unwrap_err();
+    assert!(err.contains("잠금"), "에러 메시지: {err}");
+}
+
+#[test]
+fn test_change_password_requires_new_password_afterward() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+
+    enable_encryption_impl(&conn, &crypto, "old-password").unwrap();
+    change_encryption_password_impl(&conn, &crypto, "old-password", "new-password").unwrap();
+
+    clear_crypto_state(&crypto).unwrap();
+    assert!(unlock_encryption_impl(&conn, &crypto, "old-password").is_err());
+    unlock_encryption_impl(&conn, &crypto, "new-password").unwrap();
+
+    let key = resolve_data_key(&conn, &crypto).unwrap();
+    let students = get_students_impl(&conn, key).unwrap();
+    assert_eq!(students[0].id, stu_id);
     assert_eq!(students[0].name, "홍길동");
 }

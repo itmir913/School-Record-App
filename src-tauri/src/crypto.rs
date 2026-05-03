@@ -7,7 +7,16 @@ use pbkdf2::pbkdf2_hmac;
 use rand::RngCore;
 use sha2::Sha256;
 
+const AES_256_KEY_LEN: usize = 32;
+const AES_GCM_NONCE_LEN: usize = 12;
 const PBKDF2_ITERATIONS: u32 = 100_000;
+
+fn cipher_from_key(key: &[u8]) -> Result<Aes256Gcm, String> {
+    if key.len() != AES_256_KEY_LEN {
+        return Err(format!("잘못된 암호화 키 길이입니다: {} bytes", key.len()));
+    }
+    Ok(Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(key)))
+}
 
 pub fn generate_salt() -> [u8; 16] {
     let mut salt = [0u8; 16];
@@ -22,7 +31,7 @@ pub fn derive_key(password: &str, salt: &[u8]) -> [u8; 32] {
 }
 
 pub fn encrypt(plaintext: &str, key: &[u8]) -> Result<String, String> {
-    let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(key));
+    let cipher = cipher_from_key(key)?;
     let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
     let ciphertext = cipher
         .encrypt(&nonce, plaintext.as_bytes())
@@ -39,10 +48,16 @@ pub fn decrypt(value: &str, key: &[u8]) -> Result<String, String> {
     let nonce_bytes = B64
         .decode(nonce_b64)
         .map_err(|e| format!("nonce 디코딩 실패: {e}"))?;
+    if nonce_bytes.len() != AES_GCM_NONCE_LEN {
+        return Err(format!(
+            "잘못된 nonce 길이입니다: {} bytes",
+            nonce_bytes.len()
+        ));
+    }
     let ciphertext = B64
         .decode(cipher_b64)
         .map_err(|e| format!("암호문 디코딩 실패: {e}"))?;
-    let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(key));
+    let cipher = cipher_from_key(key)?;
     let nonce = Nonce::from_slice(&nonce_bytes);
     let plaintext = cipher
         .decrypt(nonce, ciphertext.as_ref())

@@ -23,7 +23,6 @@ const releaseUrl = ref('')
 const showPasswordModal = ref(false)
 const passwordError = ref('')
 const passwordLoading = ref(false)
-let pendingPath = ''
 
 onMounted(async () => {
   currentVersion.value = await getVersion()
@@ -57,9 +56,8 @@ async function handleOpen() {
   try {
     await invoke('open_project', {path})
     project.setProject(path)
-    const status = await invoke('get_encryption_status')
-    if (status.enabled) {
-      pendingPath = path
+    await config.refreshEncryptionStatus()
+    if (config.encryptionEnabled) {
       passwordError.value = ''
       showPasswordModal.value = true
     } else {
@@ -87,7 +85,6 @@ async function handlePasswordSubmit({password}) {
 function handlePasswordCancel() {
   showPasswordModal.value = false
   project.closeProject()
-  pendingPath = ''
 }
 
 async function checkUpdate() {

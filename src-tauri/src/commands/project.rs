@@ -1,19 +1,26 @@
-use crate::state::DbState;
+use crate::state::{clear_crypto_state, CryptoStateHandle, DbState};
 use tauri::State;
 
-#[tauri::command]
-pub fn new_project(path: String, state: State<DbState>) -> Result<(), String> {
+pub(crate) fn new_project_impl(
+    path: &str,
+    state: &DbState,
+    crypto: &CryptoStateHandle,
+) -> Result<(), String> {
     let p = std::path::Path::new(&path);
     if p.exists() {
         return Err(format!("이미 파일이 존재합니다: {path}"));
     }
     let conn = crate::db::create_new(p).map_err(|e| e.to_string())?;
-    *state.0.lock().unwrap() = Some(conn);
+    *state.0.lock().map_err(|e| e.to_string())? = Some(conn);
+    clear_crypto_state(crypto)?;
     Ok(())
 }
 
-#[tauri::command]
-pub fn open_project(path: String, state: State<DbState>) -> Result<(), String> {
+pub(crate) fn open_project_impl(
+    path: &str,
+    state: &DbState,
+    crypto: &CryptoStateHandle,
+) -> Result<(), String> {
     let src = std::path::Path::new(&path);
 
     if let Some(parent) = src.parent() {
@@ -24,6 +31,25 @@ pub fn open_project(path: String, state: State<DbState>) -> Result<(), String> {
     }
 
     let conn = crate::db::open_existing(src).map_err(|e| e.to_string())?;
-    *state.0.lock().unwrap() = Some(conn);
+    *state.0.lock().map_err(|e| e.to_string())? = Some(conn);
+    clear_crypto_state(crypto)?;
     Ok(())
+}
+
+#[tauri::command]
+pub fn new_project(
+    path: String,
+    state: State<DbState>,
+    crypto: State<CryptoStateHandle>,
+) -> Result<(), String> {
+    new_project_impl(&path, &state, &crypto)
+}
+
+#[tauri::command]
+pub fn open_project(
+    path: String,
+    state: State<DbState>,
+    crypto: State<CryptoStateHandle>,
+) -> Result<(), String> {
+    open_project_impl(&path, &state, &crypto)
 }

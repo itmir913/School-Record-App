@@ -11,6 +11,29 @@ pub struct CryptoState {
 
 pub type CryptoStateHandle = Mutex<CryptoState>;
 
+pub fn current_crypto_key(crypto: &CryptoStateHandle) -> Result<Option<[u8; 32]>, String> {
+    let guard = crypto.lock().map_err(|e| e.to_string())?;
+    Ok(guard.key)
+}
+
+pub fn set_crypto_state(
+    crypto: &CryptoStateHandle,
+    key: [u8; 32],
+    salt: Vec<u8>,
+) -> Result<(), String> {
+    let mut guard = crypto.lock().map_err(|e| e.to_string())?;
+    guard.key = Some(key);
+    guard.salt = Some(salt);
+    Ok(())
+}
+
+pub fn clear_crypto_state(crypto: &CryptoStateHandle) -> Result<(), String> {
+    let mut guard = crypto.lock().map_err(|e| e.to_string())?;
+    guard.key = None;
+    guard.salt = None;
+    Ok(())
+}
+
 pub struct ReplaceCache {
     pub ruleset_version: u64,
     pub entries: HashMap<u64, (String, u64)>,

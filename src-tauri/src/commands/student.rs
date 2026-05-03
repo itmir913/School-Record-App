@@ -1,3 +1,4 @@
+use crate::commands::crypto::resolve_data_key;
 use crate::crypto::{maybe_decrypt, maybe_encrypt};
 use crate::state::{unique_err, CryptoStateHandle, DbState};
 use crate::types::{BulkUpsertResult, StudentInput, StudentItem};
@@ -57,7 +58,10 @@ pub fn create_student_impl(
         rusqlite::params![grade, class_num, number, stored_name],
     )
     .map_err(|e| {
-        unique_err(&e, &format!("이미 같은 학번의 학생이 있습니다: {grade}학년 {class_num}반 {number}번"))
+        unique_err(
+            &e,
+            &format!("이미 같은 학번의 학생이 있습니다: {grade}학년 {class_num}반 {number}번"),
+        )
     })?;
     Ok(conn.last_insert_rowid())
 }
@@ -77,7 +81,10 @@ pub fn update_student_impl(
         rusqlite::params![grade, class_num, number, stored_name, id],
     )
     .map_err(|e| {
-        unique_err(&e, &format!("이미 같은 학번의 학생이 있습니다: {grade}학년 {class_num}반 {number}번"))
+        unique_err(
+            &e,
+            &format!("이미 같은 학번의 학생이 있습니다: {grade}학년 {class_num}반 {number}번"),
+        )
     })?;
     Ok(())
 }
@@ -209,18 +216,16 @@ pub fn set_area_activities_impl(
 
 // ── Tauri 커맨드 (얇은 래퍼) ─────────────────────────────────
 
-fn extract_key(crypto: &State<CryptoStateHandle>) -> Option<[u8; 32]> {
-    crypto.lock().ok().and_then(|g| g.key)
-}
-
 #[tauri::command]
 pub fn get_students(
     state: State<DbState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<Vec<StudentItem>, String> {
-    let key = extract_key(&crypto);
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let key = resolve_data_key(conn, &crypto)?;
     get_students_impl(conn, key)
 }
 
@@ -233,9 +238,11 @@ pub fn create_student(
     state: State<DbState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<i64, String> {
-    let key = extract_key(&crypto);
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let key = resolve_data_key(conn, &crypto)?;
     create_student_impl(conn, grade, class_num, number, &name, key)
 }
 
@@ -249,16 +256,20 @@ pub fn update_student(
     state: State<DbState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<(), String> {
-    let key = extract_key(&crypto);
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let key = resolve_data_key(conn, &crypto)?;
     update_student_impl(conn, id, grade, class_num, number, &name, key)
 }
 
 #[tauri::command]
 pub fn delete_student(id: i64, state: State<DbState>) -> Result<(), String> {
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
     delete_student_impl(conn, id)
 }
 
@@ -269,7 +280,9 @@ pub fn set_area_activities(
     state: State<DbState>,
 ) -> Result<(), String> {
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
     set_area_activities_impl(conn, area_id, &activity_ids)
 }
 
@@ -279,16 +292,20 @@ pub fn bulk_upsert_students(
     state: State<DbState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<BulkUpsertResult, String> {
-    let key = extract_key(&crypto);
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let key = resolve_data_key(conn, &crypto)?;
     bulk_upsert_students_impl(conn, &students, key)
 }
 
 #[tauri::command]
 pub fn get_area_students(area_id: i64, state: State<DbState>) -> Result<Vec<i64>, String> {
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
     get_area_students_impl(conn, area_id)
 }
 
@@ -299,6 +316,8 @@ pub fn set_area_students(
     state: State<DbState>,
 ) -> Result<(), String> {
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
     set_area_students_impl(conn, area_id, &student_ids)
 }

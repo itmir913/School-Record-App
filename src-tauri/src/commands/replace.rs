@@ -1,5 +1,8 @@
-use crate::crypto::maybe_encrypt;
-use crate::engine::{apply_rules_cached, detect_conflicts, fetch_rules_from_db, get_records_for_scope};
+use crate::commands::crypto::resolve_data_key;
+use crate::crypto::{maybe_decrypt, maybe_encrypt};
+use crate::engine::{
+    apply_rules_cached, detect_conflicts, fetch_rules_from_db, get_records_for_scope,
+};
 use crate::state::{CryptoStateHandle, DbState, ReplaceCacheState};
 use crate::types::{ReplaceApplyResult, ReplacePreviewItem, ReplaceRule};
 use regex::Regex;
@@ -113,8 +116,11 @@ pub fn update_replace_rule_db(
 }
 
 pub fn delete_replace_rule_impl(conn: &Connection, id: i64) -> Result<(), String> {
-    conn.execute("DELETE FROM ReplaceRule WHERE id = ?1", rusqlite::params![id])
-        .map_err(|e| e.to_string())?;
+    conn.execute(
+        "DELETE FROM ReplaceRule WHERE id = ?1",
+        rusqlite::params![id],
+    )
+    .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -135,7 +141,11 @@ pub fn seed_default_replace_rules_impl(
         let old_text = rule["oldText"].as_str().ok_or("oldText 누락")?;
         let new_text = rule["newText"].as_str().ok_or("newText 누락")?;
         let priority = rule["priority"].as_i64().ok_or("priority 누락")?;
-        let is_regex: i64 = if rule["isRegex"].as_bool().unwrap_or(false) { 1 } else { 0 };
+        let is_regex: i64 = if rule["isRegex"].as_bool().unwrap_or(false) {
+            1
+        } else {
+            0
+        };
         conn.execute(
             "INSERT OR IGNORE INTO ReplaceRule (old_text, new_text, is_regex, priority) VALUES (?1, ?2, ?3, ?4)",
             rusqlite::params![old_text, new_text, is_regex, priority],
@@ -227,7 +237,9 @@ pub fn seed_default_replace_rules(
     cache: State<ReplaceCacheState>,
 ) -> Result<(), String> {
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
 
     seed_default_replace_rules_impl(conn, &rules)?;
     drop(guard);
@@ -243,16 +255,14 @@ pub fn preview_replace(
     cache: State<ReplaceCacheState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<Vec<ReplacePreviewItem>, String> {
-    let key = crypto.lock().ok().and_then(|g| g.key);
-
     let (rules, records, act_names, stu_names) = {
         let guard = state.0.lock().unwrap();
         let conn = guard
             .as_ref()
             .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+        let key = resolve_data_key(conn, &crypto)?;
 
         let rules = fetch_rules_from_db(conn)?;
-        // get_records_for_scope now returns decrypted content
         let records = get_records_for_scope(conn, &scope_type, &area_ids, key)?;
 
         let mut act_names: HashMap<i64, String> = HashMap::new();
@@ -274,12 +284,7 @@ pub fn preview_replace(
                         |r| r.get(0),
                     )
                     .unwrap_or_else(|_| format!("학생#{}", rec.student_id));
-                let name = if let Some(k) = key {
-                    crate::crypto::decrypt(&raw_name, &k)
-                        .unwrap_or_else(|_| raw_name)
-                } else {
-                    raw_name
-                };
+                let name = maybe_decrypt(raw_name, key)?;
                 stu_names.insert(rec.student_id, name);
             }
         }
@@ -318,17 +323,15 @@ pub fn apply_replace(
     cache: State<ReplaceCacheState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<ReplaceApplyResult, String> {
-    let key = crypto.lock().ok().and_then(|g| g.key);
-
-    let (rules, records) = {
+    let (key, rules, records) = {
         let guard = state.0.lock().unwrap();
         let conn = guard
             .as_ref()
             .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+        let key = resolve_data_key(conn, &crypto)?;
         let rules = fetch_rules_from_db(conn)?;
-        // get_records_for_scope returns decrypted content
         let records = get_records_for_scope(conn, &scope_type, &area_ids, key)?;
-        (rules, records)
+        (key, rules, records)
     };
 
     let total_count = records.len() as i64;
@@ -351,7 +354,10 @@ pub fn apply_replace(
 
     let changed_count = changes.len() as i64;
     if changes.is_empty() {
-        return Ok(ReplaceApplyResult { changed_count: 0, total_count });
+        return Ok(ReplaceApplyResult {
+            changed_count: 0,
+            total_count,
+        });
     }
 
     let guard = state.0.lock().unwrap();
@@ -393,7 +399,10 @@ pub fn apply_replace(
     match result {
         Ok(_) => {
             conn.execute_batch("COMMIT").map_err(|e| e.to_string())?;
-            Ok(ReplaceApplyResult { changed_count, total_count })
+            Ok(ReplaceApplyResult {
+                changed_count,
+                total_count,
+            })
         }
         Err(e) => {
             let _ = conn.execute_batch("ROLLBACK");

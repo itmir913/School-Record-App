@@ -112,6 +112,31 @@ fn test_decrypt_invalid_base64_ciphertext_returns_error() {
 }
 
 #[test]
+fn test_decrypt_invalid_nonce_length_returns_error() {
+    let key = derive_key("pw", &[0u8; 16]);
+    let result = decrypt("dGVzdA==:YWJj", &key);
+    assert!(result.is_err());
+    let err = result.unwrap_err();
+    assert!(err.contains("nonce 길이"), "에러 메시지: {err}");
+}
+
+#[test]
+fn test_encrypt_invalid_key_length_returns_error() {
+    let result = encrypt("test", &[0u8; 31]);
+    assert!(result.is_err());
+    let err = result.unwrap_err();
+    assert!(err.contains("키 길이"), "에러 메시지: {err}");
+}
+
+#[test]
+fn test_decrypt_invalid_key_length_returns_error() {
+    let result = decrypt("AAAAAAAAAAAAAAAA:YWJj", &[0u8; 31]);
+    assert!(result.is_err());
+    let err = result.unwrap_err();
+    assert!(err.contains("키 길이"), "에러 메시지: {err}");
+}
+
+#[test]
 fn test_encrypt_output_format_has_colon_separator() {
     let key = derive_key("pw", &[0u8; 16]);
     let ciphertext = encrypt("test", &key).unwrap();

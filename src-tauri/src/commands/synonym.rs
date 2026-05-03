@@ -1,3 +1,4 @@
+use crate::commands::crypto::resolve_data_key;
 use crate::crypto::maybe_decrypt;
 use crate::state::{unique_err, CryptoStateHandle, DbState};
 use crate::types::{InspectRecord, SeedGroupInput, SynonymGroupFull, SynonymWordItem};
@@ -36,12 +37,21 @@ pub fn get_synonym_groups_impl(conn: &Connection) -> Result<Vec<SynonymGroupFull
             i
         } else {
             let i = groups.len();
-            groups.push(SynonymGroupFull { id: gid, name: gname, created_at, items: vec![] });
+            groups.push(SynonymGroupFull {
+                id: gid,
+                name: gname,
+                created_at,
+                items: vec![],
+            });
             index_map.insert(gid, i);
             i
         };
         if let (Some(id), Some(w)) = (item_id, word) {
-            groups[idx].items.push(SynonymWordItem { id, group_id: gid, word: w });
+            groups[idx].items.push(SynonymWordItem {
+                id,
+                group_id: gid,
+                word: w,
+            });
         }
     }
 
@@ -75,7 +85,10 @@ pub fn delete_synonym_word_impl(conn: &Connection, id: i64) -> Result<(), String
     Ok(())
 }
 
-pub fn seed_default_synonyms_impl(conn: &Connection, groups: &[SeedGroupInput]) -> Result<(), String> {
+pub fn seed_default_synonyms_impl(
+    conn: &Connection,
+    groups: &[SeedGroupInput],
+) -> Result<(), String> {
     let count: i64 = conn
         .query_row("SELECT COUNT(*) FROM SynonymGroup", [], |r| r.get(0))
         .map_err(|e| e.to_string())?;
@@ -200,42 +213,57 @@ pub fn get_all_records_for_inspect_impl(
 #[tauri::command]
 pub fn get_synonym_groups(state: State<DbState>) -> Result<Vec<SynonymGroupFull>, String> {
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
     get_synonym_groups_impl(conn)
 }
 
 #[tauri::command]
 pub fn create_synonym_group(name: String, state: State<DbState>) -> Result<i64, String> {
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
     create_synonym_group_impl(conn, &name)
 }
 
 #[tauri::command]
 pub fn delete_synonym_group(id: i64, state: State<DbState>) -> Result<(), String> {
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
     delete_synonym_group_impl(conn, id)
 }
 
 #[tauri::command]
 pub fn add_synonym_word(group_id: i64, word: String, state: State<DbState>) -> Result<i64, String> {
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
     add_synonym_word_impl(conn, group_id, &word)
 }
 
 #[tauri::command]
 pub fn delete_synonym_word(id: i64, state: State<DbState>) -> Result<(), String> {
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
     delete_synonym_word_impl(conn, id)
 }
 
 #[tauri::command]
-pub fn seed_default_synonyms(groups: Vec<SeedGroupInput>, state: State<DbState>) -> Result<(), String> {
+pub fn seed_default_synonyms(
+    groups: Vec<SeedGroupInput>,
+    state: State<DbState>,
+) -> Result<(), String> {
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
     seed_default_synonyms_impl(conn, &groups)
 }
 
@@ -246,8 +274,10 @@ pub fn get_all_records_for_inspect(
     state: State<DbState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<Vec<InspectRecord>, String> {
-    let key = crypto.lock().ok().and_then(|g| g.key);
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let key = resolve_data_key(conn, &crypto)?;
     get_all_records_for_inspect_impl(conn, &scope_type, area_ids, key)
 }
