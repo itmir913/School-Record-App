@@ -36,6 +36,7 @@ fn test_new_project_clears_crypto_state() {
     assert!(db.0.lock().unwrap().is_some());
     assert!(current_crypto_key(&crypto).unwrap().is_none());
 
+    drop(db); // Windows: 파일 잠금 해제 후 삭제
     std::fs::remove_dir_all(&dir).unwrap();
 }
 
@@ -54,5 +55,6 @@ fn test_open_project_clears_crypto_state() {
     assert!(db.0.lock().unwrap().is_some());
     assert!(current_crypto_key(&crypto).unwrap().is_none());
 
+    drop(db); // Windows: 파일 잠금 해제 후 삭제
     std::fs::remove_dir_all(&dir).unwrap();
 }
