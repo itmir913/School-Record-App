@@ -191,14 +191,14 @@ pub(crate) fn enable_encryption_impl(
     crypto: &CryptoStateHandle,
     password: &str,
 ) -> Result<(), String> {
+    if is_encryption_enabled(conn)? {
+        return Err("이미 암호화가 활성화되어 있습니다.".to_string());
+    }
+
     let salt = generate_salt();
     let key = derive_key(password, &salt);
     let salt_b64 = B64.encode(salt);
     let verify_token = encrypt(VERIFY_PLAINTEXT, &key)?;
-
-    if is_encryption_enabled(conn)? {
-        return Err("이미 암호화가 활성화되어 있습니다.".to_string());
-    }
 
     run_transaction(conn, || {
         encrypt_all_data(conn, key)?;
