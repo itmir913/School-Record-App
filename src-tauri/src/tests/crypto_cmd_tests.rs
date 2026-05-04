@@ -8,8 +8,10 @@ use crate::commands::record::{
     bulk_import_records_impl, get_area_grid_impl, get_record_history_impl,
     preview_import_records_impl, save_snapshot_internal, upsert_record_impl,
 };
+use crate::commands::replace::{apply_replace_impl, create_replace_rule_db, preview_replace_impl};
 use crate::commands::snapshot::{create_snapshot_impl, restore_snapshot_impl};
 use crate::commands::synonym::get_all_records_for_inspect_impl;
+use crate::state::ReplaceCache;
 use crate::commands::student::{
     bulk_upsert_students_impl, create_student_impl, get_students_impl, update_student_impl,
 };
@@ -682,4 +684,152 @@ fn test_restore_snapshot_with_encryption() {
         grid_restored.records[0].content, "v1 내용",
         "스냅샷 복원 후 암호화된 v1 내용이 복호화되어야 한다"
     );
+}
+
+// ── preview_replace / apply_replace: 암호화 경로 ─────────────────
+
+fn make_cache() -> ReplaceCache {
+    ReplaceCache {
+        ruleset_version: 0,
+        entries: std::collections::HashMap::new(),
+    }
+}
+
+#[test]
+fn test_preview_replace_with_key_shows_decrypted_content() {
+    let conn = setup_test_db();
+    let key = test_key();
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = create_student_impl(&conn, 1, 1, 1, "홍길동", Some(key)).unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "가나다 발표", Some(key)).unwrap();
+
+    create_replace_rule_db(&conn, "가나다", "ABC", false, 1).unwrap();
+
+    let mut cache = make_cache();
+    let items = preview_replace_impl(&conn, "all", &[], Some(key), &mut cache).unwrap();
+
+    assert_eq!(items.len(), 1);
+    assert_eq!(items[0].original, "가나다 발표", "preview의 원본이 복호화된 평문이어야 한다");
+    assert_eq!(items[0].result, "ABC 발표");
+    assert_eq!(items[0].student_name, "홍길동", "student_name이 복호화되어야 한다");
+}
+
+#[test]
+fn test_apply_replace_with_key_reencrypts_result() {
+    let conn = setup_test_db();
+    let key = test_key();
+    let area_id = insert_area(&conn, "국어", 500);
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = create_student_impl(&conn, 1, 1, 1, "홍길동", Some(key)).unwrap();
+    conn.execute(
+        "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
+        rusqlite::params![area_id, act_id],
+    )
+    .unwrap();
+    conn.execute(
+        "INSERT INTO AreaStudent (area_id, student_id) VALUES (?1, ?2)",
+        rusqlite::params![area_id, stu_id],
+    )
+    .unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "가나다 발표", Some(key)).unwrap();
+
+    create_replace_rule_db(&conn, "가나다", "ABC", false, 1).unwrap();
+
+    let mut cache = make_cache();
+    let result = apply_replace_impl(&conn, "all", &[], Some(key), &mut cache).unwrap();
+    assert_eq!(result.changed_count, 1);
+
+    // DB에 재암호화된 값이 저장되어야 한다
+    let raw: String = conn
+        .query_row(
+            "SELECT content FROM ActivityRecord WHERE activity_id=?1 AND student_id=?2",
+            rusqlite::params![act_id, stu_id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_ne!(raw, "ABC 발표", "치환 결과가 평문으로 저장되면 안 된다");
+    assert!(raw.contains(':'), "재암호화된 nonce:ciphertext 형식이어야 한다");
+
+    // Some(key)로 읽으면 치환된 평문이 복호화되어야 한다
+    let grid = get_area_grid_impl(&conn, area_id, Some(key)).unwrap();
+    assert_eq!(grid.records[0].content, "ABC 발표", "치환 후 복호화하면 치환된 원문이어야 한다");
+
+    // 치환 이력도 history에 암호화된 채로 저장되고 복호화 가능해야 한다
+    let history = get_record_history_impl(&conn, act_id, stu_id, 10, 0, Some(key)).unwrap();
+    assert!(!history.is_empty(), "치환 적용 시 history가 생성되어야 한다");
+    assert_eq!(history[0].content, "ABC 발표", "history content도 복호화되어야 한다");
+}
+
+// ── disable_encryption + 빈 이름 학생 회귀 테스트 ─────────────────
+
+#[test]
+fn test_disable_encryption_with_blank_name_student() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+
+    let act_id = insert_activity(&conn, "발표");
+
+    // 암호화 활성화
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    let key = resolve_data_key(&conn, &crypto).unwrap();
+
+    // 암호화 활성화 후 빈 이름 학생 생성 (버그 시나리오)
+    let stu_id = create_student_impl(&conn, 1, 1, 1, "", Some(key.unwrap())).unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "기록 내용", key).unwrap();
+
+    // disable_encryption이 실패 없이 완료되어야 한다 (이것이 수정된 버그)
+    let result = disable_encryption_impl(&conn, &crypto, &db_path);
+    assert!(result.is_ok(), "빈 이름 학생이 있어도 disable_encryption이 성공해야 한다: {:?}", result);
+
+    // 복호화 후 데이터 무결성 확인
+    let students = get_students_impl(&conn, None).unwrap();
+    assert_eq!(students[0].name, "", "복호화 후 빈 이름이 유지되어야 한다");
+
+    let content: String = conn
+        .query_row(
+            "SELECT content FROM ActivityRecord WHERE activity_id=?1",
+            rusqlite::params![act_id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(content, "기록 내용", "복호화 후 record content가 평문으로 복원되어야 한다");
+
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── bulk_import 후 history 복호화 조합 테스트 ────────────────────
+
+#[test]
+fn test_bulk_import_history_readable_with_key() {
+    let conn = setup_test_db();
+    let key = test_key();
+    let act_id = insert_activity(&conn, "발표");
+
+    bulk_import_records_impl(
+        &conn,
+        &[make_import(1, 1, 1, Some("홍길동"), act_id, "발표 내용")],
+        Some(key),
+    )
+    .unwrap();
+
+    // bulk_import는 content가 있으면 history에도 암호화된 채로 복사한다
+    // get_record_history_impl이 그것을 복호화해서 반환해야 한다
+    let stu_id: i64 = conn
+        .query_row("SELECT id FROM Student WHERE grade=1", [], |r| r.get(0))
+        .unwrap();
+
+    let history = get_record_history_impl(&conn, act_id, stu_id, 10, 0, Some(key)).unwrap();
+    assert_eq!(history.len(), 1, "bulk_import 후 history가 1개 생성되어야 한다");
+    assert_eq!(
+        history[0].content, "발표 내용",
+        "bulk_import로 저장된 history content가 복호화되어야 한다"
+    );
+
+    // history에 암호화된 값이 저장되어 있어야 한다 (None으로 읽으면 ciphertext)
+    let raw_history: String = conn
+        .query_row("SELECT content FROM ActivityRecordHistory LIMIT 1", [], |r| r.get(0))
+        .unwrap();
+    assert_ne!(raw_history, "발표 내용", "history DB에는 암호화된 값이 있어야 한다");
+    assert!(raw_history.contains(':'));
 }
