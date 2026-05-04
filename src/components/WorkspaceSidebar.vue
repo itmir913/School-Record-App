@@ -14,6 +14,7 @@ import {
   PenLine,
   Replace,
   ScanSearch,
+  Settings,
   Upload,
   Users,
 } from 'lucide-vue-next'
@@ -74,6 +75,11 @@ const navGroups = [
       {id: 'import', label: '가져오기(Import)', icon: Download},
       {id: 'export', label: '내보내기(Export)', icon: Upload},
       {id: 'checklist', label: '체크리스트(Checklist)', icon: ClipboardList},
+    ],
+  },
+  {
+    items: [
+      {id: 'settings', label: '설정(Settings)', icon: Settings},
     ],
   },
 ]

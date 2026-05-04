@@ -1,5 +1,9 @@
-use crate::engine::{apply_rules_cached, detect_conflicts, fetch_rules_from_db, get_records_for_scope};
-use crate::state::{DbState, ReplaceCacheState};
+use crate::commands::crypto::resolve_data_key;
+use crate::crypto::{maybe_decrypt, maybe_encrypt};
+use crate::engine::{
+    apply_rules_cached, detect_conflicts, fetch_rules_from_db, get_records_for_scope,
+};
+use crate::state::{CryptoStateHandle, DbState, ReplaceCache, ReplaceCacheState};
 use crate::types::{ReplaceApplyResult, ReplacePreviewItem, ReplaceRule};
 use regex::Regex;
 use rusqlite::Connection;
@@ -112,8 +116,11 @@ pub fn update_replace_rule_db(
 }
 
 pub fn delete_replace_rule_impl(conn: &Connection, id: i64) -> Result<(), String> {
-    conn.execute("DELETE FROM ReplaceRule WHERE id = ?1", rusqlite::params![id])
-        .map_err(|e| e.to_string())?;
+    conn.execute(
+        "DELETE FROM ReplaceRule WHERE id = ?1",
+        rusqlite::params![id],
+    )
+    .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -134,7 +141,11 @@ pub fn seed_default_replace_rules_impl(
         let old_text = rule["oldText"].as_str().ok_or("oldText 누락")?;
         let new_text = rule["newText"].as_str().ok_or("newText 누락")?;
         let priority = rule["priority"].as_i64().ok_or("priority 누락")?;
-        let is_regex: i64 = if rule["isRegex"].as_bool().unwrap_or(false) { 1 } else { 0 };
+        let is_regex: i64 = if rule["isRegex"].as_bool().unwrap_or(false) {
+            1
+        } else {
+            0
+        };
         conn.execute(
             "INSERT OR IGNORE INTO ReplaceRule (old_text, new_text, is_regex, priority) VALUES (?1, ?2, ?3, ?4)",
             rusqlite::params![old_text, new_text, is_regex, priority],
@@ -226,7 +237,9 @@ pub fn seed_default_replace_rules(
     cache: State<ReplaceCacheState>,
 ) -> Result<(), String> {
     let guard = state.0.lock().unwrap();
-    let conn = guard.as_ref().ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
 
     seed_default_replace_rules_impl(conn, &rules)?;
     drop(guard);
@@ -234,56 +247,48 @@ pub fn seed_default_replace_rules(
     Ok(())
 }
 
-#[tauri::command]
-pub fn preview_replace(
-    scope_type: String,
-    area_ids: Vec<i64>,
-    state: State<DbState>,
-    cache: State<ReplaceCacheState>,
+pub fn preview_replace_impl(
+    conn: &Connection,
+    scope_type: &str,
+    area_ids: &[i64],
+    key: Option<[u8; 32]>,
+    cache: &mut ReplaceCache,
 ) -> Result<Vec<ReplacePreviewItem>, String> {
-    let (rules, records, act_names, stu_names) = {
-        let guard = state.0.lock().unwrap();
-        let conn = guard
-            .as_ref()
-            .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let rules = fetch_rules_from_db(conn)?;
+    let records = get_records_for_scope(conn, scope_type, area_ids, key)?;
 
-        let rules = fetch_rules_from_db(conn)?;
-        let records = get_records_for_scope(conn, &scope_type, &area_ids)?;
-
-        let mut act_names: HashMap<i64, String> = HashMap::new();
-        let mut stu_names: HashMap<i64, String> = HashMap::new();
-        for rec in &records {
-            act_names.entry(rec.activity_id).or_insert_with(|| {
-                conn.query_row(
-                    "SELECT name FROM Activity WHERE id=?1",
-                    rusqlite::params![rec.activity_id],
-                    |r| r.get(0),
-                )
-                .unwrap_or_else(|_| format!("활동#{}", rec.activity_id))
-            });
-            stu_names.entry(rec.student_id).or_insert_with(|| {
-                conn.query_row(
+    let mut act_names: HashMap<i64, String> = HashMap::new();
+    let mut stu_names: HashMap<i64, String> = HashMap::new();
+    for rec in &records {
+        act_names.entry(rec.activity_id).or_insert_with(|| {
+            conn.query_row(
+                "SELECT name FROM Activity WHERE id=?1",
+                rusqlite::params![rec.activity_id],
+                |r| r.get(0),
+            )
+            .unwrap_or_else(|_| format!("활동#{}", rec.activity_id))
+        });
+        if !stu_names.contains_key(&rec.student_id) {
+            let raw_name: String = conn
+                .query_row(
                     "SELECT name FROM Student WHERE id=?1",
                     rusqlite::params![rec.student_id],
                     |r| r.get(0),
                 )
-                .unwrap_or_else(|_| format!("학생#{}", rec.student_id))
-            });
+                .unwrap_or_else(|_| format!("학생#{}", rec.student_id));
+            let name = maybe_decrypt(raw_name, key)?;
+            stu_names.insert(rec.student_id, name);
         }
-        (rules, records, act_names, stu_names)
-    };
+    }
 
-    let mut cache_guard = cache.lock().unwrap();
     let mut items = Vec::new();
-
     for rec in &records {
-        let result = apply_rules_cached(&rec.content, &rules, &mut cache_guard);
+        let result = apply_rules_cached(&rec.content, &rules, cache);
         if result == rec.content {
             continue;
         }
         let activity_name = act_names.get(&rec.activity_id).cloned().unwrap_or_default();
         let student_name = stu_names.get(&rec.student_id).cloned().unwrap_or_default();
-
         items.push(ReplacePreviewItem {
             activity_id: rec.activity_id,
             student_id: rec.student_id,
@@ -293,64 +298,48 @@ pub fn preview_replace(
             result,
         });
     }
-
     Ok(items)
 }
 
-#[tauri::command]
-pub fn apply_replace(
-    scope_type: String,
-    area_ids: Vec<i64>,
-    state: State<DbState>,
-    cache: State<ReplaceCacheState>,
+pub fn apply_replace_impl(
+    conn: &Connection,
+    scope_type: &str,
+    area_ids: &[i64],
+    key: Option<[u8; 32]>,
+    cache: &mut ReplaceCache,
 ) -> Result<ReplaceApplyResult, String> {
-    let (rules, records) = {
-        let guard = state.0.lock().unwrap();
-        let conn = guard
-            .as_ref()
-            .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
-        let rules = fetch_rules_from_db(conn)?;
-        let records = get_records_for_scope(conn, &scope_type, &area_ids)?;
-        (rules, records)
-    };
-
+    let rules = fetch_rules_from_db(conn)?;
+    let records = get_records_for_scope(conn, scope_type, area_ids, key)?;
     let total_count = records.len() as i64;
 
-    let changes: Vec<(i64, i64, String)> = {
-        let mut cache_guard = cache.lock().unwrap();
-        records
-            .iter()
-            .filter_map(|rec| {
-                let result = apply_rules_cached(&rec.content, &rules, &mut cache_guard);
-                if result != rec.content {
-                    Some((rec.activity_id, rec.student_id, result))
-                } else {
-                    None
-                }
-            })
-            .collect()
-    };
+    let changes: Vec<(i64, i64, String)> = records
+        .iter()
+        .filter_map(|rec| {
+            let result = apply_rules_cached(&rec.content, &rules, cache);
+            if result != rec.content {
+                Some((rec.activity_id, rec.student_id, result))
+            } else {
+                None
+            }
+        })
+        .collect();
 
     let changed_count = changes.len() as i64;
     if changes.is_empty() {
         return Ok(ReplaceApplyResult { changed_count: 0, total_count });
     }
 
-    let guard = state.0.lock().unwrap();
-    let conn = guard
-        .as_ref()
-        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
-
     conn.execute_batch("BEGIN").map_err(|e| e.to_string())?;
     let result: Result<(), String> = (|| {
-        for (activity_id, student_id, new_content) in &changes {
+        for (activity_id, student_id, plain_content) in &changes {
+            let stored = maybe_encrypt(plain_content, key)?;
             conn.execute(
                 "INSERT INTO ActivityRecord (activity_id, student_id, content, updated_at)
                  VALUES (?1, ?2, ?3, datetime('now'))
                  ON CONFLICT(activity_id, student_id) DO UPDATE SET
                    content = excluded.content,
                    updated_at = excluded.updated_at",
-                rusqlite::params![activity_id, student_id, new_content],
+                rusqlite::params![activity_id, student_id, stored],
             )
             .map_err(|e| e.to_string())?;
 
@@ -381,4 +370,38 @@ pub fn apply_replace(
             Err(e)
         }
     }
+}
+
+#[tauri::command]
+pub fn preview_replace(
+    scope_type: String,
+    area_ids: Vec<i64>,
+    state: State<DbState>,
+    cache: State<ReplaceCacheState>,
+    crypto: State<CryptoStateHandle>,
+) -> Result<Vec<ReplacePreviewItem>, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let key = resolve_data_key(conn, &crypto)?;
+    let mut cache_guard = cache.lock().unwrap();
+    preview_replace_impl(conn, &scope_type, &area_ids, key, &mut cache_guard)
+}
+
+#[tauri::command]
+pub fn apply_replace(
+    scope_type: String,
+    area_ids: Vec<i64>,
+    state: State<DbState>,
+    cache: State<ReplaceCacheState>,
+    crypto: State<CryptoStateHandle>,
+) -> Result<ReplaceApplyResult, String> {
+    let guard = state.0.lock().unwrap();
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    let key = resolve_data_key(conn, &crypto)?;
+    let mut cache_guard = cache.lock().unwrap();
+    apply_replace_impl(conn, &scope_type, &area_ids, key, &mut cache_guard)
 }

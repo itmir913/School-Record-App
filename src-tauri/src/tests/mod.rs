@@ -1,7 +1,10 @@
+use crate::state::DbPathState;
 use rusqlite::Connection;
+use std::sync::Mutex;
 
 pub mod engine_tests;
 pub mod db_tests;
+pub mod project_tests;
 pub mod area_tests;
 pub mod activity_tests;
 pub mod config_tests;
@@ -10,6 +13,24 @@ pub mod record_tests;
 pub mod snapshot_tests;
 pub mod replace_tests;
 pub mod synonym_tests;
+pub mod crypto_tests;
+pub mod crypto_cmd_tests;
+
+/// 테스트에서 백업 경로가 필요한 경우 사용. 임시 파일을 생성하고 DbPathState를 반환한다.
+/// 반환된 PathBuf(디렉토리)는 테스트 종료 후 직접 삭제해야 한다.
+pub fn setup_temp_db_path_state() -> (DbPathState, std::path::PathBuf) {
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let dir = std::env::temp_dir()
+        .join(format!("school_record_path_test_{}_{}", std::process::id(), nanos));
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("test.db");
+    std::fs::write(&path, b"").unwrap();
+    let state = DbPathState(Mutex::new(Some(path)));
+    (state, dir)
+}
 
 pub fn setup_test_db() -> Connection {
     let conn = Connection::open_in_memory().unwrap();

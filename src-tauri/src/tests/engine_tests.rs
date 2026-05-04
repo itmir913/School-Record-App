@@ -262,7 +262,7 @@ fn test_scope_all_returns_nonempty_records() {
     .unwrap();
     insert_record(&conn, act_id, stu_id, "내용있음");
 
-    let records = get_records_for_scope(&conn, "all", &[]).unwrap();
+    let records = get_records_for_scope(&conn, "all", &[], None).unwrap();
     assert_eq!(records.len(), 1);
     assert_eq!(records[0].content, "내용있음");
 }
@@ -274,7 +274,7 @@ fn test_scope_all_excludes_empty_content() {
     let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
     insert_record(&conn, act_id, stu_id, ""); // 빈 content
 
-    let records = get_records_for_scope(&conn, "all", &[]).unwrap();
+    let records = get_records_for_scope(&conn, "all", &[], None).unwrap();
     assert!(records.is_empty());
 }
 
@@ -301,7 +301,7 @@ fn test_scope_areas_filters_by_area() {
     insert_record(&conn, act1, stu, "영역1 기록");
     insert_record(&conn, act2, stu, "영역2 기록");
 
-    let records = get_records_for_scope(&conn, "areas", &[area1]).unwrap();
+    let records = get_records_for_scope(&conn, "areas", &[area1], None).unwrap();
     assert_eq!(records.len(), 1);
     assert_eq!(records[0].content, "영역1 기록");
 }
@@ -309,13 +309,13 @@ fn test_scope_areas_filters_by_area() {
 #[test]
 fn test_scope_areas_empty_ids_returns_empty() {
     let conn = setup_test_db();
-    let records = get_records_for_scope(&conn, "areas", &[]).unwrap();
+    let records = get_records_for_scope(&conn, "areas", &[], None).unwrap();
     assert!(records.is_empty());
 }
 
 #[test]
 fn test_scope_unknown_returns_error() {
     let conn = setup_test_db();
-    let result = get_records_for_scope(&conn, "invalid_scope", &[]);
+    let result = get_records_for_scope(&conn, "invalid_scope", &[], None);
     assert!(result.is_err());
 }
