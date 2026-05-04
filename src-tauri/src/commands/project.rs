@@ -14,7 +14,8 @@ pub(crate) fn new_project_impl(
         return Err(format!("이미 파일이 존재합니다: {path}"));
     }
     let conn = crate::db::create_new(p).map_err(|e| e.to_string())?;
-    *state.0.lock().map_err(|e| e.to_string())? = Some(conn);
+    let mut guard = state.0.lock().map_err(|e| e.to_string())?;
+    *guard = Some(conn);
     *db_path_state.0.lock().map_err(|e| e.to_string())? = Some(p.to_path_buf());
     clear_crypto_state(crypto)?;
     Ok(())
@@ -37,7 +38,8 @@ pub(crate) fn open_project_impl(
     }
 
     let conn = crate::db::open_existing(src).map_err(|e| e.to_string())?;
-    *state.0.lock().map_err(|e| e.to_string())? = Some(conn);
+    let mut guard = state.0.lock().map_err(|e| e.to_string())?;
+    *guard = Some(conn);
     *db_path_state.0.lock().map_err(|e| e.to_string())? = Some(src.to_path_buf());
     clear_crypto_state(crypto)?;
     Ok(())
