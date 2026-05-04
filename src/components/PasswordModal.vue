@@ -161,8 +161,8 @@ function handleCancel() {
       </div>
 
       <div class="actions">
-        <button v-if="mode !== 'unlock'" class="btn-cancel" @click="handleCancel" :disabled="loading">
-          취소
+        <button class="btn-cancel" @click="handleCancel" :disabled="loading">
+          {{ mode === 'unlock' ? '뒤로 가기' : '취소' }}
         </button>
         <button class="btn-submit" @click="handleSubmit" :disabled="loading">
           <span v-if="loading" class="spinner"/>
