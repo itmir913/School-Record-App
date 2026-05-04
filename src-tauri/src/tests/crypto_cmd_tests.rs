@@ -924,17 +924,10 @@ fn test_replace_then_history_roundtrip_with_encryption() {
     let grid = get_area_grid_impl(&conn, area_id, Some(key)).unwrap();
     assert_eq!(grid.records[0].content, "원본 내용 XYZ");
 
-    // history가 존재하며 모든 항목이 복호화된 평문이어야 한다
+    // apply_replace는 치환 후 새 content를 history에 저장한다.
+    // upsert_record_impl만으로는 history가 생성되지 않으므로 항목은 1개여야 한다.
     let history = get_record_history_impl(&conn, act_id, stu_id, 10, 0, Some(key)).unwrap();
-    assert!(!history.is_empty(), "치환 적용 후 history가 있어야 한다");
-    for entry in &history {
-        assert!(
-            !entry.content.contains(':') || entry.content.is_empty(),
-            "history content가 암호화된 ciphertext 형식이면 안 된다: {}",
-            entry.content
-        );
-    }
-    // 가장 최근 history의 content는 치환된 결과여야 한다
+    assert_eq!(history.len(), 1, "apply_replace 후 history는 정확히 1개여야 한다");
     assert_eq!(history[0].content, "원본 내용 XYZ", "history[0]이 복호화된 치환 결과여야 한다");
 }
 
