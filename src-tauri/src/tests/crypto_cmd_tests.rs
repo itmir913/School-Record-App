@@ -798,6 +798,193 @@ fn test_disable_encryption_with_blank_name_student() {
     std::fs::remove_dir_all(&tmp_dir).ok();
 }
 
+// ── 통합 시나리오 테스트 ──────────────────────────────────────────
+
+#[test]
+fn test_full_workflow_with_encryption() {
+    // 전체 파이프라인: enable → import → replace → disable
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+
+    let area_id = insert_area(&conn, "국어", 500);
+    let act_id = insert_activity(&conn, "발표");
+    conn.execute(
+        "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
+        rusqlite::params![area_id, act_id],
+    )
+    .unwrap();
+
+    // 1. 암호화 활성화
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    let key = resolve_data_key(&conn, &crypto).unwrap().unwrap();
+
+    // 2. 암호화 상태에서 학생/기록 임포트
+    bulk_import_records_impl(
+        &conn,
+        &[make_import(1, 1, 1, Some("홍길동"), act_id, "가나다 발표 내용")],
+        Some(key),
+    )
+    .unwrap();
+
+    let stu_id: i64 = conn
+        .query_row("SELECT id FROM Student WHERE grade=1", [], |r| r.get(0))
+        .unwrap();
+    conn.execute(
+        "INSERT INTO AreaStudent (area_id, student_id) VALUES (?1, ?2)",
+        rusqlite::params![area_id, stu_id],
+    )
+    .unwrap();
+
+    // 3. 치환 규칙 적용 (가나다 → ABC)
+    create_replace_rule_db(&conn, "가나다", "ABC", false, 1).unwrap();
+    let mut cache = make_cache();
+    let replace_result = apply_replace_impl(&conn, "all", &[], Some(key), &mut cache).unwrap();
+    assert_eq!(replace_result.changed_count, 1);
+
+    // 4. 암호화 상태에서 치환된 결과 확인
+    let grid_encrypted = get_area_grid_impl(&conn, area_id, Some(key)).unwrap();
+    assert_eq!(grid_encrypted.records[0].content, "ABC 발표 내용");
+    assert_eq!(grid_encrypted.students[0].name, "홍길동");
+
+    // DB에는 암호화된 값이 저장되어야 한다
+    let raw: String = conn
+        .query_row(
+            "SELECT content FROM ActivityRecord WHERE activity_id=?1 AND student_id=?2",
+            rusqlite::params![act_id, stu_id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_ne!(raw, "ABC 발표 내용", "치환 결과가 평문으로 저장되면 안 된다");
+
+    // 5. 암호화 비활성화
+    disable_encryption_impl(&conn, &crypto, &db_path).unwrap();
+
+    // 6. None 키로 동일한 평문이 조회되어야 한다
+    let grid_plain = get_area_grid_impl(&conn, area_id, None).unwrap();
+    assert_eq!(grid_plain.records[0].content, "ABC 발표 내용");
+    assert_eq!(grid_plain.students[0].name, "홍길동");
+
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+#[test]
+fn test_encrypt_state_transitions() {
+    // 상태 A: 암호화 비활성화 → resolve_data_key → Ok(None)
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+
+    let key_a = resolve_data_key(&conn, &crypto).unwrap();
+    assert!(key_a.is_none(), "암호화 비활성화 상태에서 key는 None이어야 한다");
+
+    // 상태 B: 활성화 + 잠금 → resolve_data_key → Err("잠금")
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    clear_crypto_state(&crypto).unwrap(); // 잠금 상태로 전환
+    let err = resolve_data_key(&conn, &crypto).unwrap_err();
+    assert!(err.contains("잠금"), "잠금 상태 에러 메시지: {err}");
+
+    // 상태 C: 활성화 + 해제 → resolve_data_key → Ok(Some(key))
+    unlock_encryption_impl(&conn, &crypto, "password").unwrap();
+    let key_c = resolve_data_key(&conn, &crypto).unwrap();
+    assert!(key_c.is_some(), "해제 상태에서 key는 Some이어야 한다");
+    assert_ne!(key_c.unwrap(), [0u8; 32], "key는 영벡터가 아니어야 한다");
+
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+#[test]
+fn test_replace_then_history_roundtrip_with_encryption() {
+    // apply_replace 후 get_record_history_impl로 history 평문 검증
+    // (apply_replace는 치환된 새 content를 history에 저장)
+    let conn = setup_test_db();
+    let key = test_key();
+    let area_id = insert_area(&conn, "국어", 500);
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = create_student_impl(&conn, 1, 1, 1, "홍길동", Some(key)).unwrap();
+    conn.execute(
+        "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
+        rusqlite::params![area_id, act_id],
+    )
+    .unwrap();
+    conn.execute(
+        "INSERT INTO AreaStudent (area_id, student_id) VALUES (?1, ?2)",
+        rusqlite::params![area_id, stu_id],
+    )
+    .unwrap();
+
+    upsert_record_impl(&conn, act_id, stu_id, "원본 내용 ABC", Some(key)).unwrap();
+
+    create_replace_rule_db(&conn, "ABC", "XYZ", false, 1).unwrap();
+    let mut cache = make_cache();
+    apply_replace_impl(&conn, "all", &[], Some(key), &mut cache).unwrap();
+
+    // 현재 content가 복호화되어야 한다
+    let grid = get_area_grid_impl(&conn, area_id, Some(key)).unwrap();
+    assert_eq!(grid.records[0].content, "원본 내용 XYZ");
+
+    // history가 존재하며 모든 항목이 복호화된 평문이어야 한다
+    let history = get_record_history_impl(&conn, act_id, stu_id, 10, 0, Some(key)).unwrap();
+    assert!(!history.is_empty(), "치환 적용 후 history가 있어야 한다");
+    for entry in &history {
+        assert!(
+            !entry.content.contains(':') || entry.content.is_empty(),
+            "history content가 암호화된 ciphertext 형식이면 안 된다: {}",
+            entry.content
+        );
+    }
+    // 가장 최근 history의 content는 치환된 결과여야 한다
+    assert_eq!(history[0].content, "원본 내용 XYZ", "history[0]이 복호화된 치환 결과여야 한다");
+}
+
+#[test]
+fn test_bulk_import_then_inspect_with_encryption() {
+    // 여러 학생 대량 임포트 후 inspect 결과가 모두 평문인지 검증
+    let conn = setup_test_db();
+    let key = test_key();
+    let act_id = insert_activity(&conn, "발표");
+
+    bulk_import_records_impl(
+        &conn,
+        &[
+            make_import(1, 1, 1, Some("홍길동"), act_id, "우수한 발표 내용"),
+            make_import(1, 1, 2, Some("이순신"), act_id, "성실한 태도 기록"),
+            make_import(1, 1, 3, Some("강감찬"), act_id, "창의적인 발표"),
+        ],
+        Some(key),
+    )
+    .unwrap();
+
+    // DB에는 암호화된 값이 저장되어야 한다
+    let raw_names: Vec<String> = {
+        let mut stmt = conn
+            .prepare("SELECT name FROM Student ORDER BY number")
+            .unwrap();
+        stmt.query_map([], |r| r.get(0))
+            .unwrap()
+            .map(|r| r.unwrap())
+            .collect()
+    };
+    for name in &raw_names {
+        assert!(name.contains(':'), "DB 이름이 암호화 형식이어야 한다: {name}");
+    }
+
+    // Some(key)로 inspect 조회 → 모든 필드가 평문이어야 한다
+    let records =
+        get_all_records_for_inspect_impl(&conn, "all", vec![], Some(key)).unwrap();
+    assert_eq!(records.len(), 3, "3개 기록이 반환되어야 한다");
+
+    let names: Vec<&str> = records.iter().map(|r| r.student_name.as_str()).collect();
+    assert!(names.contains(&"홍길동"), "홍길동이 복호화되어야 한다");
+    assert!(names.contains(&"이순신"), "이순신이 복호화되어야 한다");
+    assert!(names.contains(&"강감찬"), "강감찬이 복호화되어야 한다");
+
+    let contents: Vec<&str> = records.iter().map(|r| r.content.as_str()).collect();
+    assert!(contents.contains(&"우수한 발표 내용"));
+    assert!(contents.contains(&"성실한 태도 기록"));
+    assert!(contents.contains(&"창의적인 발표"));
+}
+
 // ── bulk_import 후 history 복호화 조합 테스트 ────────────────────
 
 #[test]
