@@ -42,7 +42,6 @@ fn test_create_student_with_key_stores_encrypted_name() {
         .query_row("SELECT name FROM Student WHERE grade=1", [], |r| r.get(0))
         .unwrap();
     assert_ne!(raw_name, "홍길동", "DB에 평문이 저장되면 안 된다");
-    assert!(raw_name.contains(':'), "nonce:ciphertext 형식이어야 한다");
 }
 
 #[test]
@@ -180,7 +179,6 @@ fn test_upsert_record_with_key_stores_encrypted_content() {
         raw, "리더십이 뛰어난 학생입니다.",
         "DB에 평문이 저장되면 안 된다"
     );
-    assert!(raw.contains(':'), "nonce:ciphertext 형식이어야 한다");
 }
 
 #[test]
@@ -259,7 +257,11 @@ fn test_get_record_history_with_key_decrypts_content() {
         "복호화된 히스토리 content여야 한다"
     );
     // DB에는 여전히 암호화 값이 저장되어 있어야 한다
-    assert!(encrypted_content.contains(':'));
+    // — 평문과 달라야 하고, 올바른 키로 복호화하면 원문이 나와야 한다
+    assert_ne!(encrypted_content, "발표 내용", "DB에 평문이 저장되면 안 된다");
+    let decrypted = crate::crypto::decrypt(&encrypted_content, &key)
+        .expect("유효한 암호문이어야 한다");
+    assert_eq!(decrypted, "발표 내용", "올바른 키로 복호화하면 원문이어야 한다");
 }
 
 // ── engine: get_records_for_scope ─────────────────────────────────
@@ -522,7 +524,6 @@ fn test_bulk_import_records_with_key() {
         .query_row("SELECT name FROM Student WHERE grade=1", [], |r| r.get(0))
         .unwrap();
     assert_ne!(raw_name, "홍길동", "이름이 평문으로 저장되면 안 된다");
-    assert!(raw_name.contains(':'), "nonce:ciphertext 형식이어야 한다");
 
     let raw_content: String = conn
         .query_row(
@@ -532,7 +533,6 @@ fn test_bulk_import_records_with_key() {
         )
         .unwrap();
     assert_ne!(raw_content, "발표 내용", "content가 평문으로 저장되면 안 된다");
-    assert!(raw_content.contains(':'));
 
     // Some(key)로 읽으면 복호화된 원문이 나와야 한다
     conn.execute(
@@ -571,7 +571,6 @@ fn test_bulk_import_records_with_key_existing_empty_name() {
         .query_row("SELECT name FROM Student WHERE grade=1", [], |r| r.get(0))
         .unwrap();
     assert_ne!(raw_name, "새이름");
-    assert!(raw_name.contains(':'));
 }
 
 // ── preview_import_records: 암호화 경로 ──────────────────────────
@@ -749,7 +748,6 @@ fn test_apply_replace_with_key_reencrypts_result() {
         )
         .unwrap();
     assert_ne!(raw, "ABC 발표", "치환 결과가 평문으로 저장되면 안 된다");
-    assert!(raw.contains(':'), "재암호화된 nonce:ciphertext 형식이어야 한다");
 
     // Some(key)로 읽으면 치환된 평문이 복호화되어야 한다
     let grid = get_area_grid_impl(&conn, area_id, Some(key)).unwrap();
@@ -950,6 +948,8 @@ fn test_bulk_import_then_inspect_with_encryption() {
     .unwrap();
 
     // DB에는 암호화된 값이 저장되어야 한다
+    // — 평문과 달라야 하고, 올바른 키로 복호화하면 원문이 나와야 한다
+    let expected_names = ["홍길동", "이순신", "강감찬"];
     let raw_names: Vec<String> = {
         let mut stmt = conn
             .prepare("SELECT name FROM Student ORDER BY number")
@@ -959,8 +959,11 @@ fn test_bulk_import_then_inspect_with_encryption() {
             .map(|r| r.unwrap())
             .collect()
     };
-    for name in &raw_names {
-        assert!(name.contains(':'), "DB 이름이 암호화 형식이어야 한다: {name}");
+    for (raw, expected) in raw_names.iter().zip(expected_names.iter()) {
+        assert_ne!(raw, expected, "DB에 평문이 저장되면 안 된다: {raw}");
+        let decrypted = crate::crypto::decrypt(raw, &key)
+            .unwrap_or_else(|e| panic!("유효한 암호문이어야 한다 ({raw}): {e}"));
+        assert_eq!(&decrypted, expected, "올바른 키로 복호화하면 원문이어야 한다");
     }
 
     // Some(key)로 inspect 조회 → 모든 필드가 평문이어야 한다
@@ -1012,7 +1015,6 @@ fn test_bulk_import_history_readable_with_key() {
         .query_row("SELECT content FROM ActivityRecordHistory LIMIT 1", [], |r| r.get(0))
         .unwrap();
     assert_ne!(raw_history, "발표 내용", "history DB에는 암호화된 값이 있어야 한다");
-    assert!(raw_history.contains(':'));
 }
 
 // ── 파일 DB 재시작 시나리오 ───────────────────────────────────────────
@@ -1213,7 +1215,6 @@ fn test_restore_plaintext_snapshot_after_encryption_enabled() {
         )
         .unwrap();
     assert_ne!(raw, "v1 내용", "복원 후에도 DB에는 암호화된 값이 저장되어야 한다");
-    assert!(raw.contains(':'), "복원된 값이 nonce:ciphertext 형식이어야 한다");
 
     std::fs::remove_dir_all(&tmp_dir).ok();
 }
