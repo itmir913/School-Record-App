@@ -9,7 +9,7 @@ use sha2::Sha256;
 
 const AES_256_KEY_LEN: usize = 32;
 const AES_GCM_NONCE_LEN: usize = 12;
-const PBKDF2_ITERATIONS: u32 = 100_000;
+const PBKDF2_ITERATIONS: u32 = 600_000;
 
 fn cipher_from_key(key: &[u8]) -> Result<Aes256Gcm, String> {
     if key.len() != AES_256_KEY_LEN {
