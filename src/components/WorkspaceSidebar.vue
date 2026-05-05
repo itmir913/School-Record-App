@@ -85,7 +85,7 @@ const navGroups = [
     <!-- 상단: 타이틀 + 토글 -->
     <div class="sidebar-header">
       <div v-if="!collapsed" class="sidebar-title">
-        <span class="title-badge">생기부</span>
+        <span class="title-badge">에디터</span>
         <span class="title-text">학교생활기록부</span>
       </div>
       <button class="toggle-btn" @click="toggle" :title="collapsed ? '사이드바 열기' : '사이드바 접기'">
