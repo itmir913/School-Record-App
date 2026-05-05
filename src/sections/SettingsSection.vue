@@ -11,6 +11,7 @@ const passwordModalMode = ref('setup')
 const passwordError = ref('')
 const passwordLoading = ref(false)
 const statusMessage = ref('')
+const confirmDisable = ref(false)
 
 function openSetup() {
   passwordModalMode.value = 'setup'
@@ -27,7 +28,11 @@ function openChange() {
 }
 
 async function handleDisable() {
-  if (!confirm('암호화를 비활성화하면 데이터가 평문으로 저장됩니다. 계속하시겠습니까?')) return
+  if (!confirmDisable.value) {
+    confirmDisable.value = true
+    return
+  }
+  confirmDisable.value = false
   statusMessage.value = ''
   try {
     await config.disableEncryption()
@@ -101,10 +106,20 @@ async function handlePasswordSubmit(payload) {
               <KeyRound :size="16"/>
               비밀번호 변경
             </button>
-            <button class="btn-disable" @click="handleDisable">
+            <button v-if="!confirmDisable" class="btn-disable" @click="handleDisable">
               <ShieldOff :size="16"/>
               암호화 비활성화
             </button>
+            <div v-else class="disable-confirm-row">
+              <div class="disable-warning">
+                <AlertTriangle :size="14" class="disable-warning-icon"/>
+                <span class="disable-warning-title">암호화를 정말 비활성화하시겠습니까?</span>
+              </div>
+              <div class="disable-confirm-btns">
+                <button class="btn-cancel-sm" @click="confirmDisable = false">취소</button>
+                <button class="btn-disable-confirm" @click="handleDisable">비활성화</button>
+              </div>
+            </div>
           </template>
         </div>
 
@@ -324,6 +339,72 @@ async function handlePasswordSubmit(payload) {
 
 .status-error {
   color: #fca5a5;
+}
+
+.disable-confirm-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.disable-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(239, 68, 68, 0.07);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
+  padding: 9px 18px;
+}
+
+.disable-warning-icon {
+  color: #f87171;
+  flex-shrink: 0;
+}
+
+.disable-warning-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f87171;
+}
+
+.disable-confirm-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-cancel-sm {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(100, 116, 139, 0.4);
+  background: transparent;
+  color: #94a3b8;
+  font-size: 14px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.btn-cancel-sm:hover {
+  background-color: rgba(100, 116, 139, 0.12);
+}
+
+.btn-disable-confirm {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background-color: #ef4444;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  box-sizing: border-box;
+}
+
+.btn-disable-confirm:hover {
+  background-color: #dc2626;
 }
 
 .fade-enter-from, .fade-leave-to {
