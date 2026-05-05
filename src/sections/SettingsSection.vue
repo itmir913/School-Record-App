@@ -10,35 +10,39 @@ const showPasswordModal = ref(false)
 const passwordModalMode = ref('setup')
 const passwordError = ref('')
 const passwordLoading = ref(false)
-const statusMessage = ref('')
-const confirmDisable = ref(false)
+const statusEncryptMessage = ref('')
+const confirmEncryptDisable = ref(false)
+const disableEncryptLoading = ref(false)
 
 function openSetup() {
   passwordModalMode.value = 'setup'
   passwordError.value = ''
-  statusMessage.value = ''
+  statusEncryptMessage.value = ''
   showPasswordModal.value = true
 }
 
 function openChange() {
   passwordModalMode.value = 'change'
   passwordError.value = ''
-  statusMessage.value = ''
+  statusEncryptMessage.value = ''
   showPasswordModal.value = true
 }
 
 async function handleDisable() {
-  if (!confirmDisable.value) {
-    confirmDisable.value = true
+  if (!confirmEncryptDisable.value) {
+    confirmEncryptDisable.value = true
     return
   }
-  confirmDisable.value = false
-  statusMessage.value = ''
+  confirmEncryptDisable.value = false
+  disableEncryptLoading.value = true
+  statusEncryptMessage.value = ''
   try {
     await config.disableEncryption()
-    statusMessage.value = '암호화가 비활성화되었습니다.'
+    statusEncryptMessage.value = '암호화가 비활성화되었습니다.'
   } catch (e) {
-    statusMessage.value = '오류: ' + String(e)
+    statusEncryptMessage.value = '오류: ' + String(e)
+  } finally {
+    disableEncryptLoading.value = false
   }
 }
 
@@ -48,10 +52,10 @@ async function handlePasswordSubmit(payload) {
   try {
     if (passwordModalMode.value === 'setup') {
       await config.enableEncryption(payload.password)
-      statusMessage.value = '암호화가 활성화되었습니다.'
+      statusEncryptMessage.value = '암호화가 활성화되었습니다.'
     } else {
       await config.changeEncryptionPassword(payload.oldPassword, payload.newPassword)
-      statusMessage.value = '비밀번호가 변경되었습니다.'
+      statusEncryptMessage.value = '비밀번호가 변경되었습니다.'
     }
     showPasswordModal.value = false
   } catch (e) {
@@ -102,11 +106,11 @@ async function handlePasswordSubmit(payload) {
             암호화 활성화
           </button>
           <template v-else>
-            <button class="btn-change" @click="openChange">
+            <button class="btn-change" :disabled="disableEncryptLoading" @click="openChange">
               <KeyRound :size="16"/>
               비밀번호 변경
             </button>
-            <button v-if="!confirmDisable" class="btn-disable" @click="handleDisable">
+            <button v-if="!confirmEncryptDisable" class="btn-disable" :disabled="disableEncryptLoading" @click="handleDisable">
               <ShieldOff :size="16"/>
               암호화 비활성화
             </button>
@@ -116,8 +120,10 @@ async function handlePasswordSubmit(payload) {
                 <span class="disable-warning-title">암호화를 정말 비활성화하시겠습니까?</span>
               </div>
               <div class="disable-confirm-btns">
-                <button class="btn-cancel-sm" @click="confirmDisable = false">취소</button>
-                <button class="btn-disable-confirm" @click="handleDisable">비활성화</button>
+                <button class="btn-cancel-sm" :disabled="disableEncryptLoading" @click="confirmEncryptDisable = false">취소</button>
+                <button class="btn-disable-confirm" :disabled="disableEncryptLoading" @click="handleDisable">
+                  {{ disableEncryptLoading ? '처리 중…' : '비활성화' }}
+                </button>
               </div>
             </div>
           </template>
@@ -125,9 +131,9 @@ async function handlePasswordSubmit(payload) {
 
         <!-- 상태 메시지 -->
         <transition name="fade">
-          <p v-if="statusMessage" class="status-msg"
-             :class="statusMessage.startsWith('오류') ? 'status-error' : 'status-ok'">
-            {{ statusMessage }}
+          <p v-if="statusEncryptMessage" class="status-msg"
+             :class="statusEncryptMessage.startsWith('오류') ? 'status-error' : 'status-ok'">
+            {{ statusEncryptMessage }}
           </p>
         </transition>
       </div>
