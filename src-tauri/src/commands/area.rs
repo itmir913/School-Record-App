@@ -12,7 +12,7 @@ pub fn get_areas_impl(conn: &Connection) -> Result<Vec<AreaItem>, String> {
              FROM Area a
              LEFT JOIN AreaActivity aa ON a.id = aa.area_id
              LEFT JOIN Activity act ON aa.activity_id = act.id
-             ORDER BY a.id",
+             ORDER BY a.name ASC",
         )
         .map_err(|e| e.to_string())?;
 
