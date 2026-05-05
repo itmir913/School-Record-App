@@ -299,7 +299,9 @@ async function handlePasswordSubmit(payload) {
   border: 1px solid transparent;
 }
 
-.btn-enable:active, .btn-change:active, .btn-disable:active {
+.btn-enable:active:not(:disabled),
+.btn-change:active:not(:disabled),
+.btn-disable:active:not(:disabled) {
   transform: scale(0.97);
 }
 
@@ -411,6 +413,16 @@ async function handlePasswordSubmit(payload) {
 
 .btn-disable-confirm:hover {
   background-color: #dc2626;
+}
+
+.btn-enable:disabled,
+.btn-change:disabled,
+.btn-disable:disabled,
+.btn-cancel-sm:disabled,
+.btn-disable-confirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .fade-enter-from, .fade-leave-to {
