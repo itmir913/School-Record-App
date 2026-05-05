@@ -91,15 +91,15 @@ function handleCancel() {
         <div>
           <h2>{{ title }}</h2>
           <p v-if="mode === 'unlock'">이 파일은 암호화되어 있습니다.</p>
-          <p v-else-if="mode === 'setup'">암호화할 비밀번호를 설정합니다.</p>
-          <p v-else>현재 비밀번호와 새 비밀번호를 입력합니다.</p>
+          <p v-else-if="mode === 'setup'">암호화 비밀번호를 입력하세요.</p>
+          <p v-else>현재 비밀번호와 새 비밀번호를 입력하세요.</p>
         </div>
       </div>
 
       <!-- 비밀번호 분실 경고 (setup 모드) -->
       <div v-if="mode === 'setup'" class="warning-box">
         <AlertTriangle :size="16" class="warning-icon"/>
-        <span>비밀번호를 분실하면 데이터를 복구할 수 없습니다. 반드시 안전한 곳에 보관하세요.</span>
+        <span>비밀번호를 분실하면 데이터를 절대로 복구할 수 없습니다. 반드시 안전한 곳에 보관하세요.</span>
       </div>
 
       <div class="form">

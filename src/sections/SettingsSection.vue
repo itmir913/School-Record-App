@@ -71,7 +71,7 @@ async function handlePasswordSubmit(payload) {
     <div class="section-header">
       <div>
         <h2 class="section-title">설정(Settings)</h2>
-        <p class="section-desc">파일 및 보안 설정을 관리합니다.</p>
+        <p class="section-desc">프로그램의 기본 설정을 관리합니다.</p>
       </div>
     </div>
 
@@ -86,7 +86,7 @@ async function handlePasswordSubmit(payload) {
           </div>
           <div>
             <h3 class="card-title">데이터 암호화</h3>
-            <p class="card-desc">학생 이름과 생기부 내용을 암호화합니다.</p>
+            <p class="card-desc">학생 개인정보와 학교생활기록부 내용을 암호화하여 보호합니다.</p>
           </div>
           <div class="card-badge" :class="config.encryptionEnabled ? 'badge-on' : 'badge-off'">
             {{ config.encryptionEnabled ? '활성화' : '비활성화' }}
