@@ -9,7 +9,7 @@ fn test_create_snapshot_creates_history_for_records() {
     let conn = setup_test_db();
     let act_id = insert_activity(&conn, "발표");
     let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
-    upsert_record_impl(&conn, act_id, stu_id, "훌륭한 발표").unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "훌륭한 발표", None).unwrap();
 
     create_snapshot_impl(&conn, None).unwrap();
 
@@ -24,7 +24,7 @@ fn test_create_snapshot_no_duplicate_same_updated_at() {
     let conn = setup_test_db();
     let act_id = insert_activity(&conn, "발표");
     let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
-    upsert_record_impl(&conn, act_id, stu_id, "내용").unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "내용", None).unwrap();
 
     create_snapshot_impl(&conn, None).unwrap();
     create_snapshot_impl(&conn, None).unwrap();
@@ -110,11 +110,11 @@ fn test_restore_snapshot_reverts_content() {
     let conn = setup_test_db();
     let act_id = insert_activity(&conn, "발표");
     let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
-    upsert_record_impl(&conn, act_id, stu_id, "초기 내용").unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "초기 내용", None).unwrap();
 
     let snap = create_snapshot_impl(&conn, None).unwrap();
 
-    upsert_record_impl(&conn, act_id, stu_id, "수정된 내용").unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "수정된 내용", None).unwrap();
 
     restore_snapshot_impl(&conn, snap.id).unwrap();
 
@@ -170,8 +170,8 @@ fn test_restore_returns_affected_row_count() {
     let act_id = insert_activity(&conn, "발표");
     let stu1 = insert_student(&conn, 1, 1, 1, "홍길동");
     let stu2 = insert_student(&conn, 1, 1, 2, "김철수");
-    upsert_record_impl(&conn, act_id, stu1, "내용1").unwrap();
-    upsert_record_impl(&conn, act_id, stu2, "내용2").unwrap();
+    upsert_record_impl(&conn, act_id, stu1, "내용1", None).unwrap();
+    upsert_record_impl(&conn, act_id, stu2, "내용2", None).unwrap();
 
     let snap = create_snapshot_impl(&conn, None).unwrap();
     let count = restore_snapshot_impl(&conn, snap.id).unwrap();

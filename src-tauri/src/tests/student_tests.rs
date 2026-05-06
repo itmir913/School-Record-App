@@ -8,15 +8,15 @@ use super::{insert_activity, insert_area, insert_record, insert_student, setup_t
 #[test]
 fn test_create_student_returns_id() {
     let conn = setup_test_db();
-    let id = create_student_impl(&conn, 1, 1, 1, "홍길동").unwrap();
+    let id = create_student_impl(&conn, 1, 1, 1, "홍길동", None).unwrap();
     assert!(id > 0);
 }
 
 #[test]
 fn test_create_student_duplicate_key_error() {
     let conn = setup_test_db();
-    create_student_impl(&conn, 1, 1, 1, "홍길동").unwrap();
-    let err = create_student_impl(&conn, 1, 1, 1, "홍길동").unwrap_err();
+    create_student_impl(&conn, 1, 1, 1, "홍길동", None).unwrap();
+    let err = create_student_impl(&conn, 1, 1, 1, "홍길동", None).unwrap_err();
     assert!(err.contains("이미 같은 학번의 학생"), "에러 메시지: {err}");
 }
 
@@ -27,7 +27,7 @@ fn test_get_students_ordered_by_grade_class_number() {
     insert_student(&conn, 1, 2, 1, "나");
     insert_student(&conn, 1, 1, 5, "가");
 
-    let students = get_students_impl(&conn).unwrap();
+    let students = get_students_impl(&conn, None).unwrap();
     assert_eq!(students[0].name, "가");
     assert_eq!(students[1].name, "나");
     assert_eq!(students[2].name, "다");
@@ -36,10 +36,10 @@ fn test_get_students_ordered_by_grade_class_number() {
 #[test]
 fn test_update_student() {
     let conn = setup_test_db();
-    let id = create_student_impl(&conn, 1, 1, 1, "홍길동").unwrap();
-    update_student_impl(&conn, id, 2, 3, 10, "김철수").unwrap();
+    let id = create_student_impl(&conn, 1, 1, 1, "홍길동", None).unwrap();
+    update_student_impl(&conn, id, 2, 3, 10, "김철수", None).unwrap();
 
-    let students = get_students_impl(&conn).unwrap();
+    let students = get_students_impl(&conn, None).unwrap();
     assert_eq!(students[0].name, "김철수");
     assert_eq!(students[0].grade, 2);
     assert_eq!(students[0].class_num, 3);
@@ -49,20 +49,20 @@ fn test_update_student() {
 #[test]
 fn test_update_student_duplicate_key_error() {
     let conn = setup_test_db();
-    let id1 = create_student_impl(&conn, 1, 1, 1, "홍길동").unwrap();
-    let id2 = create_student_impl(&conn, 1, 1, 2, "김철수").unwrap();
+    let id1 = create_student_impl(&conn, 1, 1, 1, "홍길동", None).unwrap();
+    let id2 = create_student_impl(&conn, 1, 1, 2, "김철수", None).unwrap();
     let _ = id1;
-    let err = update_student_impl(&conn, id2, 1, 1, 1, "김철수").unwrap_err();
+    let err = update_student_impl(&conn, id2, 1, 1, 1, "김철수", None).unwrap_err();
     assert!(err.contains("이미 같은 학번의 학생"), "에러 메시지: {err}");
 }
 
 #[test]
 fn test_delete_student() {
     let conn = setup_test_db();
-    let id = create_student_impl(&conn, 1, 1, 1, "홍길동").unwrap();
+    let id = create_student_impl(&conn, 1, 1, 1, "홍길동", None).unwrap();
     delete_student_impl(&conn, id).unwrap();
 
-    let students = get_students_impl(&conn).unwrap();
+    let students = get_students_impl(&conn, None).unwrap();
     assert!(students.is_empty());
 }
 
@@ -92,7 +92,7 @@ fn test_bulk_upsert_all_new() {
         StudentInput { grade: 1, class_num: 1, number: 1, name: "가".to_string() },
         StudentInput { grade: 1, class_num: 1, number: 2, name: "나".to_string() },
     ];
-    let result = bulk_upsert_students_impl(&conn, &students).unwrap();
+    let result = bulk_upsert_students_impl(&conn, &students, None).unwrap();
     assert_eq!(result.inserted, 2);
     assert_eq!(result.updated, 0);
 }
@@ -107,11 +107,11 @@ fn test_bulk_upsert_all_existing() {
         StudentInput { grade: 1, class_num: 1, number: 1, name: "홍길동(변경)".to_string() },
         StudentInput { grade: 1, class_num: 1, number: 2, name: "김철수(변경)".to_string() },
     ];
-    let result = bulk_upsert_students_impl(&conn, &students).unwrap();
+    let result = bulk_upsert_students_impl(&conn, &students, None).unwrap();
     assert_eq!(result.inserted, 0);
     assert_eq!(result.updated, 2);
 
-    let list = get_students_impl(&conn).unwrap();
+    let list = get_students_impl(&conn, None).unwrap();
     assert_eq!(list[0].name, "홍길동(변경)");
     assert_eq!(list[1].name, "김철수(변경)");
 }
@@ -125,7 +125,7 @@ fn test_bulk_upsert_mixed() {
         StudentInput { grade: 1, class_num: 1, number: 1, name: "기존(갱신)".to_string() },
         StudentInput { grade: 1, class_num: 1, number: 2, name: "신규".to_string() },
     ];
-    let result = bulk_upsert_students_impl(&conn, &students).unwrap();
+    let result = bulk_upsert_students_impl(&conn, &students, None).unwrap();
     assert_eq!(result.inserted, 1);
     assert_eq!(result.updated, 1);
 }
@@ -133,7 +133,7 @@ fn test_bulk_upsert_mixed() {
 #[test]
 fn test_bulk_upsert_empty_list() {
     let conn = setup_test_db();
-    let result = bulk_upsert_students_impl(&conn, &[]).unwrap();
+    let result = bulk_upsert_students_impl(&conn, &[], None).unwrap();
     assert_eq!(result.inserted, 0);
     assert_eq!(result.updated, 0);
 }
@@ -269,7 +269,7 @@ fn test_delete_student_cascades_area_student() {
 #[test]
 fn test_get_students_empty() {
     let conn = setup_test_db();
-    let students = get_students_impl(&conn).unwrap();
+    let students = get_students_impl(&conn, None).unwrap();
     assert!(students.is_empty());
 }
 
@@ -278,28 +278,28 @@ fn test_get_students_empty() {
 #[test]
 fn test_create_student_grade_zero_violates_check() {
     let conn = setup_test_db();
-    let err = create_student_impl(&conn, 0, 1, 1, "홍길동").unwrap_err();
+    let err = create_student_impl(&conn, 0, 1, 1, "홍길동", None).unwrap_err();
     assert!(err.contains("CHECK constraint failed"), "grade=0 CHECK 위반이어야 함: {err}");
 }
 
 #[test]
 fn test_create_student_class_num_zero_violates_check() {
     let conn = setup_test_db();
-    let err = create_student_impl(&conn, 1, 0, 1, "홍길동").unwrap_err();
+    let err = create_student_impl(&conn, 1, 0, 1, "홍길동", None).unwrap_err();
     assert!(err.contains("CHECK constraint failed"), "class_num=0 CHECK 위반이어야 함: {err}");
 }
 
 #[test]
 fn test_create_student_number_zero_violates_check() {
     let conn = setup_test_db();
-    let err = create_student_impl(&conn, 1, 1, 0, "홍길동").unwrap_err();
+    let err = create_student_impl(&conn, 1, 1, 0, "홍길동", None).unwrap_err();
     assert!(err.contains("CHECK constraint failed"), "number=0 CHECK 위반이어야 함: {err}");
 }
 
 #[test]
 fn test_update_student_negative_grade_violates_check() {
     let conn = setup_test_db();
-    let id = create_student_impl(&conn, 1, 1, 1, "홍길동").unwrap();
-    let err = update_student_impl(&conn, id, -1, 1, 1, "홍길동").unwrap_err();
+    let id = create_student_impl(&conn, 1, 1, 1, "홍길동", None).unwrap();
+    let err = update_student_impl(&conn, id, -1, 1, 1, "홍길동", None).unwrap_err();
     assert!(err.contains("CHECK constraint failed"), "grade=-1 CHECK 위반이어야 함: {err}");
 }

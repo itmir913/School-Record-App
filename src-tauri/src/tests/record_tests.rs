@@ -13,7 +13,7 @@ fn test_upsert_record_creates_new() {
     let act_id = insert_activity(&conn, "발표");
     let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
 
-    upsert_record_impl(&conn, act_id, stu_id, "훌륭한 발표").unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "훌륭한 발표", None).unwrap();
 
     let content: String = conn
         .query_row(
@@ -31,8 +31,8 @@ fn test_upsert_record_updates_existing() {
     let act_id = insert_activity(&conn, "발표");
     let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
 
-    upsert_record_impl(&conn, act_id, stu_id, "초기 내용").unwrap();
-    upsert_record_impl(&conn, act_id, stu_id, "수정된 내용").unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "초기 내용", None).unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "수정된 내용", None).unwrap();
 
     let content: String = conn
         .query_row(
@@ -68,9 +68,9 @@ fn test_get_area_grid_activities_and_students() {
         rusqlite::params![area_id, stu_id],
     )
     .unwrap();
-    upsert_record_impl(&conn, act_id, stu_id, "독후감").unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "독후감", None).unwrap();
 
-    let grid = get_area_grid_impl(&conn, area_id).unwrap();
+    let grid = get_area_grid_impl(&conn, area_id, None).unwrap();
     assert_eq!(grid.activities.len(), 1);
     assert_eq!(grid.activities[0].name, "독서");
     assert_eq!(grid.students.len(), 1);
@@ -84,7 +84,7 @@ fn test_get_area_grid_empty_returns_empty_records() {
     let conn = setup_test_db();
     let area_id = insert_area(&conn, "수학", 300);
 
-    let grid = get_area_grid_impl(&conn, area_id).unwrap();
+    let grid = get_area_grid_impl(&conn, area_id, None).unwrap();
     assert!(grid.activities.is_empty());
     assert!(grid.students.is_empty());
     assert!(grid.records.is_empty());
@@ -101,7 +101,7 @@ fn test_get_area_grid_activities_only_empty_records() {
     )
     .unwrap();
 
-    let grid = get_area_grid_impl(&conn, area_id).unwrap();
+    let grid = get_area_grid_impl(&conn, area_id, None).unwrap();
 
     assert_eq!(grid.activities.len(), 1);
     assert_eq!(grid.activities[0].name, "독서");
@@ -123,7 +123,7 @@ fn test_get_area_grid_activities_sorted_by_name() {
         .unwrap();
     }
 
-    let grid = get_area_grid_impl(&conn, area_id).unwrap();
+    let grid = get_area_grid_impl(&conn, area_id, None).unwrap();
 
     assert_eq!(grid.activities.len(), 2);
     assert_eq!(grid.activities[0].name, "A발표");
@@ -145,7 +145,7 @@ fn test_get_area_grid_students_sorted() {
         .unwrap();
     }
 
-    let grid = get_area_grid_impl(&conn, area_id).unwrap();
+    let grid = get_area_grid_impl(&conn, area_id, None).unwrap();
 
     assert_eq!(grid.students.len(), 3);
     assert_eq!(grid.students[0].name, "가학생"); // (1,1,2)
@@ -161,7 +161,7 @@ fn test_get_record_history_empty() {
     let act_id = insert_activity(&conn, "발표");
     let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
 
-    let entries = get_record_history_impl(&conn, act_id, stu_id, 10, 0).unwrap();
+    let entries = get_record_history_impl(&conn, act_id, stu_id, 10, 0, None).unwrap();
     assert!(entries.is_empty());
 }
 
@@ -171,7 +171,7 @@ fn test_get_record_history_ordered_desc() {
     let act_id = insert_activity(&conn, "발표");
     let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
 
-    upsert_record_impl(&conn, act_id, stu_id, "첫 번째").unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "첫 번째", None).unwrap();
     conn.execute(
         "INSERT INTO ActivityRecordHistory (activity_record_id, content, changed_at, note)
          SELECT id, content, '2024-01-01 10:00:00', NULL FROM ActivityRecord
@@ -187,7 +187,7 @@ fn test_get_record_history_ordered_desc() {
     )
     .unwrap();
 
-    let entries = get_record_history_impl(&conn, act_id, stu_id, 10, 0).unwrap();
+    let entries = get_record_history_impl(&conn, act_id, stu_id, 10, 0, None).unwrap();
     assert_eq!(entries.len(), 2);
     assert!(entries[0].changed_at > entries[1].changed_at, "최신 항목이 먼저여야 한다");
 }
@@ -198,7 +198,7 @@ fn test_get_record_history_limit_offset() {
     let act_id = insert_activity(&conn, "발표");
     let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
 
-    upsert_record_impl(&conn, act_id, stu_id, "내용").unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "내용", None).unwrap();
     for ts in &["2024-01-01 10:00:00", "2024-01-02 10:00:00", "2024-01-03 10:00:00"] {
         conn.execute(
             "INSERT INTO ActivityRecordHistory (activity_record_id, content, changed_at, note)
@@ -209,8 +209,8 @@ fn test_get_record_history_limit_offset() {
         .unwrap();
     }
 
-    let page1 = get_record_history_impl(&conn, act_id, stu_id, 1, 0).unwrap();
-    let page2 = get_record_history_impl(&conn, act_id, stu_id, 1, 1).unwrap();
+    let page1 = get_record_history_impl(&conn, act_id, stu_id, 1, 0, None).unwrap();
+    let page2 = get_record_history_impl(&conn, act_id, stu_id, 1, 1, None).unwrap();
     assert_eq!(page1.len(), 1);
     assert_eq!(page2.len(), 1);
     assert_ne!(page1[0].id, page2[0].id);
@@ -222,7 +222,7 @@ fn test_get_record_history_note_optional() {
     let act_id = insert_activity(&conn, "발표");
     let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
 
-    upsert_record_impl(&conn, act_id, stu_id, "내용").unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "내용", None).unwrap();
     conn.execute(
         "INSERT INTO ActivityRecordHistory (activity_record_id, content, changed_at, note)
          SELECT id, content, '2024-01-01 10:00:00', 'snapshot' FROM ActivityRecord
@@ -238,7 +238,7 @@ fn test_get_record_history_note_optional() {
     )
     .unwrap();
 
-    let entries = get_record_history_impl(&conn, act_id, stu_id, 10, 0).unwrap();
+    let entries = get_record_history_impl(&conn, act_id, stu_id, 10, 0, None).unwrap();
     assert_eq!(entries.len(), 2);
     let notes: Vec<Option<String>> = entries.iter().map(|e| e.note.clone()).collect();
     assert!(notes.iter().any(|n| n.is_some()), "note=Some 항목이 있어야 한다");
@@ -253,7 +253,7 @@ fn test_save_snapshot_creates_history_entry() {
     let act_id = insert_activity(&conn, "발표");
     let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
 
-    upsert_record_impl(&conn, act_id, stu_id, "발표 내용").unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "발표 내용", None).unwrap();
     save_snapshot_internal(&conn, act_id, stu_id, Some("스냅샷")).unwrap();
 
     let count: i64 = conn
@@ -274,7 +274,7 @@ fn test_save_snapshot_no_duplicate_same_updated_at() {
     let act_id = insert_activity(&conn, "발표");
     let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
 
-    upsert_record_impl(&conn, act_id, stu_id, "발표 내용").unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "발표 내용", None).unwrap();
     save_snapshot_internal(&conn, act_id, stu_id, None).unwrap();
     save_snapshot_internal(&conn, act_id, stu_id, None).unwrap();
 
@@ -296,7 +296,7 @@ fn test_save_snapshot_updates_note_when_exists() {
     let act_id = insert_activity(&conn, "발표");
     let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
 
-    upsert_record_impl(&conn, act_id, stu_id, "발표 내용").unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "발표 내용", None).unwrap();
     save_snapshot_internal(&conn, act_id, stu_id, Some("초기 노트")).unwrap();
     save_snapshot_internal(&conn, act_id, stu_id, Some("수정 노트")).unwrap();
 
@@ -346,7 +346,7 @@ fn test_bulk_import_creates_new_student() {
     let conn = setup_test_db();
     let act_id = insert_activity(&conn, "발표");
 
-    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, Some("홍길동"), act_id, "내용")]).unwrap();
+    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, Some("홍길동"), act_id, "내용")], None).unwrap();
 
     let count: i64 = conn
         .query_row("SELECT COUNT(*) FROM Student", [], |row| row.get(0))
@@ -360,7 +360,7 @@ fn test_bulk_import_updates_name_when_existing_is_blank() {
     let act_id = insert_activity(&conn, "발표");
     insert_student(&conn, 1, 1, 1, "");
 
-    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, Some("홍길동"), act_id, "내용")]).unwrap();
+    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, Some("홍길동"), act_id, "내용")], None).unwrap();
 
     let name: String = conn
         .query_row(
@@ -378,7 +378,7 @@ fn test_bulk_import_skips_name_update_when_existing_nonempty() {
     let act_id = insert_activity(&conn, "발표");
     insert_student(&conn, 1, 1, 1, "기존이름");
 
-    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, Some("새이름"), act_id, "내용")]).unwrap();
+    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, Some("새이름"), act_id, "내용")], None).unwrap();
 
     let name: String = conn
         .query_row(
@@ -395,8 +395,8 @@ fn test_bulk_import_upserts_record() {
     let conn = setup_test_db();
     let act_id = insert_activity(&conn, "발표");
 
-    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, Some("홍길동"), act_id, "처음")]).unwrap();
-    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, Some("홍길동"), act_id, "갱신")]).unwrap();
+    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, Some("홍길동"), act_id, "처음")], None).unwrap();
+    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, Some("홍길동"), act_id, "갱신")], None).unwrap();
 
     let content: String = conn
         .query_row(
@@ -418,7 +418,7 @@ fn test_bulk_import_creates_history_for_nonempty_content() {
     let conn = setup_test_db();
     let act_id = insert_activity(&conn, "발표");
 
-    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, Some("홍길동"), act_id, "내용")]).unwrap();
+    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, Some("홍길동"), act_id, "내용")], None).unwrap();
 
     let count: i64 = conn
         .query_row("SELECT COUNT(*) FROM ActivityRecordHistory", [], |row| row.get(0))
@@ -431,7 +431,7 @@ fn test_bulk_import_no_history_for_empty_content() {
     let conn = setup_test_db();
     let act_id = insert_activity(&conn, "발표");
 
-    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, Some("홍길동"), act_id, "")]).unwrap();
+    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, Some("홍길동"), act_id, "")], None).unwrap();
 
     let count: i64 = conn
         .query_row("SELECT COUNT(*) FROM ActivityRecordHistory", [], |row| row.get(0))
@@ -451,6 +451,7 @@ fn test_bulk_import_student_cache_deduplication() {
             make_import(1, 1, 1, Some("홍길동"), act_id1, "내용1"),
             make_import(1, 1, 1, Some("홍길동"), act_id2, "내용2"),
         ],
+        None,
     )
     .unwrap();
 
@@ -473,6 +474,7 @@ fn test_bulk_import_result_counts() {
             make_import(1, 1, 2, Some("신규2"), act_id, "내용B"),
             make_import(2, 1, 1, Some("기존학생"), act_id, "내용C"),
         ],
+        None,
     )
     .unwrap();
 
@@ -486,7 +488,7 @@ fn test_bulk_import_uses_default_name_when_none() {
     let conn = setup_test_db();
     let act_id = insert_activity(&conn, "발표");
 
-    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, None, act_id, "내용")]).unwrap();
+    bulk_import_records_impl(&conn, &[make_import(1, 1, 1, None, act_id, "내용")], None).unwrap();
 
     let name: String = conn
         .query_row(
@@ -510,6 +512,7 @@ fn test_preview_existing_student_shows_existing_content() {
     let items = preview_import_records_impl(
         &conn,
         &[make_import(1, 1, 1, Some("홍길동"), act_id, "새 내용")],
+        None,
     )
     .unwrap();
 
@@ -526,6 +529,7 @@ fn test_preview_new_student_shows_empty_existing_content() {
     let items = preview_import_records_impl(
         &conn,
         &[make_import(1, 1, 99, Some("신규학생"), act_id, "새 내용")],
+        None,
     )
     .unwrap();
 
@@ -542,6 +546,7 @@ fn test_preview_activity_name_fallback() {
     let items = preview_import_records_impl(
         &conn,
         &[make_import(1, 1, 1, Some("홍길동"), fake_act_id, "내용")],
+        None,
     )
     .unwrap();
 
@@ -555,7 +560,7 @@ fn test_preview_activity_name_fallback() {
 fn test_bulk_import_empty_input_returns_zeros() {
     let conn = setup_test_db();
 
-    let result = bulk_import_records_impl(&conn, &[]).unwrap();
+    let result = bulk_import_records_impl(&conn, &[], None).unwrap();
 
     assert_eq!(result.students_created, 0);
     assert_eq!(result.students_updated, 0);
@@ -566,7 +571,7 @@ fn test_bulk_import_empty_input_returns_zeros() {
 fn test_preview_import_empty_input_returns_empty() {
     let conn = setup_test_db();
 
-    let items = preview_import_records_impl(&conn, &[]).unwrap();
+    let items = preview_import_records_impl(&conn, &[], None).unwrap();
 
     assert!(items.is_empty());
 }
@@ -585,7 +590,7 @@ fn test_bulk_import_rollback_on_fk_violation() {
     ];
 
     conn.execute_batch("BEGIN").unwrap();
-    let result = bulk_import_records_impl(&conn, &records);
+    let result = bulk_import_records_impl(&conn, &records, None);
     match result {
         Ok(_) => { conn.execute_batch("COMMIT").unwrap(); }
         Err(_) => { let _ = conn.execute_batch("ROLLBACK"); }
@@ -616,6 +621,7 @@ fn test_bulk_import_same_student_multiple_activities_records_saved() {
             make_import(1, 1, 1, Some("홍길동"), act_id1, "독서 내용"),
             make_import(1, 1, 1, Some("홍길동"), act_id2, "발표 내용"),
         ],
+        None,
     )
     .unwrap();
 

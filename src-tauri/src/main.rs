@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod commands;
+mod crypto;
 mod db;
 mod engine;
 mod state;
@@ -10,7 +11,7 @@ mod types;
 mod tests;
 
 use commands::*;
-use state::{DbState, ReplaceCache};
+use state::{CryptoState, CryptoStateHandle, DbPathState, DbState, ReplaceCache};
 use std::collections::HashMap;
 use std::sync::Mutex;
 
@@ -19,10 +20,12 @@ fn main() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .manage(DbState(Mutex::new(None)))
+        .manage(DbPathState(Mutex::new(None)))
         .manage(Mutex::new(ReplaceCache {
             ruleset_version: 0,
             entries: HashMap::new(),
         }))
+        .manage(CryptoStateHandle::new(CryptoState { key: None, salt: None }))
         .invoke_handler(tauri::generate_handler![
             new_project,
             open_project,
@@ -69,6 +72,11 @@ fn main() {
             get_all_records_for_inspect,
             get_config,
             set_config,
+            get_encryption_status,
+            unlock_encryption,
+            enable_encryption,
+            disable_encryption,
+            change_encryption_password,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

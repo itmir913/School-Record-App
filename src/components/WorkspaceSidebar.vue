@@ -14,6 +14,7 @@ import {
   PenLine,
   Replace,
   ScanSearch,
+  Settings,
   Upload,
   Users,
 } from 'lucide-vue-next'
@@ -136,6 +137,20 @@ const navGroups = [
       >
         <GitBranch :size="20" class="autosave-icon"/>
         <span v-if="!collapsed" class="autosave-text">스냅샷(Snapshot)</span>
+      </button>
+
+      <!-- 설정 버튼 -->
+      <button
+          class="autosave-indicator"
+          :class="[
+            { 'autosave-indicator--icon': collapsed },
+            activeSection === 'settings' ? 'footer-btn--active' : ''
+          ]"
+          @click="select('settings')"
+          title="설정(Settings)"
+      >
+        <Settings :size="20" class="autosave-icon"/>
+        <span v-if="!collapsed" class="autosave-text">설정(Settings)</span>
       </button>
     </div>
   </aside>
@@ -276,7 +291,10 @@ const navGroups = [
 
 /* 하단 */
 .sidebar-footer {
+  display: flex;
+  flex-direction: column;
   padding: 8px;
+  gap: 5px;
 }
 
 .footer-divider {
@@ -360,5 +378,20 @@ const navGroups = [
 .sidebar--collapsed .file-btn {
   justify-content: center;
   padding: 8px;
+}
+
+.footer-btn--active {
+  background-color: rgba(59, 91, 219, 0.2);
+  color: #93c5fd;
+}
+
+.footer-btn--active:hover {
+  background-color: rgba(59, 91, 219, 0.3);
+  color: #bfdbfe;
+}
+
+.footer-btn--active .autosave-icon {
+  color: #93c5fd;
+  opacity: 1;
 }
 </style>

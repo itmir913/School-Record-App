@@ -195,7 +195,7 @@ fn test_preview_replace_with_regex() {
     create_replace_rule_db(&conn, r"\n+", " ", true, 0).unwrap();
 
     let rules = fetch_rules_from_db(&conn).unwrap();
-    let records = get_records_for_scope(&conn, "all", &[]).unwrap();
+    let records = get_records_for_scope(&conn, "all", &[], None).unwrap();
     assert_eq!(records.len(), 1);
     let result = apply_rules(&records[0].content, &rules);
     assert!(!result.contains('\n'), "정규식 규칙 적용 후 개행 없어야 함: {:?}", result);

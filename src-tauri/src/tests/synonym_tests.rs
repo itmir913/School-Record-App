@@ -184,7 +184,7 @@ fn setup_inspect_db() -> rusqlite::Connection {
 #[test]
 fn test_get_all_records_for_inspect_all_scope() {
     let conn = setup_inspect_db();
-    let records = get_all_records_for_inspect_impl(&conn, "all", vec![]).unwrap();
+    let records = get_all_records_for_inspect_impl(&conn, "all", vec![], None).unwrap();
     assert_eq!(records.len(), 1);
     assert_eq!(records[0].content, "테스트 기록");
     assert_eq!(records[0].student_name, "홍길동");
@@ -197,7 +197,7 @@ fn test_get_all_records_for_inspect_areas_scope() {
         .query_row("SELECT id FROM Area WHERE name = '영역A'", [], |r| r.get(0))
         .unwrap();
 
-    let records = get_all_records_for_inspect_impl(&conn, "areas", vec![area_id]).unwrap();
+    let records = get_all_records_for_inspect_impl(&conn, "areas", vec![area_id], None).unwrap();
     assert_eq!(records.len(), 1);
     assert_eq!(records[0].area_name, "영역A");
 }
@@ -205,14 +205,14 @@ fn test_get_all_records_for_inspect_areas_scope() {
 #[test]
 fn test_get_all_records_for_inspect_areas_empty_ids() {
     let conn = setup_inspect_db();
-    let records = get_all_records_for_inspect_impl(&conn, "areas", vec![]).unwrap();
+    let records = get_all_records_for_inspect_impl(&conn, "areas", vec![], None).unwrap();
     assert!(records.is_empty(), "area_ids=[] 이면 빈 목록 반환");
 }
 
 #[test]
 fn test_get_all_records_for_inspect_unknown_scope_error() {
     let conn = setup_test_db();
-    let err = get_all_records_for_inspect_impl(&conn, "unknown", vec![]).unwrap_err();
+    let err = get_all_records_for_inspect_impl(&conn, "unknown", vec![], None).unwrap_err();
     assert!(err.contains("알 수 없는 scope_type"), "에러 메시지: {err}");
 }
 
@@ -240,7 +240,7 @@ fn test_inspect_multiple_area_ids() {
     conn.execute("INSERT INTO ActivityRecord (activity_id, student_id, content) VALUES (?1, ?2, '기록1')", rusqlite::params![act1, stu]).unwrap();
     conn.execute("INSERT INTO ActivityRecord (activity_id, student_id, content) VALUES (?1, ?2, '기록2')", rusqlite::params![act2, stu]).unwrap();
 
-    let records = get_all_records_for_inspect_impl(&conn, "areas", vec![area1, area2]).unwrap();
+    let records = get_all_records_for_inspect_impl(&conn, "areas", vec![area1, area2], None).unwrap();
     assert_eq!(records.len(), 2, "두 area_id로 조회 시 2개 기록 반환: {:?}", records);
 }
 
@@ -264,7 +264,7 @@ fn test_inspect_area_student_filter() {
     conn.execute("INSERT INTO ActivityRecord (activity_id, student_id, content) VALUES (?1, ?2, '기록1')", rusqlite::params![act, stu1]).unwrap();
     conn.execute("INSERT INTO ActivityRecord (activity_id, student_id, content) VALUES (?1, ?2, '기록2')", rusqlite::params![act, stu2]).unwrap();
 
-    let records = get_all_records_for_inspect_impl(&conn, "areas", vec![area]).unwrap();
+    let records = get_all_records_for_inspect_impl(&conn, "areas", vec![area], None).unwrap();
     assert_eq!(records.len(), 1, "AreaStudent 미등록 학생 기록은 제외되어야 함");
     assert_eq!(records[0].student_name, "등록학생");
 }
@@ -280,7 +280,7 @@ fn test_inspect_coalesce_null_area_name() {
     let stu = conn.last_insert_rowid();
     conn.execute("INSERT INTO ActivityRecord (activity_id, student_id, content) VALUES (?1, ?2, '독립기록')", rusqlite::params![act, stu]).unwrap();
 
-    let records = get_all_records_for_inspect_impl(&conn, "all", vec![]).unwrap();
+    let records = get_all_records_for_inspect_impl(&conn, "all", vec![], None).unwrap();
     assert_eq!(records.len(), 1);
     assert_eq!(records[0].area_name, "", "area 미연결 기록은 area_name='' 이어야 함");
     assert_eq!(records[0].student_name, "독립학생");
@@ -302,6 +302,6 @@ fn test_get_all_records_for_inspect_excludes_empty_content() {
         rusqlite::params![act_id, stu_id],
     ).unwrap();
 
-    let records = get_all_records_for_inspect_impl(&conn, "all", vec![]).unwrap();
+    let records = get_all_records_for_inspect_impl(&conn, "all", vec![], None).unwrap();
     assert!(records.is_empty(), "content='' 기록은 제외되어야 함");
 }
