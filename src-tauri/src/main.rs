@@ -25,7 +25,7 @@ fn main() {
             ruleset_version: 0,
             entries: HashMap::new(),
         }))
-        .manage(CryptoStateHandle::new(CryptoState { key: None, salt: None }))
+        .manage(CryptoStateHandle::new(CryptoState { key: None }))
         .invoke_handler(tauri::generate_handler![
             new_project,
             open_project,

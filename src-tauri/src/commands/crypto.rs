@@ -184,7 +184,7 @@ pub(crate) fn unlock_encryption_impl(
         &verify_token,
         "비밀번호가 올바르지 않습니다.",
     )?;
-    set_crypto_state(crypto, key, salt)
+    set_crypto_state(crypto, key)
 }
 
 fn backup_db_file(db_path_state: &DbPathState, suffix: &str) -> Result<(), String> {
@@ -226,7 +226,7 @@ pub(crate) fn enable_encryption_impl(
         Ok(())
     })?;
 
-    set_crypto_state(crypto, key, salt.to_vec())
+    set_crypto_state(crypto, key)
 }
 
 pub(crate) fn disable_encryption_impl(
@@ -284,7 +284,7 @@ pub(crate) fn change_encryption_password_impl(
         Ok(())
     })?;
 
-    set_crypto_state(crypto, new_key, new_salt.to_vec())
+    set_crypto_state(crypto, new_key)
 }
 
 fn db_conn<'a>(guard: &'a Option<Connection>) -> Result<&'a Connection, String> {

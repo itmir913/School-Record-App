@@ -7,7 +7,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 fn crypto_state_with_key() -> CryptoStateHandle {
     Mutex::new(CryptoState {
         key: Some([7u8; 32]),
-        salt: Some(vec![1, 2, 3]),
     })
 }
 

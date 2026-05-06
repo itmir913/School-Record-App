@@ -26,7 +26,7 @@ fn test_key() -> [u8; 32] {
 }
 
 fn crypto_state(key: Option<[u8; 32]>) -> CryptoStateHandle {
-    std::sync::Mutex::new(CryptoState { key, salt: None })
+    std::sync::Mutex::new(CryptoState { key })
 }
 
 // ── 학생 이름 암호화 ──────────────────────────────────────────────
