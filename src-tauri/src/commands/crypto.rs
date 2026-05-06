@@ -204,6 +204,9 @@ pub(crate) fn enable_encryption_impl(
     db_path_state: &DbPathState,
     password: &str,
 ) -> Result<(), String> {
+    if password.is_empty() {
+        return Err("비밀번호를 입력해주세요.".to_string());
+    }
     if is_encryption_enabled(conn)? {
         return Err("이미 암호화가 활성화되어 있습니다.".to_string());
     }
@@ -255,6 +258,9 @@ pub(crate) fn change_encryption_password_impl(
     old_password: &str,
     new_password: &str,
 ) -> Result<(), String> {
+    if new_password.is_empty() {
+        return Err("새 비밀번호를 입력해주세요.".to_string());
+    }
     let (salt, verify_token) = encryption_material(conn)?;
     let old_key = verify_password(
         old_password,

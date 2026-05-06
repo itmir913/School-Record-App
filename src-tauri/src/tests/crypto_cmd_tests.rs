@@ -1148,6 +1148,31 @@ fn test_change_password_then_reload() {
     std::fs::remove_dir_all(dir).unwrap();
 }
 
+// ── 빈 패스워드 거부 테스트 ───────────────────────────────────────────
+
+#[test]
+fn test_enable_encryption_rejects_empty_password() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    let result = enable_encryption_impl(&conn, &crypto, &db_path, "");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().contains("비밀번호"));
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+#[test]
+fn test_change_password_rejects_empty_new_password() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    let result = change_encryption_password_impl(&conn, &crypto, &db_path, "password", "");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().contains("비밀번호"));
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
 // ── 레거시 스냅샷 × 암호화 활성화 경계 테스트 ────────────────────────
 //
 // 실제 발생 가능한 시나리오:
