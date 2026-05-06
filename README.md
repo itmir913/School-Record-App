@@ -131,6 +131,14 @@ npm run tauri:macos
 
 ---
 
+## Contributors
+
+이 프로젝트는 여러 기여자의 도움으로 발전하고 있습니다. 상세한 기여 내역은 아래 문서에서 확인하실 수 있습니다.
+
+- [상세 기여 내역 보기 (CONTRIBUTORS.md)](./CONTRIBUTORS.md)
+
+---
+
 ## 라이선스
 
 본 프로젝트는 PolyForm Noncommercial 1.0.0 라이선스를 따릅니다. (LICENSE.md 파일 참조)
