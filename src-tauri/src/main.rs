@@ -72,6 +72,7 @@ fn main() {
             get_all_records_for_inspect,
             get_config,
             set_config,
+            check_and_update_app_version,
             get_encryption_status,
             unlock_encryption,
             enable_encryption,
