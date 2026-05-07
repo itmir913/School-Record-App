@@ -25,10 +25,11 @@ fn main() {
             ruleset_version: 0,
             entries: HashMap::new(),
         }))
-        .manage(CryptoStateHandle::new(CryptoState { key: None, salt: None }))
+        .manage(CryptoStateHandle::new(CryptoState { key: None }))
         .invoke_handler(tauri::generate_handler![
             new_project,
             open_project,
+            migrate_schema,
             get_areas,
             create_area,
             update_area,
@@ -72,6 +73,7 @@ fn main() {
             get_all_records_for_inspect,
             get_config,
             set_config,
+            check_and_update_app_version,
             get_encryption_status,
             unlock_encryption,
             enable_encryption,

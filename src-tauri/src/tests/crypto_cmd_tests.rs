@@ -1,4 +1,6 @@
 use super::{insert_activity, insert_area, insert_student, setup_temp_db_path_state, setup_test_db};
+use base64::engine::general_purpose::STANDARD as B64;
+use base64::Engine;
 use rusqlite::Connection;
 use crate::commands::config::set_config_impl;
 use crate::commands::crypto::{
@@ -26,7 +28,7 @@ fn test_key() -> [u8; 32] {
 }
 
 fn crypto_state(key: Option<[u8; 32]>) -> CryptoStateHandle {
-    std::sync::Mutex::new(CryptoState { key, salt: None })
+    std::sync::Mutex::new(CryptoState { key })
 }
 
 // ── 학생 이름 암호화 ──────────────────────────────────────────────
@@ -1148,6 +1150,31 @@ fn test_change_password_then_reload() {
     std::fs::remove_dir_all(dir).unwrap();
 }
 
+// ── 빈 패스워드 거부 테스트 ───────────────────────────────────────────
+
+#[test]
+fn test_enable_encryption_rejects_empty_password() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    let result = enable_encryption_impl(&conn, &crypto, &db_path, "");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().contains("비밀번호"));
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+#[test]
+fn test_change_password_rejects_empty_new_password() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    let result = change_encryption_password_impl(&conn, &crypto, &db_path, "password", "");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().contains("비밀번호"));
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
 // ── 레거시 스냅샷 × 암호화 활성화 경계 테스트 ────────────────────────
 //
 // 실제 발생 가능한 시나리오:
@@ -1217,4 +1244,819 @@ fn test_restore_plaintext_snapshot_after_encryption_enabled() {
     assert_ne!(raw, "v1 내용", "복원 후에도 DB에는 암호화된 값이 저장되어야 한다");
 
     std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 추가 엣지 케이스 · 상태 전이 · 실사용 시나리오 (32개)
+// ═══════════════════════════════════════════════════════════════════
+
+// ── 이중 활성화 / 이중 비활성화 ──────────────────────────────────
+
+#[test]
+fn test_enable_encryption_when_already_enabled_returns_error() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    let result = enable_encryption_impl(&conn, &crypto, &db_path, "password");
+    assert!(result.is_err());
+    assert!(
+        result.unwrap_err().contains("이미 암호화가 활성화"),
+        "에러 메시지 확인"
+    );
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+#[test]
+fn test_disable_encryption_when_not_enabled_returns_error() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    let result = disable_encryption_impl(&conn, &crypto, &db_path);
+    assert!(result.is_err());
+    assert!(
+        result.unwrap_err().contains("암호화가 활성화되어 있지 않습니다"),
+        "에러 메시지 확인"
+    );
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+#[test]
+fn test_disable_encryption_twice_returns_error() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    disable_encryption_impl(&conn, &crypto, &db_path).unwrap();
+    let result = disable_encryption_impl(&conn, &crypto, &db_path);
+    assert!(result.is_err());
+    assert!(
+        result.unwrap_err().contains("암호화가 활성화되어 있지 않습니다"),
+        "에러 메시지 확인"
+    );
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── unlock 오류 케이스 ────────────────────────────────────────────
+
+#[test]
+fn test_unlock_with_wrong_password_returns_error() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    enable_encryption_impl(&conn, &crypto, &db_path, "correct_password").unwrap();
+    clear_crypto_state(&crypto).unwrap();
+    let result = unlock_encryption_impl(&conn, &crypto, "wrong_password");
+    assert!(result.is_err());
+    assert!(
+        result.unwrap_err().contains("비밀번호가 올바르지 않습니다"),
+        "에러 메시지 확인"
+    );
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+#[test]
+fn test_unlock_with_missing_salt_returns_error() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    // encryption_enabled=true만 있고 salt 없는 비정상 DB
+    set_config_impl(&conn, "encryption_enabled", "true").unwrap();
+    let result = unlock_encryption_impl(&conn, &crypto, "any_password");
+    assert!(result.is_err());
+    assert!(
+        result.unwrap_err().contains("암호화 설정이 없습니다"),
+        "에러 메시지 확인"
+    );
+}
+
+#[test]
+fn test_unlock_with_missing_token_returns_error() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    // salt만 있고 verify token이 없는 비정상 DB
+    set_config_impl(&conn, "encryption_enabled", "true").unwrap();
+    set_config_impl(
+        &conn,
+        "encryption_pbkdf2_salt",
+        &B64.encode([1u8; 16]),
+    )
+    .unwrap();
+    let result = unlock_encryption_impl(&conn, &crypto, "any_password");
+    assert!(result.is_err());
+    assert!(
+        result.unwrap_err().contains("검증 토큰이 없습니다"),
+        "에러 메시지 확인"
+    );
+}
+
+#[test]
+fn test_unlock_with_corrupted_token_returns_error() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    // 유효한 형식처럼 보이지만 내용은 쓰레기인 token
+    set_config_impl(&conn, "encryption_enabled", "true").unwrap();
+    set_config_impl(
+        &conn,
+        "encryption_pbkdf2_salt",
+        &B64.encode([42u8; 16]),
+    )
+    .unwrap();
+    set_config_impl(
+        &conn,
+        "encryption_verify_token",
+        "AAAAAAAAAAAAAAAA:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+    )
+    .unwrap();
+    let result = unlock_encryption_impl(&conn, &crypto, "any_password");
+    assert!(result.is_err());
+    let err = result.unwrap_err();
+    assert!(
+        err.contains("비밀번호가 올바르지 않습니다") || err.contains("복호화 실패"),
+        "에러 메시지: {err}"
+    );
+}
+
+// ── 특수 문자 포함 이름 / content ────────────────────────────────
+
+#[test]
+fn test_student_name_with_colon_encrypt_decrypt_roundtrip() {
+    let conn = setup_test_db();
+    let key = test_key();
+    let id = create_student_impl(&conn, 1, 1, 1, "홍:길동", Some(key)).unwrap();
+    let raw_name: String = conn
+        .query_row(
+            "SELECT name FROM Student WHERE id=?1",
+            rusqlite::params![id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_ne!(raw_name, "홍:길동", "콜론 포함 이름도 암호화되어야 한다");
+    let students = get_students_impl(&conn, Some(key)).unwrap();
+    assert_eq!(students[0].name, "홍:길동", "콜론 포함 이름이 복호화되어야 한다");
+}
+
+#[test]
+fn test_record_content_with_newline_tab_roundtrip() {
+    let conn = setup_test_db();
+    let key = test_key();
+    let area_id = insert_area(&conn, "테스트영역", 5000);
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = create_student_impl(&conn, 1, 1, 1, "홍길동", Some(key)).unwrap();
+    conn.execute(
+        "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
+        rusqlite::params![area_id, act_id],
+    )
+    .unwrap();
+    conn.execute(
+        "INSERT INTO AreaStudent (area_id, student_id) VALUES (?1, ?2)",
+        rusqlite::params![area_id, stu_id],
+    )
+    .unwrap();
+    let content = "발표\n내용\t탭포함\n두번째줄";
+    upsert_record_impl(&conn, act_id, stu_id, content, Some(key)).unwrap();
+    let raw: String = conn
+        .query_row(
+            "SELECT content FROM ActivityRecord WHERE activity_id=?1 AND student_id=?2",
+            rusqlite::params![act_id, stu_id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_ne!(raw, content, "개행·탭 포함 content도 암호화되어야 한다");
+    let grid = get_area_grid_impl(&conn, area_id, Some(key)).unwrap();
+    assert_eq!(grid.records[0].content, content, "복호화 후 개행·탭이 보존되어야 한다");
+}
+
+// ── change_password 케이스 ────────────────────────────────────────
+
+#[test]
+fn test_change_password_same_password_succeeds() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+    enable_encryption_impl(&conn, &crypto, &db_path, "same_password").unwrap();
+    let result =
+        change_encryption_password_impl(&conn, &crypto, &db_path, "same_password", "same_password");
+    assert!(result.is_ok(), "동일 비밀번호 변경도 성공해야 한다: {:?}", result);
+    clear_crypto_state(&crypto).unwrap();
+    unlock_encryption_impl(&conn, &crypto, "same_password").unwrap();
+    let key = resolve_data_key(&conn, &crypto).unwrap().unwrap();
+    let students = get_students_impl(&conn, Some(key)).unwrap();
+    assert!(students.iter().any(|s| s.id == stu_id && s.name == "홍길동"));
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+#[test]
+fn test_change_password_wrong_old_password_returns_error() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    enable_encryption_impl(&conn, &crypto, &db_path, "correct_password").unwrap();
+    let result = change_encryption_password_impl(
+        &conn,
+        &crypto,
+        &db_path,
+        "wrong_password",
+        "new_password",
+    );
+    assert!(result.is_err());
+    assert!(result.unwrap_err().contains("현재 비밀번호가 올바르지 않습니다"));
+    // 데이터 미변조: 기존 비밀번호로 여전히 unlock 가능해야 한다
+    clear_crypto_state(&crypto).unwrap();
+    unlock_encryption_impl(&conn, &crypto, "correct_password").unwrap();
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── 다중 스냅샷 복원 정합성 ───────────────────────────────────────
+
+#[test]
+fn test_multiple_snapshots_restore_integrity_after_encryption() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    let area_id = insert_area(&conn, "국어", 500);
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+    conn.execute(
+        "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
+        rusqlite::params![area_id, act_id],
+    )
+    .unwrap();
+    conn.execute(
+        "INSERT INTO AreaStudent (area_id, student_id) VALUES (?1, ?2)",
+        rusqlite::params![area_id, stu_id],
+    )
+    .unwrap();
+    // 암호화 없이 v1, v2, v3 스냅샷 생성
+    // 인메모리 DB에서 datetime('now')는 1초 단위라 같은 타임스탬프가 나올 수 있으므로
+    // updated_at / created_at을 명시적으로 다르게 설정해 스냅샷 복원 로직이 정확히 동작하게 한다.
+    upsert_record_impl(&conn, act_id, stu_id, "v1 내용", None).unwrap();
+    conn.execute(
+        "UPDATE ActivityRecord SET updated_at = '2024-01-01 00:00:01' WHERE activity_id=?1 AND student_id=?2",
+        rusqlite::params![act_id, stu_id],
+    ).unwrap();
+    let snap1 = create_snapshot_impl(&conn, Some("v1".to_string())).unwrap();
+    conn.execute(
+        "UPDATE Snapshot SET created_at = '2024-01-01 00:00:01' WHERE id=?1",
+        rusqlite::params![snap1.id],
+    ).unwrap();
+
+    upsert_record_impl(&conn, act_id, stu_id, "v2 내용", None).unwrap();
+    conn.execute(
+        "UPDATE ActivityRecord SET updated_at = '2024-01-01 00:00:02' WHERE activity_id=?1 AND student_id=?2",
+        rusqlite::params![act_id, stu_id],
+    ).unwrap();
+    let snap2 = create_snapshot_impl(&conn, Some("v2".to_string())).unwrap();
+    conn.execute(
+        "UPDATE Snapshot SET created_at = '2024-01-01 00:00:02' WHERE id=?1",
+        rusqlite::params![snap2.id],
+    ).unwrap();
+
+    upsert_record_impl(&conn, act_id, stu_id, "v3 내용", None).unwrap();
+    conn.execute(
+        "UPDATE ActivityRecord SET updated_at = '2024-01-01 00:00:03' WHERE activity_id=?1 AND student_id=?2",
+        rusqlite::params![act_id, stu_id],
+    ).unwrap();
+    let snap3 = create_snapshot_impl(&conn, Some("v3".to_string())).unwrap();
+    conn.execute(
+        "UPDATE Snapshot SET created_at = '2024-01-01 00:00:03' WHERE id=?1",
+        rusqlite::params![snap3.id],
+    ).unwrap();
+    // 암호화 활성화 → 모든 history / record 암호화
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    let key = resolve_data_key(&conn, &crypto).unwrap().unwrap();
+    // 순서를 섞어 복원해도 올바른 내용이 나와야 한다
+    restore_snapshot_impl(&conn, snap1.id).unwrap();
+    let grid = get_area_grid_impl(&conn, area_id, Some(key)).unwrap();
+    assert_eq!(grid.records[0].content, "v1 내용", "snap1 복원 후 v1이어야 한다");
+    restore_snapshot_impl(&conn, snap3.id).unwrap();
+    let grid = get_area_grid_impl(&conn, area_id, Some(key)).unwrap();
+    assert_eq!(grid.records[0].content, "v3 내용", "snap3 복원 후 v3이어야 한다");
+    restore_snapshot_impl(&conn, snap2.id).unwrap();
+    let grid = get_area_grid_impl(&conn, area_id, Some(key)).unwrap();
+    assert_eq!(grid.records[0].content, "v2 내용", "snap2 복원 후 v2이어야 한다");
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── 대량 데이터 enable / disable 왕복 ────────────────────────────
+
+#[test]
+fn test_large_dataset_enable_disable_roundtrip() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    let area_id = insert_area(&conn, "국어", 5000);
+    let act_ids: Vec<i64> = (0..3).map(|i| insert_activity(&conn, &format!("활동{i}"))).collect();
+    for i in 0..10i64 {
+        let stu_id = insert_student(&conn, 1, 1, i + 1, &format!("학생{:02}", i + 1));
+        conn.execute(
+            "INSERT INTO AreaStudent (area_id, student_id) VALUES (?1, ?2)",
+            rusqlite::params![area_id, stu_id],
+        )
+        .unwrap();
+        for &act_id in &act_ids {
+            conn.execute(
+                "INSERT OR IGNORE INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
+                rusqlite::params![area_id, act_id],
+            )
+            .unwrap();
+            upsert_record_impl(&conn, act_id, stu_id, &format!("학생{} 기록", i + 1), None)
+                .unwrap();
+        }
+    }
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    let key = resolve_data_key(&conn, &crypto).unwrap().unwrap();
+    let students = get_students_impl(&conn, Some(key)).unwrap();
+    assert_eq!(students.len(), 10);
+    for (i, s) in students.iter().enumerate() {
+        assert_eq!(s.name, format!("학생{:02}", i + 1));
+    }
+    disable_encryption_impl(&conn, &crypto, &db_path).unwrap();
+    let students_plain = get_students_impl(&conn, None).unwrap();
+    assert_eq!(students_plain.len(), 10);
+    for (i, s) in students_plain.iter().enumerate() {
+        assert_eq!(s.name, format!("학생{:02}", i + 1));
+    }
+    let grid = get_area_grid_impl(&conn, area_id, None).unwrap();
+    assert_eq!(grid.records.len(), 30, "30개 레코드가 모두 복원되어야 한다");
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── 동일 위치 반복 upsert ─────────────────────────────────────────
+
+#[test]
+fn test_upsert_record_multiple_times_each_decryptable() {
+    let conn = setup_test_db();
+    let key = test_key();
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+    upsert_record_impl(&conn, act_id, stu_id, "1차 기록", Some(key)).unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "2차 기록", Some(key)).unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "3차 기록", Some(key)).unwrap();
+    let raw: String = conn
+        .query_row(
+            "SELECT content FROM ActivityRecord WHERE activity_id=?1 AND student_id=?2",
+            rusqlite::params![act_id, stu_id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_ne!(raw, "3차 기록", "최신 content도 암호화되어야 한다");
+    let decrypted = crate::crypto::decrypt(&raw, &key).unwrap();
+    assert_eq!(decrypted, "3차 기록", "마지막 upsert 값이 복호화되어야 한다");
+    let count: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM ActivityRecord WHERE activity_id=?1 AND student_id=?2",
+            rusqlite::params![act_id, stu_id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(count, 1, "ActivityRecord는 항상 1행이어야 한다");
+}
+
+// ── 잠금 상태 전이 수명주기 ───────────────────────────────────────
+
+#[test]
+fn test_locked_state_prevents_resolve_data_key() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    clear_crypto_state(&crypto).unwrap();
+    let err = resolve_data_key(&conn, &crypto).unwrap_err();
+    assert!(err.contains("잠금"), "잠금 에러 메시지: {err}");
+    unlock_encryption_impl(&conn, &crypto, "password").unwrap();
+    let key_result = resolve_data_key(&conn, &crypto);
+    assert!(key_result.is_ok());
+    assert!(key_result.unwrap().is_some(), "unlock 후 key는 Some이어야 한다");
+    clear_crypto_state(&crypto).unwrap();
+    let err2 = resolve_data_key(&conn, &crypto).unwrap_err();
+    assert!(err2.contains("잠금"), "재잠금 후 에러 메시지: {err2}");
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── enable → disable → enable 재활성화 ───────────────────────────
+
+#[test]
+fn test_enable_disable_reenable_works() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+    enable_encryption_impl(&conn, &crypto, &db_path, "password1").unwrap();
+    let key1 = resolve_data_key(&conn, &crypto).unwrap().unwrap();
+    assert_eq!(get_students_impl(&conn, Some(key1)).unwrap()[0].name, "홍길동");
+    disable_encryption_impl(&conn, &crypto, &db_path).unwrap();
+    assert_eq!(get_students_impl(&conn, None).unwrap()[0].name, "홍길동");
+    enable_encryption_impl(&conn, &crypto, &db_path, "password2").unwrap();
+    let key2 = resolve_data_key(&conn, &crypto).unwrap().unwrap();
+    assert_ne!(key1, key2, "새 활성화는 새 키를 생성해야 한다");
+    let students2 = get_students_impl(&conn, Some(key2)).unwrap();
+    assert!(students2.iter().any(|s| s.id == stu_id && s.name == "홍길동"));
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── 잠금 상태에서 change_password ────────────────────────────────
+
+#[test]
+fn test_change_password_while_locked_succeeds() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+    enable_encryption_impl(&conn, &crypto, &db_path, "old_pw").unwrap();
+    clear_crypto_state(&crypto).unwrap();
+    // 잠금 상태에서도 구 비밀번호로 change_password 성공 (salt/token 직접 검증)
+    let result = change_encryption_password_impl(&conn, &crypto, &db_path, "old_pw", "new_pw");
+    assert!(result.is_ok(), "잠금 상태에서도 비밀번호 변경 가능해야 한다: {:?}", result);
+    clear_crypto_state(&crypto).unwrap();
+    unlock_encryption_impl(&conn, &crypto, "new_pw").unwrap();
+    let key = resolve_data_key(&conn, &crypto).unwrap().unwrap();
+    let students = get_students_impl(&conn, Some(key)).unwrap();
+    assert!(students.iter().any(|s| s.id == stu_id && s.name == "홍길동"));
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── 이미 해제 상태에서 unlock 재호출 ─────────────────────────────
+
+#[test]
+fn test_unlock_when_already_unlocked_succeeds() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    // enable 직후 이미 해제 상태 – 재호출도 성공 (set_crypto_state 덮어쓰기)
+    let result = unlock_encryption_impl(&conn, &crypto, "password");
+    assert!(result.is_ok(), "이미 해제 상태에서 unlock 재호출도 성공해야 한다: {:?}", result);
+    assert!(resolve_data_key(&conn, &crypto).unwrap().is_some());
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── 긴 이름 암호화 ────────────────────────────────────────────────
+
+#[test]
+fn test_student_long_name_encrypt_decrypt_roundtrip() {
+    let conn = setup_test_db();
+    let key = test_key();
+    let long_name = "가".repeat(500);
+    let id = create_student_impl(&conn, 1, 1, 1, &long_name, Some(key)).unwrap();
+    let raw_name: String = conn
+        .query_row(
+            "SELECT name FROM Student WHERE id=?1",
+            rusqlite::params![id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_ne!(raw_name, long_name, "긴 이름도 암호화되어야 한다");
+    let students = get_students_impl(&conn, Some(key)).unwrap();
+    assert_eq!(students[0].name, long_name, "500자 이름이 복호화되어야 한다");
+}
+
+// ── 공백만 있는 content → maybe_encrypt 통과 ────────────────────
+
+#[test]
+fn test_record_content_spaces_only_gets_encrypted() {
+    let conn = setup_test_db();
+    let key = test_key();
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+    let content = "     "; // 공백만 (is_empty() = false)
+    upsert_record_impl(&conn, act_id, stu_id, content, Some(key)).unwrap();
+    let raw: String = conn
+        .query_row(
+            "SELECT content FROM ActivityRecord WHERE activity_id=?1 AND student_id=?2",
+            rusqlite::params![act_id, stu_id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_ne!(raw, content, "공백만 있는 content도 암호화되어야 한다");
+    let decrypted = crate::crypto::decrypt(&raw, &key).unwrap();
+    assert_eq!(decrypted, content);
+}
+
+// ── APP_CONFIGS 항목 생성 / 삭제 검증 ────────────────────────────
+
+#[test]
+fn test_enable_encryption_creates_config_entries() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    let before: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM APP_CONFIGS WHERE config_key LIKE 'encryption%'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(before, 0);
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    let after: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM APP_CONFIGS WHERE config_key LIKE 'encryption%'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(after, 3, "활성화 후 3개 config 항목(enabled, salt, token)이 생성되어야 한다");
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+#[test]
+fn test_disable_encryption_removes_config_entries() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    disable_encryption_impl(&conn, &crypto, &db_path).unwrap();
+    let count: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM APP_CONFIGS WHERE config_key LIKE 'encryption%'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(count, 0, "비활성화 후 encryption config 항목이 모두 삭제되어야 한다");
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── history 다건 복호화 ───────────────────────────────────────────
+
+#[test]
+fn test_record_history_multiple_entries_all_decryptable() {
+    let conn = setup_test_db();
+    let key = test_key();
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+    upsert_record_impl(&conn, act_id, stu_id, "최신 내용", Some(key)).unwrap();
+    let record_id: i64 = conn
+        .query_row(
+            "SELECT id FROM ActivityRecord WHERE activity_id=?1 AND student_id=?2",
+            rusqlite::params![act_id, stu_id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    for (i, content) in ["이전 내용1", "이전 내용2", "이전 내용3"].iter().enumerate() {
+        let encrypted = crate::crypto::encrypt(content, &key).unwrap();
+        conn.execute(
+            "INSERT INTO ActivityRecordHistory (activity_record_id, content, changed_at, note) VALUES (?1, ?2, ?3, NULL)",
+            rusqlite::params![record_id, encrypted, format!("2024-01-{:02} 10:00:00", i + 1)],
+        )
+        .unwrap();
+    }
+    let history = get_record_history_impl(&conn, act_id, stu_id, 10, 0, Some(key)).unwrap();
+    assert_eq!(history.len(), 3, "history가 3개이어야 한다");
+    let contents: Vec<&str> = history.iter().map(|h| h.content.as_str()).collect();
+    assert!(contents.contains(&"이전 내용1"));
+    assert!(contents.contains(&"이전 내용2"));
+    assert!(contents.contains(&"이전 내용3"));
+}
+
+// ── 정규식 치환 + 암호화 조합 ─────────────────────────────────────
+
+#[test]
+fn test_apply_replace_regex_with_encryption() {
+    let conn = setup_test_db();
+    let key = test_key();
+    let area_id = insert_area(&conn, "국어", 500);
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = create_student_impl(&conn, 1, 1, 1, "홍길동", Some(key)).unwrap();
+    conn.execute(
+        "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
+        rusqlite::params![area_id, act_id],
+    )
+    .unwrap();
+    conn.execute(
+        "INSERT INTO AreaStudent (area_id, student_id) VALUES (?1, ?2)",
+        rusqlite::params![area_id, stu_id],
+    )
+    .unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "홍길동은 100점을 받았다", Some(key)).unwrap();
+    // 정규식으로 숫자 → N 치환
+    create_replace_rule_db(&conn, r"\d+", "N", true, 1).unwrap();
+    let mut cache = make_cache();
+    let result = apply_replace_impl(&conn, "all", &[], Some(key), &mut cache).unwrap();
+    assert_eq!(result.changed_count, 1);
+    let grid = get_area_grid_impl(&conn, area_id, Some(key)).unwrap();
+    assert_eq!(grid.records[0].content, "홍길동은 N점을 받았다");
+    let raw: String = conn
+        .query_row(
+            "SELECT content FROM ActivityRecord WHERE activity_id=?1 AND student_id=?2",
+            rusqlite::params![act_id, stu_id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_ne!(raw, "홍길동은 N점을 받았다", "치환 결과도 암호화되어야 한다");
+}
+
+// ── get_encryption_status 3가지 상태 ─────────────────────────────
+
+#[test]
+fn test_get_encryption_status_all_states() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    let s = get_encryption_status_impl(&conn, &crypto).unwrap();
+    assert!(!s.enabled && !s.unlocked, "비활성 상태: enabled=false, unlocked=false");
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    let s = get_encryption_status_impl(&conn, &crypto).unwrap();
+    assert!(s.enabled && s.unlocked, "활성+해제: enabled=true, unlocked=true");
+    clear_crypto_state(&crypto).unwrap();
+    let s = get_encryption_status_impl(&conn, &crypto).unwrap();
+    assert!(s.enabled && !s.unlocked, "활성+잠금: enabled=true, unlocked=false");
+    unlock_encryption_impl(&conn, &crypto, "password").unwrap();
+    let s = get_encryption_status_impl(&conn, &crypto).unwrap();
+    assert!(s.enabled && s.unlocked, "재해제: enabled=true, unlocked=true");
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── 잘못된 비밀번호 여러 번 후 성공 ──────────────────────────────
+
+#[test]
+fn test_multiple_wrong_then_correct_unlock() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    enable_encryption_impl(&conn, &crypto, &db_path, "correct_pw").unwrap();
+    clear_crypto_state(&crypto).unwrap();
+    for _ in 0..3 {
+        assert!(unlock_encryption_impl(&conn, &crypto, "wrong_pw").is_err());
+    }
+    unlock_encryption_impl(&conn, &crypto, "correct_pw").unwrap();
+    assert!(resolve_data_key(&conn, &crypto).unwrap().is_some());
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── 미활성 상태에서 change_password ──────────────────────────────
+
+#[test]
+fn test_change_password_when_not_enabled_returns_error() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    let result = change_encryption_password_impl(&conn, &crypto, &db_path, "old", "new");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().contains("암호화 설정이 없습니다"));
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── 빈 content는 enable / disable 후에도 빈 문자열 유지 ───────────
+
+#[test]
+fn test_record_empty_content_preserved_through_enable_disable() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+    upsert_record_impl(&conn, act_id, stu_id, "", None).unwrap();
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    let after_enable: String = conn
+        .query_row(
+            "SELECT content FROM ActivityRecord WHERE activity_id=?1 AND student_id=?2",
+            rusqlite::params![act_id, stu_id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(after_enable, "", "빈 content는 enable 후에도 빈 문자열이어야 한다 (skip_empty=true)");
+    disable_encryption_impl(&conn, &crypto, &db_path).unwrap();
+    let after_disable: String = conn
+        .query_row(
+            "SELECT content FROM ActivityRecord WHERE activity_id=?1 AND student_id=?2",
+            rusqlite::params![act_id, stu_id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(after_disable, "", "빈 content는 disable 후에도 빈 문자열이어야 한다");
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── 20명 대량 bulk_import 후 각각 복호화 ──────────────────────────
+
+#[test]
+fn test_bulk_import_large_batch_all_decryptable() {
+    let conn = setup_test_db();
+    let key = test_key();
+    let act_id = insert_activity(&conn, "발표");
+    let names: Vec<String> = (1..=20i64).map(|i| format!("학생{:02}", i)).collect();
+    let contents: Vec<String> = (1..=20i64).map(|i| format!("내용{}", i)).collect();
+    let inputs: Vec<_> = (0..20usize)
+        .map(|i| make_import(1, 1, (i + 1) as i64, Some(names[i].as_str()), act_id, &contents[i]))
+        .collect();
+    bulk_import_records_impl(&conn, &inputs, Some(key)).unwrap();
+    let raw_names: Vec<String> = {
+        let mut stmt = conn.prepare("SELECT name FROM Student ORDER BY number").unwrap();
+        stmt.query_map([], |r| r.get(0))
+            .unwrap()
+            .map(|r| r.unwrap())
+            .collect()
+    };
+    for (i, raw) in raw_names.iter().enumerate() {
+        assert_ne!(raw, &names[i], "DB에 평문이 저장되면 안 된다: {raw}");
+    }
+    let students = get_students_impl(&conn, Some(key)).unwrap();
+    assert_eq!(students.len(), 20);
+    for (i, s) in students.iter().enumerate() {
+        assert_eq!(s.name, format!("학생{:02}", i + 1));
+    }
+    let records = get_all_records_for_inspect_impl(&conn, "all", vec![], Some(key)).unwrap();
+    assert_eq!(records.len(), 20);
+    for i in 1..=20i64 {
+        let expected = format!("내용{}", i);
+        assert!(records.iter().any(|r| r.content == expected), "내용{}이 없다", i);
+    }
+}
+
+// ── 비밀번호 변경 후 스냅샷 복원 정합성 ──────────────────────────
+
+#[test]
+fn test_snapshot_after_change_password_still_restorable() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    let area_id = insert_area(&conn, "국어", 500);
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+    conn.execute(
+        "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
+        rusqlite::params![area_id, act_id],
+    )
+    .unwrap();
+    conn.execute(
+        "INSERT INTO AreaStudent (area_id, student_id) VALUES (?1, ?2)",
+        rusqlite::params![area_id, stu_id],
+    )
+    .unwrap();
+    enable_encryption_impl(&conn, &crypto, &db_path, "old_password").unwrap();
+    let key = resolve_data_key(&conn, &crypto).unwrap().unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "v1 기록", Some(key)).unwrap();
+    let snap = create_snapshot_impl(&conn, Some("v1".to_string())).unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "v2 기록", Some(key)).unwrap();
+    // 비밀번호 변경 → 모든 데이터 재암호화
+    change_encryption_password_impl(&conn, &crypto, &db_path, "old_password", "new_password")
+        .unwrap();
+    let new_key = resolve_data_key(&conn, &crypto).unwrap().unwrap();
+    // 스냅샷 복원 → v1 기록이 새 키로 복호화되어야 한다
+    restore_snapshot_impl(&conn, snap.id).unwrap();
+    let grid = get_area_grid_impl(&conn, area_id, Some(new_key)).unwrap();
+    assert_eq!(
+        grid.records[0].content, "v1 기록",
+        "비밀번호 변경 후 스냅샷 복원이 올바르게 동작해야 한다"
+    );
+    let raw: String = conn
+        .query_row(
+            "SELECT content FROM ActivityRecord WHERE activity_id=?1 AND student_id=?2",
+            rusqlite::params![act_id, stu_id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_ne!(raw, "v1 기록", "복원 후에도 DB에는 암호화된 값이어야 한다");
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── 비밀번호 변경 후 inspect 복호화 ──────────────────────────────
+
+#[test]
+fn test_inspect_after_change_password_decryptable() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+    enable_encryption_impl(&conn, &crypto, &db_path, "old_pw").unwrap();
+    let key = resolve_data_key(&conn, &crypto).unwrap().unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "검사 내용", Some(key)).unwrap();
+    change_encryption_password_impl(&conn, &crypto, &db_path, "old_pw", "new_pw").unwrap();
+    let new_key = resolve_data_key(&conn, &crypto).unwrap().unwrap();
+    // 새 키로 inspect → 복호화된 원문
+    let records = get_all_records_for_inspect_impl(&conn, "all", vec![], Some(new_key)).unwrap();
+    assert_eq!(records.len(), 1);
+    assert_eq!(records[0].content, "검사 내용", "비밀번호 변경 후 inspect가 복호화되어야 한다");
+    // 구 키로 inspect → 에러 (재암호화된 데이터를 구 키로 복호화 불가)
+    let result_old = get_all_records_for_inspect_impl(&conn, "all", vec![], Some(key));
+    assert!(result_old.is_err(), "구 키로 조회하면 에러여야 한다");
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+// ── update_student 후 단일 암호화 확인 ───────────────────────────
+
+#[test]
+fn test_update_student_name_reencrypted_not_double_encrypted() {
+    let conn = setup_test_db();
+    let key = test_key();
+    let id = create_student_impl(&conn, 1, 1, 1, "원래이름", Some(key)).unwrap();
+    update_student_impl(&conn, id, 1, 1, 1, "새이름", Some(key)).unwrap();
+    let raw_name: String = conn
+        .query_row(
+            "SELECT name FROM Student WHERE id=?1",
+            rusqlite::params![id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    // 1번 복호화하면 "새이름"이어야 한다
+    let decrypted = crate::crypto::decrypt(&raw_name, &key).unwrap();
+    assert_eq!(decrypted, "새이름", "update_student 후 이름이 정확히 1번 암호화되어야 한다");
+    // 2번 복호화하면 실패 (이중 암호화가 아님)
+    assert!(
+        crate::crypto::decrypt(&decrypted, &key).is_err(),
+        "이중 암호화가 아니어야 한다"
+    );
 }

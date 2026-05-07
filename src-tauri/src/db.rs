@@ -21,7 +21,7 @@ fn get_version(conn: &Connection) -> Result<u32> {
 /// - 각 단계는 rusqlite Transaction으로 감싸 실패 시 자동 ROLLBACK된다.
 /// - foreign_keys는 트랜잭션 외부에서만 변경 가능하므로, IIFE 종료 후 복구한다.
 /// - 각 단계 커밋 전 PRAGMA foreign_key_check로 무결성을 검증한다.
-fn migrate(conn: &mut Connection, from: u32) -> Result<()> {
+pub fn migrate(conn: &mut Connection, from: u32) -> Result<()> {
     // foreign_keys 변경은 트랜잭션 외부에서만 유효 (SQLite 공식 권고)
     conn.execute_batch("PRAGMA foreign_keys = OFF;")?;
 
@@ -87,19 +87,15 @@ pub fn create_new(db_path: &Path) -> Result<Connection> {
     Ok(conn)
 }
 
-/// 기존 DB 파일 열기 — 버전 검사 및 마이그레이션 수행
+/// 기존 DB 파일 열기 — 버전 검사만 수행 (마이그레이션은 migrate_schema 커맨드에서 별도 실행)
 pub fn open_existing(db_path: &Path) -> Result<Connection, OpenError> {
-    let mut conn = Connection::open(db_path).map_err(OpenError::Db)?;
+    let conn = Connection::open(db_path).map_err(OpenError::Db)?;
     conn.execute_batch("PRAGMA foreign_keys = ON;").map_err(OpenError::Db)?;
 
     let db_version = get_version(&conn).map_err(OpenError::Db)?;
 
     if db_version > SCHEMA_VERSION {
         return Err(OpenError::TooNew { db_version, app_version: SCHEMA_VERSION });
-    }
-
-    if db_version < SCHEMA_VERSION {
-        migrate(&mut conn, db_version).map_err(OpenError::Db)?;
     }
 
     Ok(conn)
