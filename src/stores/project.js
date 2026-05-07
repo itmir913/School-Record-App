@@ -21,6 +21,10 @@ export const useProjectStore = defineStore('project', () => {
     setProject(path)
   }
 
+  async function backupProject() {
+    await invoke('backup_project')
+  }
+
   async function migrateSchema() {
     await invoke('migrate_schema')
   }
@@ -31,5 +35,5 @@ export const useProjectStore = defineStore('project', () => {
     return await invoke('check_and_update_app_version')  // null | "" | "0.2.x"
   }
 
-  return { isOpen, filePath, setProject, closeProject, openProject, migrateSchema, checkAndUpdateVersion }
+  return { isOpen, filePath, setProject, closeProject, openProject, backupProject, migrateSchema, checkAndUpdateVersion }
 })

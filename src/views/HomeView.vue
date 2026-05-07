@@ -72,6 +72,7 @@ async function handleOpen() {
 }
 
 async function showReleaseNotesOrNavigate() {
+  await project.backupProject()
   await project.migrateSchema()
   const oldVersion = await project.checkAndUpdateVersion()
   if (oldVersion !== null) {
