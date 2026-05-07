@@ -25,7 +25,6 @@ const releaseUrl = ref('')
 const showPasswordModal = ref(false)
 const passwordError = ref('')
 const passwordLoading = ref(false)
-const pendingReleaseNotes = ref(null)  // null | "" | "0.2.x"
 const showReleaseNotesModal = ref(false)
 const releaseNotesToShow = ref([])
 
@@ -59,20 +58,27 @@ async function handleOpen() {
   })
   if (!path) return
   try {
-    const oldVersion = await project.openProject(path)
+    await project.openProject(path)
     await config.refreshEncryptionStatus()
     if (config.encryptionEnabled) {
-      pendingReleaseNotes.value = oldVersion
       passwordError.value = ''
       showPasswordModal.value = true
-    } else if (oldVersion !== null) {
-      releaseNotesToShow.value = getNotesToShow(oldVersion)
-      showReleaseNotesModal.value = true
     } else {
-      router.push('/workspace')
+      await showReleaseNotesOrNavigate()
     }
   } catch (e) {
     error.value = String(e)
+  }
+}
+
+async function showReleaseNotesOrNavigate() {
+  await project.migrateSchema()
+  const oldVersion = await project.checkAndUpdateVersion()
+  if (oldVersion !== null) {
+    releaseNotesToShow.value = getNotesToShow(oldVersion)
+    showReleaseNotesModal.value = true
+  } else {
+    router.push('/workspace')
   }
 }
 
@@ -82,13 +88,7 @@ async function handlePasswordSubmit({password}) {
   try {
     await config.unlockEncryption(password)
     showPasswordModal.value = false
-    if (pendingReleaseNotes.value !== null) {
-      releaseNotesToShow.value = getNotesToShow(pendingReleaseNotes.value)
-      pendingReleaseNotes.value = null
-      showReleaseNotesModal.value = true
-    } else {
-      router.push('/workspace')
-    }
+    await showReleaseNotesOrNavigate()
   } catch (e) {
     passwordError.value = String(e)
   } finally {

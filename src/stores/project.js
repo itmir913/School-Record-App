@@ -16,13 +16,20 @@ export const useProjectStore = defineStore('project', () => {
     isOpen.value = false
   }
 
-  // 반환값: null = 버전 동일(모달 불필요), string = 이전 버전(모달 표시)
   async function openProject(path) {
     await invoke('open_project', { path })
-    const oldVersion = await invoke('check_and_update_app_version')
     setProject(path)
-    return oldVersion  // null | "" | "0.2.x"
   }
 
-  return { isOpen, filePath, setProject, closeProject, openProject }
+  async function migrateSchema() {
+    await invoke('migrate_schema')
+  }
+
+  // 반환값: null = 버전 동일(모달 불필요), string = 이전 버전(모달 표시)
+  // migrateSchema() 이후 호출해야 함
+  async function checkAndUpdateVersion() {
+    return await invoke('check_and_update_app_version')  // null | "" | "0.2.x"
+  }
+
+  return { isOpen, filePath, setProject, closeProject, openProject, migrateSchema, checkAndUpdateVersion }
 })
