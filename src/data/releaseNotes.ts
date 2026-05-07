@@ -19,6 +19,9 @@ export const RELEASE_NOTES: ReleaseNote[] = [
       '업데이트 후 첫 실행 시 릴리즈 노트 자동 표시',
       '생기부 작성 영역 선택 시 이름 순 정렬',
     ],
+    bugFixes: [
+      'DB 마이그레이션 코드 안정성 향상',
+    ],
   },
   {
     version: '0.2.12',
