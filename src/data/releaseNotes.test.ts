@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getNotesToShow, ReleaseNote } from './releaseNotes'
+import { getNotesToShow, RELEASE_NOTES, ReleaseNote } from './releaseNotes'
 
 const MOCK: ReleaseNote[] = [
   { version: '0.3.0',  date: '2026-06-01', features: ['F3'] },
@@ -39,5 +39,40 @@ describe('getNotesToShow', () => {
 
   it('null + 빈 배열 주입 → 빈 배열 반환', () => {
     expect(getNotesToShow(null, [])).toEqual([])
+  })
+
+  it('기본 인자 미전달(null) → RELEASE_NOTES 전체 반환', () => {
+    const result = getNotesToShow(null)
+    expect(result).toEqual(RELEASE_NOTES)
+  })
+
+  it('단일 아이템 배열 + 매칭 → 빈 배열', () => {
+    const single: ReleaseNote[] = [{ version: '0.3.0', date: '2026-06-01' }]
+    expect(getNotesToShow('0.3.0', single)).toEqual([])
+  })
+
+  it('단일 아이템 배열 + 미매칭 → 전체 반환', () => {
+    const single: ReleaseNote[] = [{ version: '0.3.0', date: '2026-06-01' }]
+    expect(getNotesToShow('0.2.0', single)).toEqual(single)
+  })
+
+  it('빈 문자열 + 빈 배열 → 빈 배열 반환', () => {
+    expect(getNotesToShow('', [])).toEqual([])
+  })
+})
+
+describe('RELEASE_NOTES 구조 무결성', () => {
+  it('length ≥ 1, 날짜 내림차순, [0]이 최신', () => {
+    expect(RELEASE_NOTES.length).toBeGreaterThanOrEqual(1)
+    for (let i = 0; i < RELEASE_NOTES.length - 1; i++) {
+      expect(new Date(RELEASE_NOTES[i].date).getTime()).toBeGreaterThanOrEqual(
+        new Date(RELEASE_NOTES[i + 1].date).getTime()
+      )
+    }
+  })
+
+  it('버전 중복 없음', () => {
+    const versions = RELEASE_NOTES.map(n => n.version)
+    expect(new Set(versions).size).toBe(versions.length)
   })
 })

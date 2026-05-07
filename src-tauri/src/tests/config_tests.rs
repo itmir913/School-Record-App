@@ -142,3 +142,25 @@ fn test_version_multiple_upgrades_sequence() {
     let r3 = check_and_update_app_version_impl(&conn, "0.2.12").unwrap();
     assert!(r3.is_none());
 }
+
+#[test]
+fn test_version_downgrade_returns_old_and_updates_db() {
+    // 다운그레이드(0.2.13 → 0.2.12)에서도 Some(이전버전) 반환 + DB 갱신
+    let conn = setup_test_db();
+    set_config_impl(&conn, "app_version", "0.2.13").unwrap();
+    let result = check_and_update_app_version_impl(&conn, "0.2.12").unwrap();
+    assert_eq!(result, Some("0.2.13".to_string()));
+    let stored = get_config_impl(&conn, "app_version").unwrap();
+    assert_eq!(stored, Some("0.2.12".to_string()));
+}
+
+#[test]
+fn test_version_empty_string_stored_returns_empty_and_updates_db() {
+    // app_version이 빈 문자열로 저장된 경우 → Some("") 반환 + DB 갱신
+    let conn = setup_test_db();
+    set_config_impl(&conn, "app_version", "").unwrap();
+    let result = check_and_update_app_version_impl(&conn, "0.2.13").unwrap();
+    assert_eq!(result, Some("".to_string()));
+    let stored = get_config_impl(&conn, "app_version").unwrap();
+    assert_eq!(stored, Some("0.2.13".to_string()));
+}
