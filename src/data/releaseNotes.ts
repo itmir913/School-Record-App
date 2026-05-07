@@ -13,7 +13,7 @@ export const RELEASE_NOTES: ReleaseNote[] = [
     version: '0.2.13',
     date: '2026-05-08',
     breaking: [
-      '데이터베이스 보안 강화를 위한 암호화 기능 도입',
+      '데이터베이스 보안 강화를 위한 암호화 기능 도입 (Thanks to @donginssam)',
     ],
     improvements: [
       '업데이트 후 첫 실행 시 릴리즈 노트 자동 표시',
