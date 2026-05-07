@@ -50,14 +50,14 @@ export const RELEASE_NOTES: ReleaseNote[] = [
  * - 배열에서 storedVersion을 못 찾으면 → 전체 반환 (안전 실패)
  * RELEASE_NOTES는 [0]이 최신인 스택 구조여야 한다.
  */
-export function getNotesToShow(storedVersion: string | null): ReleaseNote[] {
-  if (!storedVersion) return [...RELEASE_NOTES]
+export function getNotesToShow(storedVersion: string | null, notes: ReleaseNote[] = RELEASE_NOTES): ReleaseNote[] {
+  if (!storedVersion) return [...notes]
 
-  for (let i = 0; i < RELEASE_NOTES.length; i++) {
-    if (RELEASE_NOTES[i].version === storedVersion) {
-      return RELEASE_NOTES.slice(0, i)
+  for (let i = 0; i < notes.length; i++) {
+    if (notes[i].version === storedVersion) {
+      return notes.slice(0, i)
     }
   }
 
-  return [...RELEASE_NOTES]
+  return [...notes]
 }
