@@ -1,9 +1,11 @@
+use crate::commands::config::set_config_impl;
 use crate::engine::{validate_existing_path, validate_parent_dir_path};
 use crate::state::{clear_crypto_state, CryptoStateHandle, DbPathState, DbState};
 use tauri::State;
 
 pub(crate) fn new_project_impl(
     path: &str,
+    current_version: &str,
     state: &DbState,
     db_path_state: &DbPathState,
     crypto: &CryptoStateHandle,
@@ -14,6 +16,7 @@ pub(crate) fn new_project_impl(
         return Err(format!("이미 파일이 존재합니다: {path}"));
     }
     let conn = crate::db::create_new(p).map_err(|e| e.to_string())?;
+    set_config_impl(&conn, "app_version", current_version)?;
     let mut guard = state.0.lock().map_err(|e| e.to_string())?;
     *guard = Some(conn);
     *db_path_state.0.lock().map_err(|e| e.to_string())? = Some(p.to_path_buf());
@@ -48,11 +51,13 @@ pub(crate) fn open_project_impl(
 #[tauri::command]
 pub fn new_project(
     path: String,
+    app: tauri::AppHandle,
     state: State<DbState>,
     db_path: State<DbPathState>,
     crypto: State<CryptoStateHandle>,
 ) -> Result<(), String> {
-    new_project_impl(&path, &state, &db_path, &crypto)
+    let version = app.package_info().version.to_string();
+    new_project_impl(&path, &version, &state, &db_path, &crypto)
 }
 
 #[tauri::command]

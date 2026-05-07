@@ -56,11 +56,12 @@ pub async fn get_config(
 #[tauri::command]
 pub async fn check_and_update_app_version(
     db: State<'_, DbState>,
-    current_version: String,
+    app: tauri::AppHandle,
 ) -> Result<Option<String>, String> {
+    let version = app.package_info().version.to_string();
     let guard = db.0.lock().map_err(|e| e.to_string())?;
     let conn = guard.as_ref().ok_or("DB not open")?;
-    check_and_update_app_version_impl(conn, &current_version)
+    check_and_update_app_version_impl(conn, &version)
 }
 
 #[tauri::command]
