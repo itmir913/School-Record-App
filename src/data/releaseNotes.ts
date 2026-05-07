@@ -1,17 +1,18 @@
 ﻿export interface ReleaseNote {
   version: string
   date: string
+
+  breaking?: string[]
   features?: string[]
   improvements?: string[]
   bugFixes?: string[]
-  breaking?: string[]
 }
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
     version: '0.2.13',
     date: '2026-05-08',
-    features: [
+    breaking: [
       '데이터베이스 보안 강화를 위한 암호화 기능 도입',
     ],
     improvements: [

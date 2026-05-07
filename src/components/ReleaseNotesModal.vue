@@ -25,6 +25,16 @@ const emit = defineEmits(['close'])
         <template v-for="(note, index) in notes" :key="note.version">
           <div class="version-header">v{{ note.version }} <span class="version-date">{{ note.date }}</span></div>
 
+          <div v-if="note.breaking?.length" class="section">
+            <div class="section-title">
+              <AlertTriangle :size="14" class="section-icon breaking-icon" />
+              주요 변경 사항
+            </div>
+            <ul class="list-disc list-outside ml-4">
+              <li v-for="item in note.breaking" :key="item">{{ item }}</li>
+            </ul>
+          </div>
+
           <div v-if="note.features?.length" class="section">
             <div class="section-title">
               <Sparkles :size="14" class="section-icon features-icon" />
@@ -52,16 +62,6 @@ const emit = defineEmits(['close'])
             </div>
             <ul class="list-disc list-outside ml-4">
               <li v-for="item in note.bugFixes" :key="item">{{ item }}</li>
-            </ul>
-          </div>
-
-          <div v-if="note.breaking?.length" class="section">
-            <div class="section-title">
-              <AlertTriangle :size="14" class="section-icon breaking-icon" />
-              주요 변경 사항
-            </div>
-            <ul class="list-disc list-outside ml-4">
-              <li v-for="item in note.breaking" :key="item">{{ item }}</li>
             </ul>
           </div>
           <hr v-if="index < notes.length - 1" class="version-divider" />
