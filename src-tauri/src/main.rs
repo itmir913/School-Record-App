@@ -29,6 +29,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             new_project,
             open_project,
+            migrate_schema,
             get_areas,
             create_area,
             update_area,
