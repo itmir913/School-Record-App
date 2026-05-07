@@ -17,12 +17,12 @@ const emit = defineEmits(['close'])
         </div>
         <div>
           <h2>업데이트 완료</h2>
-          <p>v{{ version }} 새 버전이 적용되었습니다.</p>
+          <p>새로운 버전으로 정상 적용되었습니다.</p>
         </div>
       </div>
 
       <div v-if="notes.length" class="notes-body">
-        <template v-for="note in notes" :key="note.version">
+        <template v-for="(note, index) in notes" :key="note.version">
           <div class="version-header">v{{ note.version }} <span class="version-date">{{ note.date }}</span></div>
 
           <div v-if="note.features?.length" class="section">
@@ -30,7 +30,7 @@ const emit = defineEmits(['close'])
               <Sparkles :size="14" class="section-icon features-icon" />
               새 기능
             </div>
-            <ul>
+            <ul class="list-disc list-outside ml-4">
               <li v-for="item in note.features" :key="item">{{ item }}</li>
             </ul>
           </div>
@@ -40,7 +40,7 @@ const emit = defineEmits(['close'])
               <Wrench :size="14" class="section-icon improvements-icon" />
               개선 사항
             </div>
-            <ul>
+            <ul class="list-disc list-outside ml-4">
               <li v-for="item in note.improvements" :key="item">{{ item }}</li>
             </ul>
           </div>
@@ -50,7 +50,7 @@ const emit = defineEmits(['close'])
               <Bug :size="14" class="section-icon bugfix-icon" />
               버그 수정
             </div>
-            <ul>
+            <ul class="list-disc list-outside ml-4">
               <li v-for="item in note.bugFixes" :key="item">{{ item }}</li>
             </ul>
           </div>
@@ -60,10 +60,11 @@ const emit = defineEmits(['close'])
               <AlertTriangle :size="14" class="section-icon breaking-icon" />
               주요 변경 사항
             </div>
-            <ul>
+            <ul class="list-disc list-outside ml-4">
               <li v-for="item in note.breaking" :key="item">{{ item }}</li>
             </ul>
           </div>
+          <hr v-if="index < notes.length - 1" class="version-divider" />
         </template>
       </div>
 
@@ -92,7 +93,7 @@ const emit = defineEmits(['close'])
 
 .modal {
   width: 100%;
-  max-width: 460px;
+  max-width: 580px;
   background-color: #0e1220;
   border: 1px solid #1a2035;
   border-radius: 20px;
@@ -102,7 +103,7 @@ const emit = defineEmits(['close'])
 
 .modal-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
   margin-bottom: 22px;
 }
@@ -118,14 +119,14 @@ const emit = defineEmits(['close'])
   border: 1px solid rgba(59, 91, 219, 0.3);
   color: #6ea8fe;
   flex-shrink: 0;
-  margin-top: 2px;
 }
 
 .modal-header h2 {
   font-size: 18px;
   font-weight: 600;
   color: #e2e8f0;
-  margin: 0 0 4px;
+  margin: 0;
+  line-height: 1.2;
 }
 
 .modal-header p {
@@ -167,7 +168,7 @@ const emit = defineEmits(['close'])
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 18px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -195,25 +196,31 @@ ul {
 }
 
 li {
-  font-size: 14px;
+  font-size: 16px;
   color: #cbd5e1;
   line-height: 1.5;
 }
 
 .version-header {
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 600;
   color: #7ba3d4;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #1a2035;
-  margin-bottom: 4px;
+  padding-bottom: 2px;
+  margin-bottom: 0;
 }
 
 .version-date {
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 400;
   color: var(--clr-text-hint);
   margin-left: 6px;
+}
+
+.version-divider {
+  border: none;
+  border-top: 1px solid #334155;
+  margin: 8px 0;
+  opacity: 0.6;
 }
 
 .notes-empty {
