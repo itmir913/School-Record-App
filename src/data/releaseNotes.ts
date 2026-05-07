@@ -1,4 +1,4 @@
-export interface ReleaseNote {
+﻿export interface ReleaseNote {
   version: string
   date: string
   features?: string[]
@@ -20,10 +20,6 @@ export const RELEASE_NOTES: ReleaseNote[] = [
     ],
   },
 ]
-
-export function getReleaseNote(version: string): ReleaseNote | undefined {
-  return RELEASE_NOTES.find(note => note.version === version)
-}
 
 /**
  * 사용자가 마지막으로 실행한 버전(storedVersion) 이후의 노트를 반환한다.
