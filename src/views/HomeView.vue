@@ -8,6 +8,8 @@ import {openUrl} from '@tauri-apps/plugin-opener'
 import {useProjectStore} from '../stores/project'
 import {useConfigStore} from '../stores/configStore'
 import PasswordModal from '../components/PasswordModal.vue'
+import ReleaseNotesModal from '../components/ReleaseNotesModal.vue'
+import {getNotesToShow} from '../data/releaseNotes'
 
 const router = useRouter()
 const project = useProjectStore()
@@ -23,6 +25,9 @@ const releaseUrl = ref('')
 const showPasswordModal = ref(false)
 const passwordError = ref('')
 const passwordLoading = ref(false)
+const pendingReleaseNotes = ref(null)  // null | "" | "0.2.x"
+const showReleaseNotesModal = ref(false)
+const releaseNotesToShow = ref([])
 
 onMounted(async () => {
   currentVersion.value = await getVersion()
@@ -54,12 +59,15 @@ async function handleOpen() {
   })
   if (!path) return
   try {
-    await invoke('open_project', {path})
-    project.setProject(path)
+    const oldVersion = await project.openProject(path)
     await config.refreshEncryptionStatus()
     if (config.encryptionEnabled) {
+      pendingReleaseNotes.value = oldVersion
       passwordError.value = ''
       showPasswordModal.value = true
+    } else if (oldVersion !== null) {
+      releaseNotesToShow.value = getNotesToShow(oldVersion)
+      showReleaseNotesModal.value = true
     } else {
       router.push('/workspace')
     }
@@ -74,12 +82,23 @@ async function handlePasswordSubmit({password}) {
   try {
     await config.unlockEncryption(password)
     showPasswordModal.value = false
-    router.push('/workspace')
+    if (pendingReleaseNotes.value !== null) {
+      releaseNotesToShow.value = getNotesToShow(pendingReleaseNotes.value)
+      pendingReleaseNotes.value = null
+      showReleaseNotesModal.value = true
+    } else {
+      router.push('/workspace')
+    }
   } catch (e) {
     passwordError.value = String(e)
   } finally {
     passwordLoading.value = false
   }
+}
+
+function handleReleaseNotesClose() {
+  showReleaseNotesModal.value = false
+  router.push('/workspace')
 }
 
 function handlePasswordCancel() {
@@ -221,6 +240,13 @@ function closeUpdateModal() {
         :loading="passwordLoading"
         @submit="handlePasswordSubmit"
         @cancel="handlePasswordCancel"
+    />
+
+    <!-- 릴리즈 노트 모달 -->
+    <ReleaseNotesModal
+        v-if="showReleaseNotesModal"
+        :notes="releaseNotesToShow"
+        @close="handleReleaseNotesClose"
     />
 
     <!-- 업데이트 모달 -->
