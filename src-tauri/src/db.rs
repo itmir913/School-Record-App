@@ -3,6 +3,8 @@ use std::path::Path;
 
 /// 현재 앱이 지원하는 스키마 버전.
 /// 스키마 변경 시 이 값을 올리고 MIGRATIONS 배열에 SQL을 추가한다.
+/// 중요: 스키마 버전을 올릴 때는 반드시 Cargo.toml의 version(app_version)도 함께 올려야 한다.
+/// app_version이 바뀌지 않으면 릴리즈 노트 모달이 표시되지 않는다.
 pub const SCHEMA_VERSION: u32 = 1;
 
 /// 인덱스 i: 버전 i → i+1 로 올리는 SQL.
