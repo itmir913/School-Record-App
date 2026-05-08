@@ -1,12 +1,12 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { Lock, Eye, EyeOff, AlertTriangle } from 'lucide-vue-next'
+import {ref, computed, watch} from 'vue'
+import {Lock, Eye, EyeOff, AlertTriangle} from 'lucide-vue-next'
 
 const props = defineProps({
   // 'unlock' | 'setup' | 'change'
-  mode: { type: String, required: true },
-  error: { type: String, default: '' },
-  loading: { type: Boolean, default: false },
+  mode: {type: String, required: true},
+  error: {type: String, default: ''},
+  loading: {type: Boolean, default: false},
 })
 
 const emit = defineEmits(['submit', 'cancel'])
@@ -68,11 +68,11 @@ function validate() {
 function handleSubmit() {
   if (!validate()) return
   if (props.mode === 'unlock') {
-    emit('submit', { password: password.value })
+    emit('submit', {password: password.value})
   } else if (props.mode === 'setup') {
-    emit('submit', { password: password.value })
+    emit('submit', {password: password.value})
   } else {
-    emit('submit', { oldPassword: password.value, newPassword: newPassword.value })
+    emit('submit', {oldPassword: password.value, newPassword: newPassword.value})
   }
 }
 
@@ -99,7 +99,8 @@ function handleCancel() {
       <!-- 비밀번호 분실 경고 (setup 모드) -->
       <div v-if="mode === 'setup'" class="warning-box">
         <AlertTriangle :size="16" class="warning-icon"/>
-        <span>비밀번호를 분실하면 데이터를 절대로 복구할 수 없습니다. 반드시 안전한 곳에 보관하세요.</span>
+        <span>비밀번호를 분실하면 데이터를 <strong><span style="text-decoration: underline;">절대로</span></strong>
+          복구할 수 없습니다. 반드시 안전한 곳에 보관하세요.</span>
       </div>
 
       <div class="form">
@@ -108,11 +109,11 @@ function handleCancel() {
           <label>{{ mode === 'change' ? '현재 비밀번호' : '비밀번호' }}</label>
           <div class="input-wrap">
             <input
-              :type="showPassword ? 'text' : 'password'"
-              v-model="password"
-              :placeholder="mode === 'change' ? '현재 비밀번호' : '비밀번호 입력'"
-              @keydown.enter="handleSubmit"
-              autofocus
+                :type="showPassword ? 'text' : 'password'"
+                v-model="password"
+                :placeholder="mode === 'change' ? '현재 비밀번호' : '비밀번호 입력'"
+                @keydown.enter="handleSubmit"
+                autofocus
             />
             <button type="button" class="eye-btn" @click="showPassword = !showPassword">
               <Eye v-if="!showPassword" :size="16"/>
@@ -126,10 +127,10 @@ function handleCancel() {
           <label>새 비밀번호</label>
           <div class="input-wrap">
             <input
-              :type="showNewPassword ? 'text' : 'password'"
-              v-model="newPassword"
-              placeholder="새 비밀번호 입력"
-              @keydown.enter="handleSubmit"
+                :type="showNewPassword ? 'text' : 'password'"
+                v-model="newPassword"
+                placeholder="새 비밀번호 입력"
+                @keydown.enter="handleSubmit"
             />
             <button type="button" class="eye-btn" @click="showNewPassword = !showNewPassword">
               <Eye v-if="!showNewPassword" :size="16"/>
@@ -143,10 +144,10 @@ function handleCancel() {
           <label>{{ mode === 'setup' ? '비밀번호 확인' : '새 비밀번호 확인' }}</label>
           <div class="input-wrap">
             <input
-              type="password"
-              v-model="confirmPassword"
-              :placeholder="mode === 'setup' ? '비밀번호 재입력' : '새 비밀번호 재입력'"
-              @keydown.enter="handleSubmit"
+                type="password"
+                v-model="confirmPassword"
+                :placeholder="mode === 'setup' ? '비밀번호 재입력' : '새 비밀번호 재입력'"
+                @keydown.enter="handleSubmit"
             />
           </div>
         </div>
@@ -187,7 +188,7 @@ function handleCancel() {
 
 .modal {
   width: 100%;
-  max-width: 420px;
+  max-width: 520px;
   background-color: #0e1220;
   border: 1px solid #1a2035;
   border-radius: 20px;
@@ -197,7 +198,7 @@ function handleCancel() {
 
 .modal-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
   margin-bottom: 20px;
 }
@@ -220,24 +221,24 @@ function handleCancel() {
   font-size: 18px;
   font-weight: 600;
   color: #e2e8f0;
-  margin: 0 0 4px;
+  margin: 0;
 }
 
 .modal-header p {
-  font-size: 14px;
-  color: var(--clr-text-hint);
+  font-size: 16px;
+  color: var(--clr-text-subtle);
   margin: 0;
 }
 
 .warning-box {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   padding: 12px 14px;
   border-radius: 10px;
   background-color: rgba(245, 158, 11, 0.08);
   border: 1px solid rgba(245, 158, 11, 0.25);
-  font-size: 13px;
+  font-size: 16px;
   color: #fbbf24;
   line-height: 1.5;
   margin-bottom: 18px;
@@ -262,7 +263,7 @@ function handleCancel() {
 }
 
 .field label {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 500;
   color: #94a3b8;
 }
@@ -278,7 +279,7 @@ function handleCancel() {
   border: 1px solid #2e3f60;
   border-radius: 10px;
   color: #e2e8f0;
-  font-size: 15px;
+  font-size: 16px;
   outline: none;
   transition: border-color 0.15s;
   box-sizing: border-box;
@@ -309,19 +310,25 @@ function handleCancel() {
 
 .error-box {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   padding: 11px 14px;
   border-radius: 10px;
   background-color: #2a1020;
   border: 1px solid #4a1a28;
-  font-size: 13px;
+  font-size: 16px;
   color: #fca5a5;
   line-height: 1.5;
 }
 
-.err-enter-from, .err-leave-to { opacity: 0; transform: translateY(4px); }
-.err-enter-active, .err-leave-active { transition: all 0.2s; }
+.err-enter-from, .err-leave-to {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.err-enter-active, .err-leave-active {
+  transition: all 0.2s;
+}
 
 .actions {
   display: flex;
@@ -380,5 +387,9 @@ function handleCancel() {
   animation: spin 0.7s linear infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 </style>

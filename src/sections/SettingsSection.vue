@@ -89,14 +89,19 @@ async function handlePasswordSubmit(payload) {
             <p class="card-desc">학생 개인정보와 학교생활기록부 내용을 암호화하여 보호합니다.</p>
           </div>
           <div class="card-badge" :class="config.encryptionEnabled ? 'badge-on' : 'badge-off'">
-            {{ config.encryptionEnabled ? '활성화' : '비활성화' }}
+            {{ config.encryptionEnabled ? '활성화됨' : '비활성화됨' }}
           </div>
         </div>
 
         <!-- 경고 문구 -->
         <div class="warning-box">
-          <AlertTriangle :size="14" class="warning-icon"/>
-          <span>암호화 활성화 시 비밀번호를 분실하면 데이터를 복구할 수 없습니다.</span>
+          <AlertTriangle :size="16" class="warning-icon"/>
+          <span>
+            비밀번호 분실 시
+            <strong><span style="text-decoration: underline;">어떠한 방법으로도</span></strong>
+            데이터를 복구할 수 없습니다.
+            비밀번호를 잊지 않도록 반드시 주의해 주세요.
+          </span>
         </div>
 
         <!-- 버튼 -->
@@ -110,7 +115,8 @@ async function handlePasswordSubmit(payload) {
               <KeyRound :size="16"/>
               비밀번호 변경
             </button>
-            <button v-if="!confirmEncryptDisable" class="btn-disable" :disabled="disableEncryptLoading" @click="handleDisable">
+            <button v-if="!confirmEncryptDisable" class="btn-disable" :disabled="disableEncryptLoading"
+                    @click="handleDisable">
               <ShieldOff :size="16"/>
               암호화 비활성화
             </button>
@@ -120,7 +126,9 @@ async function handlePasswordSubmit(payload) {
                 <span class="disable-warning-title">암호화를 정말 비활성화하시겠습니까?</span>
               </div>
               <div class="disable-confirm-btns">
-                <button class="btn-cancel-sm" :disabled="disableEncryptLoading" @click="confirmEncryptDisable = false">취소</button>
+                <button class="btn-cancel-sm" :disabled="disableEncryptLoading" @click="confirmEncryptDisable = false">
+                  취소
+                </button>
                 <button class="btn-disable-confirm" :disabled="disableEncryptLoading" @click="handleDisable">
                   {{ disableEncryptLoading ? '처리 중…' : '비활성화' }}
                 </button>
@@ -226,14 +234,14 @@ async function handlePasswordSubmit(payload) {
 }
 
 .card-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: #e2e8f0;
-  margin: 0 0 4px;
+  margin: 0;
 }
 
 .card-desc {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--clr-text-hint);
   margin: 0;
 }
@@ -242,7 +250,7 @@ async function handlePasswordSubmit(payload) {
   margin-left: auto;
   padding: 4px 12px;
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -261,13 +269,13 @@ async function handlePasswordSubmit(payload) {
 
 .warning-box {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   padding: 10px 14px;
   border-radius: 10px;
   background-color: rgba(245, 158, 11, 0.07);
   border: 1px solid rgba(245, 158, 11, 0.2);
-  font-size: 13px;
+  font-size: 16px;
   color: #fbbf24;
   line-height: 1.5;
   margin-bottom: 18px;
@@ -292,7 +300,7 @@ async function handlePasswordSubmit(payload) {
   gap: 8px;
   padding: 9px 18px;
   border-radius: 10px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.15s, transform 0.1s;
@@ -337,7 +345,7 @@ async function handlePasswordSubmit(payload) {
 
 .status-msg {
   margin: 14px 0 0;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
 }
 
@@ -372,7 +380,7 @@ async function handlePasswordSubmit(payload) {
 }
 
 .disable-warning-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: #f87171;
 }
@@ -389,7 +397,7 @@ async function handlePasswordSubmit(payload) {
   border: 1px solid rgba(100, 116, 139, 0.4);
   background: transparent;
   color: #94a3b8;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
   box-sizing: border-box;
 }
@@ -404,7 +412,7 @@ async function handlePasswordSubmit(payload) {
   border: 1px solid transparent;
   background-color: #ef4444;
   color: white;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.15s;
