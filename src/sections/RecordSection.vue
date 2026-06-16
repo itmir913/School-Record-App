@@ -38,11 +38,8 @@ function toggleActivity(actId) {
   collapsedActivities.value = next
 }
 
-// 셀별 저장 상태 map: `${activityId}-${studentId}` → 'saving' | 'saved' | null
 const savingState = ref(new Map())
-// 편집 중인 내용 map
 const cellContent = ref(new Map())
-// 1초 auto-save debounce 타이머
 const debounceTimers = new Map()
 
 onMounted(async () => {
@@ -124,14 +121,12 @@ function onCellInput(activityId, studentId, event) {
   cellContent.value = map
   if (!compactCell.value) autoResize(event.target)
 
-  // 이전 에러 초기화
   if (savingState.value.get(key) === 'error') {
     const cleared = new Map(savingState.value)
     cleared.delete(key)
     savingState.value = cleared
   }
 
-  // debounce 저장
   if (debounceTimers.has(key)) {
     clearTimeout(debounceTimers.get(key))
   }
@@ -159,7 +154,6 @@ function onGridWheel(event) {
   el.scrollLeft += event.deltaY
 }
 
-
 async function saveCell(activityId, studentId, content) {
   const key = cellKey(activityId, studentId)
   const stateMap = new Map(savingState.value)
@@ -182,18 +176,11 @@ async function saveCell(activityId, studentId, content) {
   }
 }
 
-// 바이트 길이 계산 (UTF-8 기준, 엔터 2바이트)
 function byteLength(str) {
-  if (!str) return 0;
-
-  // 인자가 숫자인 경우를 대비해 확실하게 문자열로 변환 (방어 코드)
-  const safeStr = String(str);
-
-  // 1. 기존 \r 제거 후 모든 \n을 \r\n으로 변환하여 엔터를 2바이트로 처리
-  const normalizedStr = safeStr.replace(/\r/g, '').replace(/\n/g, '\r\n');
-
-  // 2. TextEncoder를 통해 바이트 수 계산 (한글 3, 영/숫자/공백 1 자동 적용)
-  return new TextEncoder().encode(normalizedStr).length;
+  if (!str) return 0
+  const safeStr = String(str)
+  const normalizedStr = safeStr.replace(/\r/g, '').replace(/\n/g, '\r\n')
+  return new TextEncoder().encode(normalizedStr).length
 }
 
 const byteLimit = computed(() => {
@@ -226,7 +213,6 @@ function isStudentEmpty(studentId) {
   return studentTotalBytes(studentId) === 0
 }
 
-// 셀 내용 클립보드 복사
 const copiedCells = ref(new Set())
 
 async function copyCell(activityId, studentId) {
@@ -241,8 +227,7 @@ async function copyCell(activityId, studentId) {
   }, 1000)
 }
 
-// 히스토리 모달
-const historyModal = ref(null) // { activityId, studentId, activityName, studentName }
+const historyModal = ref(null)
 
 function openHistory(act, student) {
   historyModal.value = {
@@ -253,7 +238,6 @@ function openHistory(act, student) {
   }
 }
 
-// 학년+반이 바뀌는 행에 구분선 표시
 function isNewGroup(students, index) {
   if (index === 0) return false
   const prev = students[index - 1]
@@ -263,76 +247,77 @@ function isNewGroup(students, index) {
 </script>
 
 <template>
-  <div class="activity-section-wrapper" :style="{ '--cell-fs': configStore.recordCellFontSize + 'px' }">
-    <div class="section" :class="{ 'section--frozen': freezeColumns }">
+  <div class="h-full" :style="{ '--cell-fs': configStore.recordCellFontSize + 'px' }">
+    <div
+        class="flex flex-col box-border"
+        :class="freezeColumns ? 'h-full overflow-hidden' : ''"
+    >
 
-      <!-- 상단 컨트롤 -->
-      <div class="toolbar">
-        <div class="toolbar-primary">
+      <!-- 툴바 -->
+      <div class="flex flex-wrap items-center px-6 py-3 border-b border-line shrink-0 gap-2 bg-base">
+        <div class="flex items-center gap-2 min-w-0">
           <select
               v-model="selectedAreaId"
-              class="area-select"
+              class="py-2 px-3.5 rounded-btn border border-line bg-base text-ink text-sm cursor-pointer outline-none min-w-[180px] focus:border-blue/50"
           >
             <option :value="null" disabled>영역(Area) 선택</option>
-            <option
-                v-for="area in areaStore.areas"
-                :key="area.id"
-                :value="area.id"
-            >{{ area.name }}
-            </option>
+            <option v-for="area in areaStore.areas" :key="area.id" :value="area.id">{{ area.name }}</option>
           </select>
         </div>
 
-        <div class="toolbar-secondary">
+        <div class="flex items-center flex-wrap justify-end gap-2 ml-auto">
           <!-- 글자 크기 -->
-          <div class="font-size-control" title="셀 글자 크기">
-            <ALargeSmall :size="15" class="font-size-icon"/>
+          <div class="flex items-center gap-1 py-2 px-3.5 rounded-lg border border-blue/30 bg-blue/[0.08] text-blue-2" title="셀 글자 크기">
+            <ALargeSmall :size="15" class="shrink-0 mr-0.5 opacity-70"/>
             <button
-                class="btn-font-step"
+                class="flex items-center justify-center w-[22px] h-[22px] rounded-[5px] border-none bg-transparent text-sm text-ink-3 leading-none cursor-pointer transition-[background-color,color] shrink-0 enabled:hover:bg-white/[0.08] enabled:hover:text-ink-2 disabled:opacity-30 disabled:cursor-default"
                 :disabled="configStore.recordCellFontSize <= FONT_SIZE_MIN"
                 @click="changeFontSize(-1)"
             >−</button>
-            <span class="font-size-label">{{ configStore.recordCellFontSize }}px</span>
+            <span class="text-sm font-semibold text-blue-2 min-w-8 text-center">{{ configStore.recordCellFontSize }}px</span>
             <button
-                class="btn-font-step"
+                class="flex items-center justify-center w-[22px] h-[22px] rounded-[5px] border-none bg-transparent text-sm text-ink-3 leading-none cursor-pointer transition-[background-color,color] shrink-0 enabled:hover:bg-white/[0.08] enabled:hover:text-ink-2 disabled:opacity-30 disabled:cursor-default"
                 :disabled="configStore.recordCellFontSize >= FONT_SIZE_MAX"
                 @click="changeFontSize(+1)"
             >+</button>
           </div>
 
           <button
-              class="btn-freeze"
-              :class="freezeColumns ? 'btn-freeze--on' : ''"
-              @click="freezeColumns = !freezeColumns"
+              class="flex items-center gap-1.5 py-2 px-3.5 rounded-lg border bg-transparent text-sm cursor-pointer transition-[background-color,color,border-color] whitespace-nowrap hover:bg-line hover:text-ink-2"
+              :class="freezeColumns ? 'text-blue-2 border-blue/30 bg-blue/[0.08]' : 'text-ink-3 border-line'"
               title="틀고정 켜기/끄기"
+              @click="freezeColumns = !freezeColumns"
           >
             <Pin v-if="freezeColumns" :size="15"/>
             <PinOff v-else :size="15"/>
             {{ freezeColumns ? '틀고정 ON' : '틀고정 OFF' }}
           </button>
+
           <button
-              class="btn-freeze"
-              :class="smartScroll ? 'btn-freeze--on' : ''"
-              @click="smartScroll = !smartScroll"
+              class="flex items-center gap-1.5 py-2 px-3.5 rounded-lg border bg-transparent text-sm cursor-pointer transition-[background-color,color,border-color] whitespace-nowrap hover:bg-line hover:text-ink-2"
+              :class="smartScroll ? 'text-blue-2 border-blue/30 bg-blue/[0.08]' : 'text-ink-3 border-line'"
               title="스마트 스크롤: 활동 영역에서 휠 → 좌우 스크롤"
+              @click="smartScroll = !smartScroll"
           >
             <ArrowLeftRight :size="15"/>
             {{ smartScroll ? '스마트스크롤 ON' : '스마트스크롤 OFF' }}
           </button>
+
           <button
-              class="btn-freeze"
-              :class="compactCell ? 'btn-freeze--on' : ''"
-              @click="toggleCompactCell"
+              class="flex items-center gap-1.5 py-2 px-3.5 rounded-lg border bg-transparent text-sm cursor-pointer transition-[background-color,color,border-color] whitespace-nowrap hover:bg-line hover:text-ink-2"
+              :class="compactCell ? 'text-blue-2 border-blue/30 bg-blue/[0.08]' : 'text-ink-3 border-line'"
               title="셀 높이: 고정(ON) / 자동(OFF)"
+              @click="toggleCompactCell"
           >
             <Minimize2 :size="15"/>
             {{ compactCell ? '셀높이 고정' : '셀높이 자동' }}
           </button>
+
           <button
-              class="btn-freeze"
-              :class="highlightEmpty ? 'btn-freeze--on btn-freeze--warn' : ''"
-              @click="highlightEmpty = !highlightEmpty"
+              class="flex items-center gap-1.5 py-2 px-3.5 rounded-lg border bg-transparent text-sm cursor-pointer transition-[background-color,color,border-color] whitespace-nowrap hover:bg-line hover:text-ink-2"
+              :class="highlightEmpty ? 'text-amber border-amber/30 bg-amber/[0.08]' : 'text-ink-3 border-line'"
               title="기록이 없는 학생 행 강조 켜기/끄기"
+              @click="highlightEmpty = !highlightEmpty"
           >
             <CircleAlert :size="15"/>
             {{ highlightEmpty ? '빈 학생 ON' : '빈 학생 OFF' }}
@@ -341,78 +326,79 @@ function isNewGroup(students, index) {
       </div>
 
       <!-- 빈 상태: 영역 미선택 -->
-      <div v-if="!selectedAreaId" class="empty-state">
-        <p class="empty-text">상단 드롭다운 메뉴에서 영역(Area)을 선택하세요.</p>
+      <div v-if="!selectedAreaId" class="flex items-center justify-center flex-1 min-h-[300px] p-12">
+        <p class="text-base text-ink-3 m-0 text-center leading-relaxed">상단 드롭다운 메뉴에서 영역(Area)을 선택하세요.</p>
       </div>
 
       <!-- 로딩 -->
-      <div v-else-if="recordStore.loading" class="empty-state">
-        <p class="empty-text">불러오는 중...</p>
+      <div v-else-if="recordStore.loading" class="flex items-center justify-center flex-1 min-h-[300px] p-12">
+        <p class="text-base text-ink-3 m-0 text-center leading-relaxed">불러오는 중...</p>
       </div>
 
       <!-- 에러 -->
-      <div v-else-if="loadError" class="empty-state">
-        <p class="empty-text state-error">{{ loadError }}</p>
+      <div v-else-if="loadError" class="flex items-center justify-center flex-1 min-h-[300px] p-12">
+        <p class="text-base text-red m-0 text-center leading-relaxed">{{ loadError }}</p>
       </div>
 
-      <!-- 그리드 없음 (학생 또는 활동 없음) -->
-      <div v-else-if="!recordStore.gridData || recordStore.gridData.students.length === 0 || recordStore.gridData.activities.length === 0"
-           class="empty-state">
-        <p class="empty-text">
-          <template v-if="recordStore.gridData && recordStore.gridData.students.length === 0">이 영역에 배정된 학생이 없습니다. 영역(Area) 관리에서 <strong><u>학생
-            배정</u></strong> 버튼을 눌러 학생을 배정하세요.
-          </template>
-          <template v-else-if="recordStore.gridData && recordStore.gridData.activities.length === 0">이 영역에 등록된 활동이 없습니다. 영역(Area) 관리에서
-            <strong><u>포함할 활동</u></strong>을 추가하세요.
-          </template>
+      <!-- 그리드 없음 -->
+      <div
+          v-else-if="!recordStore.gridData || recordStore.gridData.students.length === 0 || recordStore.gridData.activities.length === 0"
+          class="flex items-center justify-center flex-1 min-h-[300px] p-12"
+      >
+        <p class="text-base text-ink-3 m-0 text-center leading-relaxed">
+          <template v-if="recordStore.gridData && recordStore.gridData.students.length === 0">이 영역에 배정된 학생이 없습니다. 영역(Area) 관리에서 <strong><u>학생 배정</u></strong> 버튼을 눌러 학생을 배정하세요.</template>
+          <template v-else-if="recordStore.gridData && recordStore.gridData.activities.length === 0">이 영역에 등록된 활동이 없습니다. 영역(Area) 관리에서 <strong><u>포함할 활동</u></strong>을 추가하세요.</template>
           <template v-else>데이터를 불러올 수 없습니다.</template>
         </p>
       </div>
 
       <!-- 그리드 -->
-      <div v-else class="grid-wrapper" @wheel="onGridWheel">
-        <table class="grid-table">
+      <div
+          v-else
+          :class="freezeColumns ? 'flex-1 overflow-auto' : 'overflow-x-auto'"
+          @wheel="onGridWheel"
+      >
+        <table class="border-separate border-spacing-0 min-w-full" :style="{ fontSize: 'var(--cell-fs, 14px)' }">
           <thead>
           <tr>
             <th
-                class="th-fixed th-grade"
-                :class="freezeColumns ? 'sticky' : ''"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line/50 whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12"
+                :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
                 style="left: 0"
-            >학년
-            </th>
+            >학년</th>
             <th
-                class="th-fixed th-class"
-                :class="freezeColumns ? 'sticky' : ''"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line/50 whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12"
+                :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
                 style="left: 48px"
-            >반
-            </th>
+            >반</th>
             <th
-                class="th-fixed th-number"
-                :class="freezeColumns ? 'sticky' : ''"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line/50 whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12"
+                :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
                 style="left: 96px"
-            >번호
-            </th>
+            >번호</th>
             <th
-                class="th-fixed th-name"
-                :class="freezeColumns ? 'sticky' : ''"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line/50 whitespace-nowrap text-center tracking-[0.03em] w-[100px] min-w-[100px] max-w-[100px]"
+                :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
                 style="left: 144px"
-            >이름
-            </th>
+            >이름</th>
             <th
-                class="th-fixed th-total"
-                :class="freezeColumns ? 'sticky' : ''"
-                style="left: 244px"
-            >합계
-            </th>
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line/50 whitespace-nowrap text-center tracking-[0.03em] w-[110px] min-w-[110px] max-w-[110px]"
+                :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
+                :style="[{ left: '244px' }, freezeColumns ? { boxShadow: '1px 0 6px rgba(0,0,0,0.4)', borderRight: '1px solid rgba(59,91,219,0.35)' } : {}]"
+            >합계</th>
             <th
                 v-for="act in recordStore.gridData.activities"
                 :key="act.id"
-                class="th-activity"
-                :class="{ 'th-activity--collapsed': collapsedActivities.has(act.id) }"
+                class="text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line/50 text-center tracking-[0.03em] w-[320px] min-w-[280px] cursor-pointer select-none hover:text-ink-2 hover:bg-surface"
+                :class="[
+                  freezeColumns ? 'sticky top-0 z-[3]' : '',
+                  collapsedActivities.has(act.id)
+                    ? 'whitespace-nowrap overflow-hidden text-ellipsis !py-2.5 !px-2 text-blue-2'
+                    : 'whitespace-normal break-keep'
+                ]"
                 :style="collapsedActivities.has(act.id) ? { width: '80px', minWidth: '80px', maxWidth: '80px' } : {}"
                 @click="toggleActivity(act.id)"
-            >{{ collapsedActivities.has(act.id) ? truncateName(act.name) : act.name }}
-            </th>
+            >{{ collapsedActivities.has(act.id) ? truncateName(act.name) : act.name }}</th>
           </tr>
           </thead>
           <tbody>
@@ -421,75 +407,98 @@ function isNewGroup(students, index) {
               :key="student.id"
               :class="isNewGroup(recordStore.gridData.students, idx) ? 'row-group-start' : ''"
           >
+            <!-- 학년 -->
             <td
-                class="td-fixed td-grade"
-                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : (highlightEmpty && isStudentEmpty(student.id) ? 'td-row--empty' : '')]"
-                style="left: 0"
-            >{{ student.grade }}
-            </td>
-            <td
-                class="td-fixed td-class"
-                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : (highlightEmpty && isStudentEmpty(student.id) ? 'td-row--empty' : '')]"
-                style="left: 48px"
-            >{{ student.class_num }}
-            </td>
-            <td
-                class="td-fixed td-number"
-                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : (highlightEmpty && isStudentEmpty(student.id) ? 'td-row--empty' : '')]"
-                style="left: 96px"
-            >{{ student.number }}
-            </td>
-            <td
-                class="td-fixed td-name"
-                :class="[freezeColumns ? 'sticky' : '', isStudentOverLimit(student.id) ? 'td-row--over' : (highlightEmpty && isStudentEmpty(student.id) ? 'td-row--empty' : '')]"
-                style="left: 144px"
-            >{{ student.name }}
-            </td>
-            <td
-                class="td-fixed td-total"
+                class="td-fixed text-ink-3 bg-base py-1.5 px-1 border-b border-line/60 border-r border-line/50 align-top text-center w-12 min-w-12 max-w-12"
                 :class="[
-                freezeColumns ? 'sticky' : '',
-                isStudentOverLimit(student.id) ? 'td-total--over' : (highlightEmpty && isStudentEmpty(student.id) ? 'td-total--empty' : '')
-              ]"
-                style="left: 244px"
+                  freezeColumns ? 'sticky z-[2]' : '',
+                  isStudentOverLimit(student.id) ? '!bg-[#4a1212]' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-[#1e1a00]' : '')
+                ]"
+                style="left: 0"
+            >{{ student.grade }}</td>
+            <!-- 반 -->
+            <td
+                class="td-fixed text-ink-3 bg-base py-1.5 px-1 border-b border-line/60 border-r border-line/50 align-top text-center w-12 min-w-12 max-w-12"
+                :class="[
+                  freezeColumns ? 'sticky z-[2]' : '',
+                  isStudentOverLimit(student.id) ? '!bg-[#4a1212]' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-[#1e1a00]' : '')
+                ]"
+                style="left: 48px"
+            >{{ student.class_num }}</td>
+            <!-- 번호 -->
+            <td
+                class="td-fixed text-ink-3 bg-base py-1.5 px-1 border-b border-line/60 border-r border-line/50 align-top text-center w-12 min-w-12 max-w-12"
+                :class="[
+                  freezeColumns ? 'sticky z-[2]' : '',
+                  isStudentOverLimit(student.id) ? '!bg-[#4a1212]' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-[#1e1a00]' : '')
+                ]"
+                style="left: 96px"
+            >{{ student.number }}</td>
+            <!-- 이름 -->
+            <td
+                class="td-fixed text-ink-2 bg-base py-1.5 px-2.5 border-b border-line/60 border-r border-line/50 align-top text-center w-[100px] min-w-[100px] max-w-[100px] break-all"
+                :class="[
+                  freezeColumns ? 'sticky z-[2]' : '',
+                  isStudentOverLimit(student.id) ? '!bg-[#4a1212]' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-[#1e1a00]' : '')
+                ]"
+                style="left: 144px"
+            >{{ student.name }}</td>
+            <!-- 합계 -->
+            <td
+                class="td-fixed bg-base py-1.5 px-2.5 border-b border-line/60 border-r border-line/50 align-middle text-center w-[110px] min-w-[110px] max-w-[110px]"
+                :class="[
+                  freezeColumns ? 'sticky z-[2]' : '',
+                  isStudentOverLimit(student.id) ? '!bg-[#4a1212]' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-[#1e1a00]' : '')
+                ]"
+                :style="[
+                  { left: '244px' },
+                  freezeColumns ? { boxShadow: '1px 0 6px rgba(0,0,0,0.4)', borderRight: '1px solid rgba(59,91,219,0.35)' } : {}
+                ]"
             >
-            <span
-                v-if="byteLimit"
-                class="total-bytes"
-                :class="isStudentOverLimit(student.id) ? 'total-bytes--over' : (highlightEmpty && isStudentEmpty(student.id) ? 'total-bytes--empty' : '')"
-            >
-              {{ studentTotalBytes(student.id) }} / {{ byteLimit }} Bytes
-            </span>
+              <span
+                  v-if="byteLimit"
+                  class="text-[12px]"
+                  :class="isStudentOverLimit(student.id) ? 'text-red font-bold' : (highlightEmpty && isStudentEmpty(student.id) ? 'text-amber' : 'text-ink-3')"
+              >{{ studentTotalBytes(student.id) }} / {{ byteLimit }} Bytes</span>
             </td>
+            <!-- 활동 셀 -->
             <td
                 v-for="act in recordStore.gridData.activities"
                 :key="act.id"
-                class="td-cell"
-                :style="collapsedActivities.has(act.id) ? { width: '80px', minWidth: '80px', maxWidth: '80px' } : {}"
+                class="text-ink-2 py-1.5 px-2 border-b border-line/60 border-r border-line/50 align-top relative transition-[background-color] duration-500 w-[600px] min-w-[480px]"
                 :class="{
-                'td-cell--collapsed': collapsedActivities.has(act.id),
-                'td-cell--saving': getCellSavingState(act.id, student.id) === 'saving',
-                'td-cell--saved': getCellSavingState(act.id, student.id) === 'saved',
-                'td-cell--error': getCellSavingState(act.id, student.id) === 'error',
-                'td-cell--over': isOverLimit(act.id, student.id),
-              }"
+                  '!p-0 !bg-blue/[0.04]': collapsedActivities.has(act.id),
+                  '!bg-blue/30': !collapsedActivities.has(act.id) && getCellSavingState(act.id, student.id) === 'saving',
+                  '!bg-green/30': !collapsedActivities.has(act.id) && getCellSavingState(act.id, student.id) === 'saved',
+                  '!bg-red/40 outline outline-2 outline-red/80': !collapsedActivities.has(act.id) && getCellSavingState(act.id, student.id) === 'error',
+                  '!bg-red/30': !collapsedActivities.has(act.id) && isOverLimit(act.id, student.id),
+                }"
+                :style="collapsedActivities.has(act.id) ? { width: '80px', minWidth: '80px', maxWidth: '80px' } : {}"
             >
               <template v-if="!collapsedActivities.has(act.id)">
-              <textarea
-                  class="cell-input"
-                  :class="{ 'cell-input--compact': compactCell }"
-                  :value="getCellContent(act.id, student.id)"
-                  @input="onCellInput(act.id, student.id, $event)"
-                  rows="1"
-              />
-                <div class="byte-counter" :class="isOverLimit(act.id, student.id) ? 'byte-counter--over' : ''">
+                <textarea
+                    class="cell-input w-full box-border py-1.5 px-2 leading-[1.5] bg-transparent border border-blue/50 rounded-[6px] text-ink resize-none outline-none transition-[border-color,background-color] duration-150 min-h-[60px] overflow-y-auto focus:border-ink/70 focus:bg-black/60 placeholder:text-ink-5"
+                    :class="compactCell ? 'max-h-[60px] overflow-y-auto' : ''"
+                    :style="{ fontSize: 'calc(var(--cell-fs, 14px) + 2px)' }"
+                    :value="getCellContent(act.id, student.id)"
+                    @input="onCellInput(act.id, student.id, $event)"
+                    rows="1"
+                />
+                <div
+                    class="text-[11px] text-right pt-0.5 flex items-center justify-end gap-[5px]"
+                    :class="isOverLimit(act.id, student.id) ? 'text-red' : 'text-ink-5'"
+                >
                   {{ byteLength(getCellContent(act.id, student.id) || '') }} Bytes
-                  <span class="history-sep">|</span>
-                  <button class="btn-history" @click.stop="copyCell(act.id, student.id)">
-                    {{ copiedCells.has(cellKey(act.id, student.id)) ? 'Copied!' : 'Copy' }}
-                  </button>
-                  <span class="history-sep">|</span>
-                  <button class="btn-history" @click.stop="openHistory(act, student)">History</button>
+                  <span class="text-line-2 select-none">|</span>
+                  <button
+                      class="bg-transparent border-none p-0 text-[11px] text-blue-2/70 cursor-pointer leading-none hover:text-blue-2 hover:underline"
+                      @click.stop="copyCell(act.id, student.id)"
+                  >{{ copiedCells.has(cellKey(act.id, student.id)) ? 'Copied!' : 'Copy' }}</button>
+                  <span class="text-line-2 select-none">|</span>
+                  <button
+                      class="bg-transparent border-none p-0 text-[11px] text-blue-2/70 cursor-pointer leading-none hover:text-blue-2 hover:underline"
+                      @click.stop="openHistory(act, student)"
+                  >History</button>
                 </div>
               </template>
             </td>
@@ -512,438 +521,8 @@ function isNewGroup(students, index) {
 </template>
 
 <style scoped>
-.activity-section-wrapper {
-  height: 100%;
-}
-
-.section {
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-/* 틀고정 ON: section이 viewport 높이를 잡고 grid가 내부에서 자체 스크롤 → toolbar/thead 항상 상단 고정 */
-.section--frozen {
-  height: 100%;
-  overflow: hidden;
-}
-
-/* 툴바 — 한 줄 배치, 좁아지면 secondary가 다음 줄로 wrap */
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  padding: 12px 24px;
-  border-bottom: 1px solid #1a2035;
-  flex-shrink: 0;
-  gap: 8px 12px;
-  background-color: #080b14;
-}
-
-.toolbar-primary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.toolbar-secondary {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-left: auto; /* primary 오른쪽으로 밀고, wrap 시에도 오른쪽 정렬 유지 */
-}
-
-.area-select {
-  padding: 8px 14px;
-  border-radius: 10px;
-  border: 1px solid #1a2035;
-  background-color: #080b14;
-  color: #e2e8f0;
-  font-size: 15px;
-  cursor: pointer;
-  outline: none;
-  min-width: 180px;
-}
-
-.area-select:focus {
-  border-color: rgba(59, 91, 219, 0.5);
-}
-
-.font-size-control {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid rgba(59, 91, 219, 0.3);
-  background-color: rgba(59, 91, 219, 0.08);
-  color: #a8c8ff;
-}
-
-.font-size-icon {
-  flex-shrink: 0;
-  margin-right: 2px;
-  opacity: 0.7;
-}
-
-.btn-font-step {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 5px;
-  border: none;
-  background: none;
-  color: #a0bcd8;
-  font-size: 15px;
-  line-height: 1;
-  cursor: pointer;
-  transition: background-color 0.12s, color 0.12s;
-  flex-shrink: 0;
-}
-
-.btn-font-step:hover:not(:disabled) {
-  background-color: rgba(255, 255, 255, 0.08);
-  color: #c8ddf0;
-}
-
-.btn-font-step:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
-.font-size-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #8aaaf8;
-  min-width: 32px;
-  text-align: center;
-}
-
-.btn-freeze {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid #1a2035;
-  background: none;
-  color: #a0bcd8;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
-  white-space: nowrap;
-}
-
-.btn-freeze:hover {
-  background-color: #1a2035;
-  color: #c8ddf0;
-}
-
-.btn-freeze--on {
-  color: #a8c8ff;
-  border-color: rgba(59, 91, 219, 0.3);
-  background-color: rgba(59, 91, 219, 0.08);
-}
-
-/* 빈 상태 */
-.empty-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  min-height: 300px; /* 틀고정 OFF(section 높이 free)일 때 fallback */
-  padding: 48px;
-}
-
-.empty-text {
-  font-size: 16px;
-  color: #a0bcd8;
-  margin: 0;
-  text-align: center;
-  line-height: 1.7;
-}
-
-.state-error {
-  color: #f87171;
-}
-
-/* 그리드 — 기본(틀고정 OFF): 가로 스크롤만, 세로는 자연스럽게 늘어나서 workspace-main이 스크롤 (toolbar 함께 스크롤됨) */
-.grid-wrapper {
-  overflow-x: auto;
-}
-
-/* 틀고정 ON: grid-wrapper가 flex:1로 남은 영역을 잡고 자체 양방향 스크롤 → toolbar/thead 상단 고정 */
-.section--frozen .grid-wrapper {
-  flex: 1;
-  overflow: auto;
-}
-
-
-.grid-table {
-  border-collapse: separate;
-  border-spacing: 0;
-  min-width: 100%;
-}
-
-/* 헤더 sticky — 틀고정 ON 일때만, tr이 아닌 th에 직접 적용 (브라우저 호환성 ↑) */
-.section--frozen .grid-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-}
-
-/* 좌상단 코너(고정 열 ∩ 고정 행)는 z-index 더 높여 다른 헤더 위에 그려지도록 */
-.section--frozen .grid-table thead th.sticky {
-  z-index: 5;
-}
-
-.grid-table th {
-  font-size: 13px;
-  font-weight: 600;
-  color: #b0cce0;
-  background-color: #080b14;
-  padding: 10px 10px;
-  border-bottom: 1px solid #1a2035;
-  border-right: 1px solid rgba(40, 55, 90, 0.5);
-  white-space: nowrap;
-  text-align: center;
-  letter-spacing: 0.03em;
-}
-
-.th-activity {
-  width: 320px;
-  min-width: 280px;
-  cursor: pointer;
-  user-select: none;
-  white-space: normal;
-  word-break: keep-all;
-}
-
-.th-activity:hover {
-  color: #c8ddf0;
-  background-color: #0d1220;
-}
-
-.th-activity--collapsed {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 10px 8px;
-  color: #8aaaf8;
-}
-
-/* sticky 열 */
-.sticky {
-  position: sticky;
-  z-index: 2;
-}
-
-/* 헤더의 sticky 열은 thead의 z-index(3)보다 높아야 스크롤 콘텐츠 위에 유지 */
-thead .sticky {
-  z-index: 4;
-}
-
-.th-fixed,
-.td-fixed {
-  background-color: #080b14;
-}
-
-/* 고정 열 shadow + 틀고정 구분선 — 합계 열이 담당 */
-.th-total.sticky,
-.td-total.sticky {
-  box-shadow: 1px 0 6px rgba(0, 0, 0, 0.4);
-  border-right: 1px solid rgba(59, 91, 219, 0.35) !important;
-}
-
-/* 데이터 행 */
-.grid-table td {
-  font-size: var(--cell-fs, 14px);
-  color: #dce8f8;
-  padding: 6px 10px;
-  border-bottom: 1px solid rgba(40, 55, 90, 0.6);
-  border-right: 1px solid rgba(40, 55, 90, 0.5);
-  vertical-align: top;
-  text-align: center;
-}
-
-.td-grade, .td-class, .td-number {
-  width: 48px;
-  min-width: 48px;
-  max-width: 48px;
-  text-align: center;
-  color: #a8c4e0;
-  padding: 6px 4px;
-}
-
-.th-grade, .th-class, .th-number {
-  width: 48px;
-  min-width: 48px;
-  max-width: 48px;
-  text-align: center;
-}
-
-.td-name {
-  width: 100px;
-  min-width: 100px;
-  max-width: 100px;
-  word-break: break-all;
-}
-
-.th-name {
-  width: 100px;
-  min-width: 100px;
-  max-width: 100px;
-}
-
-.th-total {
-  width: 110px;
-  min-width: 110px;
-  max-width: 110px;
-  text-align: center;
-}
-
-.td-total {
-  width: 110px;
-  min-width: 110px;
-  max-width: 110px;
-  text-align: center;
-  vertical-align: middle;
-}
-
-.td-row--over,
-.td-total--over {
-  background-color: #4a1212 !important;
-}
-
-.total-bytes {
-  font-size: 12px;
-  color: #90b4d4;
-}
-
-.total-bytes--over {
-  color: #ff9090;
-  font-weight: 700;
-}
-
-.td-row--empty,
-.td-total--empty {
-  background-color: #1e1a00 !important;
-}
-
-.total-bytes--empty {
-  color: #fbbf24;
-}
-
-.btn-freeze--warn {
-  color: #fbbf24 !important;
-  border-color: rgba(251, 191, 36, 0.3) !important;
-  background-color: rgba(251, 191, 36, 0.08) !important;
-}
-
-/* 반 구분선 */
+/* 반 구분선 — 자식 td 선택자 */
 .row-group-start td {
   border-top: 1px solid rgba(59, 91, 219, 0.3);
-}
-
-/* 셀 */
-.td-cell {
-  padding: 6px 8px;
-  width: 600px;
-  min-width: 480px;
-  position: relative;
-  transition: background-color 0.5s ease;
-}
-
-.td-cell--saving {
-  background-color: rgba(59, 91, 219, 0.3) !important;
-}
-
-.td-cell--saved {
-  background-color: rgba(52, 211, 153, 0.3) !important;
-}
-
-.td-cell--error {
-  background-color: rgba(239, 68, 68, 0.4) !important;
-  outline: 2px solid rgba(239, 68, 68, 0.8);
-}
-
-.td-cell--over {
-  background-color: rgba(239, 68, 68, 0.3) !important;
-}
-
-.td-cell--collapsed {
-  padding: 0;
-  background-color: rgba(59, 91, 219, 0.04);
-}
-
-.cell-input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 6px 8px;
-  font-size: calc(var(--cell-fs, 14px) + 2px);
-  line-height: 1.5;
-  background-color: transparent;
-  border: 1px solid rgba(100, 140, 240, 0.5);
-  border-radius: 6px;
-  color: #e2e8f0;
-  resize: none;
-  outline: none;
-  transition: border-color 0.15s, background-color 0.15s;
-  min-height: 60px;
-  overflow-y: auto;
-}
-
-.cell-input--compact {
-  max-height: 60px;
-  overflow-y: auto;
-}
-
-.cell-input:focus {
-  border-color: rgba(226, 232, 240, 0.7);
-  background-color: rgba(8, 11, 20, 0.6);
-}
-
-.cell-input::placeholder {
-  color: var(--clr-text-subtle);
-}
-
-.byte-counter {
-  font-size: 11px;
-  color: var(--clr-text-hint);
-  text-align: right;
-  padding-top: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 5px;
-}
-
-.byte-counter--over {
-  color: #f87171;
-}
-
-.history-sep {
-  color: #2a3a60;
-  user-select: none;
-}
-
-.btn-history {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 11px;
-  color: #4a6aaa;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.btn-history:hover {
-  color: #8aaaf8;
-  text-decoration: underline;
 }
 </style>

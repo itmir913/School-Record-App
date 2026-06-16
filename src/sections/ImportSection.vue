@@ -77,22 +77,14 @@ const pendingRecords = ref([])
 const previewRows = computed(() => rawData.value.slice(0, 5))
 
 const hasDuplicateCols = computed(() => {
-  // 1. 각 모드별로 검사할 대상 키 목록을 정의합니다.
   const targetKeys = {
     fields: ['grade', 'classNum', 'number', 'name', 'activityName', 'activityContent'],
     studentId: ['studentId', 'name', 'activityName', 'activityContent']
   }
-
-  // 2. 현재 활성화된 모드에 해당하는 키 배열을 가져옵니다.
   const currentKeys = targetKeys[idMode.value] || []
-
-  // 3. colMap에서 해당 키들의 값만 추출한 뒤, 빈 값을 필터링합니다.
   const vals = currentKeys
       .map(key => colMap.value[key])
       .filter(v => v !== null && v !== undefined && v !== '')
-  // 유효한 값이 항상 문자열이라면 .filter(Boolean)으로 짧게 줄일 수 있습니다.
-
-  // 4. 유효한 값들 중 중복이 있는지 확인합니다.
   return vals.length !== new Set(vals).size
 })
 
@@ -676,13 +668,13 @@ function resetWizard() {
 </script>
 
 <template>
-  <div class="section">
+  <div class="flex flex-col h-full overflow-hidden box-border">
 
     <!-- 툴바 -->
-    <div class="toolbar">
-      <div class="section-header">
-        <h2 class="section-title">데이터 가져오기(Import)</h2>
-        <p class="section-desc">다양한 형식의 학교생활기록부 기재 문장을 본 프로그램으로 가져옵니다.</p>
+    <div class="flex items-center justify-between px-10 pt-9 pb-6 border-b border-line shrink-0">
+      <div class="flex flex-col">
+        <h2 class="text-[22px] font-bold text-ink m-0 mb-1.5">데이터 가져오기(Import)</h2>
+        <p class="text-base text-ink-3 m-0">다양한 형식의 학교생활기록부 기재 문장을 본 프로그램으로 가져옵니다.</p>
       </div>
     </div>
 
@@ -695,119 +687,74 @@ function resetWizard() {
         @prev="goPrev"
         @next="goNext"
     >
-    <!-- 본문 -->
 
       <!-- Step 1: 파일 업로드 -->
-      <div v-if="step === 1" class="step-content">
+      <div v-if="step === 1">
 
         <!-- 예시 파일 다운로드 -->
-        <details class="sample-section">
-          <summary class="sample-section-summary">
-            <h3 class="step-title">Step 0. 가져오기(Import) 가능한 파일 안내</h3>
-            <span class="sample-section-toggle-label"></span>
+        <details class="sample-section mb-1.5">
+          <summary class="sample-section-summary flex items-center cursor-pointer list-none select-none mb-1.5 [&::-webkit-details-marker]:hidden">
+            <h3 class="text-lg font-bold text-ink m-0">Step 0. 가져오기(Import) 가능한 파일 안내</h3>
+            <span class="sample-section-toggle-label ml-4 text-base text-ink-5 whitespace-nowrap font-normal"></span>
           </summary>
-          <p class="step-desc">가져오기 가능한 파일은 두 가지 유형(행 단위, 열 단위)입니다. 예시 다운로드 버튼을 눌러 각 유형의 예시를 확인하세요.</p>
+          <p class="text-base text-ink-5 m-0 mb-6">가져오기 가능한 파일은 두 가지 유형(행 단위, 열 단위)입니다. 예시 다운로드 버튼을 눌러 각 유형의 예시를 확인하세요.</p>
 
-          <div class="type-cards">
-            <div class="type-card sample-type-card">
-              <div class="type-card-top">
-                <span class="type-badge type-badge--a">A 타입</span>
-                <span class="type-name">행 단위 활동 형식</span>
+          <div class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(max(300px, calc(50% - 8px)), 1fr))">
+            <!-- A 타입 (예시용, 클릭 불가) -->
+            <div class="border-2 border-line rounded-xl p-5 cursor-default">
+              <div class="flex items-center gap-2.5 mb-2.5">
+                <span class="text-xs font-bold rounded-[6px] py-[2px] px-2 text-red bg-red/[0.12] border border-red/35">A 타입</span>
+                <span class="text-base font-semibold text-ink">행 단위 활동 형식</span>
               </div>
-              <p class="type-desc">한 행에 학생 1명의 활동 1개를 기재합니다.<br>학생 1명의 활동은 여러 행에 걸쳐 기록됩니다(학생 1명 = 여러 행).</p>
-              <div class="sample-table-wrap">
-                <table class="sample-table">
-                  <thead>
-                  <tr>
-                    <th>학년</th>
-                    <th>반</th>
-                    <th>번호</th>
-                    <th>이름</th>
-                    <th>활동명</th>
-                    <th>활동내용</th>
-                  </tr>
-                  </thead>
+              <p class="text-sm text-ink-5 m-0 mb-3.5 leading-relaxed">한 행에 학생 1명의 활동 1개를 기재합니다.<br>학생 1명의 활동은 여러 행에 걸쳐 기록됩니다(학생 1명 = 여러 행).</p>
+              <div class="overflow-x-auto border border-line rounded-[6px] [&_tr:last-child_td]:border-b-0">
+                <table class="border-collapse w-full text-xs">
+                  <thead><tr>
+                    <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">학년</th>
+                    <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">반</th>
+                    <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">번호</th>
+                    <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">이름</th>
+                    <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">활동명</th>
+                    <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">활동내용</th>
+                  </tr></thead>
                   <tbody>
-                  <tr>
-                    <td>3</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td>학생A</td>
-                    <td>현장체험학습</td>
-                    <td>지역 기관을 탐방...</td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td>학생A</td>
-                    <td>학급자치회</td>
-                    <td>회의에 적극 참여...</td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td>1</td>
-                    <td>2</td>
-                    <td>학생B</td>
-                    <td>체육대회</td>
-                    <td>다양한 종목에 참여...</td>
-                  </tr>
+                  <tr><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">3</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">학생A</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">현장체험학습</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">지역 기관을 탐방...</td></tr>
+                  <tr><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">3</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">학생A</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">학급자치회</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">회의에 적극 참여...</td></tr>
+                  <tr><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">3</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">2</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">학생B</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">체육대회</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">다양한 종목에 참여...</td></tr>
                   </tbody>
                 </table>
               </div>
-              <button class="btn-sample-dl" @click.stop="downloadSampleA">
+              <button class="flex items-center gap-1.5 mt-3.5 py-[7px] px-3.5 bg-blue/[0.08] border border-blue/25 rounded-[7px] text-blue-2 text-sm cursor-pointer transition-[background-color,color] hover:bg-blue/[0.18]" @click.stop="downloadSampleA">
                 <Download :size="13"/>
                 A타입 예시 다운로드
               </button>
             </div>
 
-            <div class="type-card sample-type-card">
-              <div class="type-card-top">
-                <span class="type-badge type-badge--b">B 타입</span>
-                <span class="type-name">열 단위 활동 형식</span>
+            <!-- B 타입 (예시용, 클릭 불가) -->
+            <div class="border-2 border-line rounded-xl p-5 cursor-default">
+              <div class="flex items-center gap-2.5 mb-2.5">
+                <span class="text-xs font-bold rounded-[6px] py-[2px] px-2 text-amber bg-amber/[0.15] border border-amber/40">B 타입</span>
+                <span class="text-base font-semibold text-ink">열 단위 활동 형식</span>
               </div>
-              <p class="type-desc">활동이 열(헤더)로 구분된 형식입니다.<br>학생 1명의 모든 활동이 한 행에 기록됩니다(학생 1명 = 1행).</p>
-              <div class="sample-table-wrap">
-                <table class="sample-table">
-                  <thead>
-                  <tr>
-                    <th>학년</th>
-                    <th>반</th>
-                    <th>번호</th>
-                    <th>이름</th>
-                    <th>현장체험학습</th>
-                    <th>학급자치회</th>
-                  </tr>
-                  </thead>
+              <p class="text-sm text-ink-5 m-0 mb-3.5 leading-relaxed">활동이 열(헤더)로 구분된 형식입니다.<br>학생 1명의 모든 활동이 한 행에 기록됩니다(학생 1명 = 1행).</p>
+              <div class="overflow-x-auto border border-line rounded-[6px] [&_tr:last-child_td]:border-b-0">
+                <table class="border-collapse w-full text-xs">
+                  <thead><tr>
+                    <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">학년</th>
+                    <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">반</th>
+                    <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">번호</th>
+                    <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">이름</th>
+                    <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">현장체험학습</th>
+                    <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">학급자치회</th>
+                  </tr></thead>
                   <tbody>
-                  <tr>
-                    <td>3</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td>학생A</td>
-                    <td>지역 기관을...</td>
-                    <td>회의에 적극...</td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td>1</td>
-                    <td>2</td>
-                    <td>학생B</td>
-                    <td></td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td>1</td>
-                    <td>5</td>
-                    <td>학생E</td>
-                    <td></td>
-                    <td>학급 행사 준비...</td>
-                  </tr>
+                  <tr><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">3</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">학생A</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">지역 기관을...</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">회의에 적극...</td></tr>
+                  <tr><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">3</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">2</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">학생B</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap"></td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap"></td></tr>
+                  <tr><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">3</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">5</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">학생E</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap"></td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">학급 행사 준비...</td></tr>
                   </tbody>
                 </table>
               </div>
-              <button class="btn-sample-dl" @click.stop="downloadSampleB">
+              <button class="flex items-center gap-1.5 mt-3.5 py-[7px] px-3.5 bg-blue/[0.08] border border-blue/25 rounded-[7px] text-blue-2 text-sm cursor-pointer transition-[background-color,color] hover:bg-blue/[0.18]" @click.stop="downloadSampleB">
                 <Download :size="13"/>
                 B타입 예시 다운로드
               </button>
@@ -815,44 +762,40 @@ function resetWizard() {
           </div>
         </details>
 
-        <div class="border-hr"></div>
+        <div class="mb-3 pb-3 border-b border-line"></div>
 
-        <h3 class="step-title">Step 1. 가져올 파일 선택</h3>
-        <p class="step-desc">CSV 또는 XLSX 파일을 선택하거나 드래그하세요.</p>
+        <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 1. 가져올 파일 선택</h3>
+        <p class="text-base text-ink-5 m-0 mb-6">CSV 또는 XLSX 파일을 선택하거나 드래그하세요.</p>
 
         <input ref="fileInputRef" type="file" accept=".csv,.xlsx,.xls" style="display:none" @change="onFileChange"/>
 
         <div
-            class="drop-zone"
-            :class="{ 'drop-zone--dragging': dragging, 'drop-zone--loaded': rawHeaders.length > 0 }"
+            class="border-2 rounded-xl py-12 px-6 text-center cursor-pointer transition-[border-color,background-color] duration-200 flex flex-col items-center gap-2"
+            :class="rawHeaders.length > 0 ? ['border-green/40', 'border-solid'] : dragging ? ['border-dashed','border-blue/50','bg-blue/[0.04]'] : ['border-dashed','border-line','hover:border-blue/50','hover:bg-blue/[0.04]']"
             @dragover="onDragOver"
             @dragleave="onDragLeave"
             @drop="onDrop"
             @click="fileInputRef.click()"
         >
-          <FileSpreadsheet :size="40" class="drop-icon"/>
-          <p v-if="!fileName" class="drop-main">파일을 여기에 드래그하거나 클릭하여 선택</p>
-          <p v-else class="drop-main drop-main--loaded">{{ fileName }}</p>
-          <p class="drop-hint">CSV, XLSX, XLS 지원</p>
+          <FileSpreadsheet :size="40" class="text-ink-5"/>
+          <p v-if="!fileName" class="text-base text-ink-5 m-0">파일을 여기에 드래그하거나 클릭하여 선택</p>
+          <p v-else class="text-base font-semibold text-ink-2 m-0">{{ fileName }}</p>
+          <p class="text-sm text-ink-5 m-0">CSV, XLSX, XLS 지원</p>
         </div>
 
-        <p v-if="parseError" class="error-text">{{ parseError }}</p>
+        <p v-if="parseError" class="text-sm text-red my-3 mb-6">{{ parseError }}</p>
 
-        <div v-if="rawHeaders.length > 0" class="preview-block">
-
-          <div class="border-hr"></div>
-
-          <p class="preview-label">미리보기 (첫 {{ Math.min(rawData.length, 5) }}행)</p>
-          <div class="preview-table-wrap">
-            <table class="preview-table">
-              <thead>
-              <tr>
-                <th v-for="h in rawHeaders" :key="h">{{ h }}</th>
-              </tr>
-              </thead>
+        <div v-if="rawHeaders.length > 0">
+          <div class="mb-3 pb-3 border-b border-line"></div>
+          <p class="text-sm text-ink-5 m-0 mb-2.5">미리보기 (첫 {{ Math.min(rawData.length, 5) }}행)</p>
+          <div class="overflow-x-auto border border-line rounded-lg">
+            <table class="border-collapse min-w-full text-sm">
+              <thead><tr>
+                <th v-for="h in rawHeaders" :key="h" class="py-2 px-3 bg-surface text-ink-5 font-semibold text-left whitespace-nowrap border-b border-line">{{ h }}</th>
+              </tr></thead>
               <tbody>
               <tr v-for="(row, i) in previewRows" :key="i">
-                <td v-for="(cell, j) in row" :key="j">{{ cell }}</td>
+                <td v-for="(cell, j) in row" :key="j" class="py-[7px] px-3 text-ink-2 border-b border-line/70 whitespace-nowrap max-w-[200px] overflow-hidden text-ellipsis">{{ cell }}</td>
               </tr>
               </tbody>
             </table>
@@ -861,113 +804,66 @@ function resetWizard() {
       </div>
 
       <!-- Step 2: 양식 선택 -->
-      <div v-else-if="step === 2" class="step-content">
-        <h3 class="step-title">Step 2. 엑셀 파일 양식 선택</h3>
-        <p class="step-desc">
-          가져올 엑셀 파일 양식에 맞는 타입을 선택하세요.
-          잘못된 타입을 선택하면 데이터 오류 또는 항목 누락이 발생할 수 있습니다.
-        </p>
+      <div v-else-if="step === 2">
+        <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 2. 엑셀 파일 양식 선택</h3>
+        <p class="text-base text-ink-5 m-0 mb-6">가져올 엑셀 파일 양식에 맞는 타입을 선택하세요. 잘못된 타입을 선택하면 데이터 오류 또는 항목 누락이 발생할 수 있습니다.</p>
 
-        <div class="type-cards">
+        <div class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(max(300px, calc(50% - 8px)), 1fr))">
+          <!-- A 타입 -->
           <div
-              class="type-card"
-              :class="{ 'type-card--selected': fileType === 'A' }"
+              class="border-2 rounded-xl p-5 cursor-pointer transition-[border-color,background-color] duration-200"
+              :class="fileType === 'A' ? 'border-blue/70 bg-blue/[0.06]' : 'border-line hover:border-blue/40 hover:bg-blue/[0.03]'"
               @click="fileType = 'A'"
           >
-            <div class="type-card-top">
-              <span class="type-badge type-badge--a">A 타입</span>
-              <span class="type-name">행 단위 활동 형식</span>
+            <div class="flex items-center gap-2.5 mb-2.5">
+              <span class="text-xs font-bold rounded-[6px] py-[2px] px-2 text-red bg-red/[0.12] border border-red/35">A 타입</span>
+              <span class="text-base font-semibold text-ink">행 단위 활동 형식</span>
             </div>
-            <p class="type-desc">한 행에 학생 1명의 활동 1개를 기재합니다.<br>학생 1명의 활동은 여러 행에 걸쳐 기록됩니다(학생 1명 = 여러 행).</p>
-            <div class="sample-table-wrap">
-              <table class="sample-table">
-                <thead>
-                <tr>
-                  <th>학년</th>
-                  <th>반</th>
-                  <th>번호</th>
-                  <th>이름</th>
-                  <th>활동명</th>
-                  <th>활동내용</th>
-                </tr>
-                </thead>
+            <p class="text-sm text-ink-5 m-0 mb-3.5 leading-relaxed">한 행에 학생 1명의 활동 1개를 기재합니다.<br>학생 1명의 활동은 여러 행에 걸쳐 기록됩니다(학생 1명 = 여러 행).</p>
+            <div class="overflow-x-auto border border-line rounded-[6px] [&_tr:last-child_td]:border-b-0">
+              <table class="border-collapse w-full text-xs">
+                <thead><tr>
+                  <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">학년</th>
+                  <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">반</th>
+                  <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">번호</th>
+                  <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">이름</th>
+                  <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">활동명</th>
+                  <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">활동내용</th>
+                </tr></thead>
                 <tbody>
-                <tr>
-                  <td>3</td>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>학생A</td>
-                  <td>현장체험학습</td>
-                  <td>지역 기관을 탐방...</td>
-                </tr>
-                <tr>
-                  <td>3</td>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>학생A</td>
-                  <td>학급자치회</td>
-                  <td>회의에 적극 참여...</td>
-                </tr>
-                <tr>
-                  <td>3</td>
-                  <td>1</td>
-                  <td>2</td>
-                  <td>학생B</td>
-                  <td>체육대회</td>
-                  <td>다양한 종목에 참여...</td>
-                </tr>
+                <tr><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">3</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">학생A</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">현장체험학습</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">지역 기관을 탐방...</td></tr>
+                <tr><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">3</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">학생A</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">학급자치회</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">회의에 적극 참여...</td></tr>
+                <tr><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">3</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">2</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">학생B</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">체육대회</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">다양한 종목에 참여...</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
 
+          <!-- B 타입 -->
           <div
-              class="type-card"
-              :class="{ 'type-card--selected': fileType === 'B' }"
+              class="border-2 rounded-xl p-5 cursor-pointer transition-[border-color,background-color] duration-200"
+              :class="fileType === 'B' ? 'border-blue/70 bg-blue/[0.06]' : 'border-line hover:border-blue/40 hover:bg-blue/[0.03]'"
               @click="fileType = 'B'"
           >
-            <div class="type-card-top">
-              <span class="type-badge type-badge--b">B 타입</span>
-              <span class="type-name">열 단위 활동 형식</span>
+            <div class="flex items-center gap-2.5 mb-2.5">
+              <span class="text-xs font-bold rounded-[6px] py-[2px] px-2 text-amber bg-amber/[0.15] border border-amber/40">B 타입</span>
+              <span class="text-base font-semibold text-ink">열 단위 활동 형식</span>
             </div>
-            <p class="type-desc">활동이 열(헤더)로 구분된 형식입니다.<br>학생 1명의 모든 활동이 한 행에 기록됩니다(학생 1명 = 1행).</p>
-            <div class="sample-table-wrap">
-              <table class="sample-table">
-                <thead>
-                <tr>
-                  <th>학년</th>
-                  <th>반</th>
-                  <th>번호</th>
-                  <th>이름</th>
-                  <th>현장체험학습</th>
-                  <th>학급자치회</th>
-                </tr>
-                </thead>
+            <p class="text-sm text-ink-5 m-0 mb-3.5 leading-relaxed">활동이 열(헤더)로 구분된 형식입니다.<br>학생 1명의 모든 활동이 한 행에 기록됩니다(학생 1명 = 1행).</p>
+            <div class="overflow-x-auto border border-line rounded-[6px] [&_tr:last-child_td]:border-b-0">
+              <table class="border-collapse w-full text-xs">
+                <thead><tr>
+                  <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">학년</th>
+                  <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">반</th>
+                  <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">번호</th>
+                  <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">이름</th>
+                  <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">현장체험학습</th>
+                  <th class="py-1.5 px-2 bg-base text-ink-5 font-semibold text-left border-b border-line whitespace-nowrap">학급자치회</th>
+                </tr></thead>
                 <tbody>
-                <tr>
-                  <td>3</td>
-                  <td>1</td>
-                  <td>1</td>
-                  <td>학생A</td>
-                  <td>지역 기관을...</td>
-                  <td>회의에 적극...</td>
-                </tr>
-                <tr>
-                  <td>3</td>
-                  <td>1</td>
-                  <td>2</td>
-                  <td>학생B</td>
-                  <td></td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>3</td>
-                  <td>1</td>
-                  <td>5</td>
-                  <td>학생E</td>
-                  <td></td>
-                  <td>학급 행사 준비...</td>
-                </tr>
+                <tr><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">3</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">학생A</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">지역 기관을...</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">회의에 적극...</td></tr>
+                <tr><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">3</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">2</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap">학생B</td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap"></td><td class="py-[5px] px-2 text-ink-3 border-b border-line/50 whitespace-nowrap"></td></tr>
+                <tr><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">3</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">1</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">5</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">학생E</td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap"></td><td class="py-[5px] px-2 text-ink-3 whitespace-nowrap">학급 행사 준비...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -976,57 +872,54 @@ function resetWizard() {
       </div>
 
       <!-- Step 3: 열 매핑 -->
-      <div v-else-if="step === 3" class="step-content">
-        <h3 class="step-title">Step 3. 열 매핑</h3>
-        <p class="step-desc">엑셀 파일의 각 열을 올바르게 연결하세요. <span class="required">*</span> 는 필수입니다.</p>
+      <div v-else-if="step === 3">
+        <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 3. 열 매핑</h3>
+        <p class="text-base text-ink-5 m-0 mb-6">엑셀 파일의 각 열을 올바르게 연결하세요. <span class="text-red ml-0.5">*</span> 는 필수입니다.</p>
 
         <!-- 학생 식별 방식 토글 -->
-        <div class="id-mode-section">
-          <span class="id-mode-label">학생 식별 방식</span>
-          <div class="id-mode-buttons">
+        <div class="flex items-center gap-4 mb-6">
+          <span class="text-base text-ink-2 whitespace-nowrap">학생 식별 방식</span>
+          <div class="flex gap-0 border border-line rounded-lg overflow-hidden">
             <button
-                class="id-mode-btn"
-                :class="{ 'id-mode-btn--active': idMode === 'fields' }"
+                class="py-[7px] px-4 bg-transparent border-none text-sm cursor-pointer transition-[background-color,color]"
+                :class="idMode === 'fields' ? 'bg-blue/[0.12] text-blue-2' : 'text-ink-5'"
                 @click="idMode = 'fields'"
             >학년 · 반 · 번호
             </button>
             <button
-                class="id-mode-btn"
-                :class="{ 'id-mode-btn--active': idMode === 'studentId' }"
+                class="py-[7px] px-4 bg-transparent border-none text-sm cursor-pointer transition-[background-color,color] border-l border-line"
+                :class="idMode === 'studentId' ? 'bg-blue/[0.12] text-blue-2' : 'text-ink-5'"
                 @click="idMode = 'studentId'"
             >학번
             </button>
           </div>
         </div>
 
-        <div class="col-map-list">
+        <div class="flex flex-col gap-3">
           <!-- 학번 모드: 단일 열 선택 + 파싱 미리보기 -->
           <template v-if="idMode === 'studentId'">
-            <div class="col-map-row">
-              <label class="col-map-label">학번 <span class="required">*</span></label>
-              <select class="col-map-select" v-model="colMap['studentId']">
+            <div class="grid grid-cols-[160px_1fr] items-center gap-4">
+              <label class="text-base text-ink-2">학번 <span class="text-red ml-0.5">*</span></label>
+              <select class="py-2 px-3 bg-surface border border-line rounded-lg text-ink text-sm outline-none cursor-pointer focus:border-blue/50" v-model="colMap['studentId']">
                 <option :value="null">— 선택 안 함 —</option>
                 <option v-for="(h, i) in rawHeaders" :key="i" :value="i">{{ h }}</option>
               </select>
             </div>
-            <div v-if="colMap['studentId'] !== null" class="sid-preview">
-              <p class="sid-preview-label">파싱 미리보기
-                (ABCC·4자리, ABBCC·5자리, ABBCCC·6자리 / A=학년, B=반, C=번호)</p>
-              <table class="preview-table sid-preview-table">
-                <thead>
-                <tr>
-                  <th>학번 원본</th>
-                  <th>학년</th>
-                  <th>반</th>
-                  <th>번호</th>
-                </tr>
-                </thead>
+            <div v-if="colMap['studentId'] !== null" class="mt-1 py-3.5 px-4 bg-surface border border-line rounded-lg">
+              <p class="text-sm text-ink-5 m-0 mb-2.5">파싱 미리보기 (ABCC·4자리, ABBCC·5자리, ABBCCC·6자리 / A=학년, B=반, C=번호)</p>
+              <table class="border-collapse w-auto text-sm sid-preview-table">
+                <thead><tr>
+                  <th class="py-2 px-3 bg-base text-ink-5 font-semibold text-left whitespace-nowrap border-b border-line">학번 원본</th>
+                  <th class="py-2 px-3 bg-base text-ink-5 font-semibold text-left whitespace-nowrap border-b border-line">학년</th>
+                  <th class="py-2 px-3 bg-base text-ink-5 font-semibold text-left whitespace-nowrap border-b border-line">반</th>
+                  <th class="py-2 px-3 bg-base text-ink-5 font-semibold text-left whitespace-nowrap border-b border-line">번호</th>
+                </tr></thead>
                 <tbody>
                 <tr v-for="(r, i) in studentIdPreviewRows" :key="i" :class="{ 'sid-row-error': r.error }">
-                  <td>{{ r.raw }}</td>
-                  <td>{{ r.grade }}</td>
-                  <td>{{ r.classNum }}</td>
-                  <td>{{ r.number }}</td>
+                  <td class="py-[7px] px-3 text-ink-2 border-b border-line/70 whitespace-nowrap">{{ r.raw }}</td>
+                  <td class="py-[7px] px-3 text-ink-2 border-b border-line/70 whitespace-nowrap">{{ r.grade }}</td>
+                  <td class="py-[7px] px-3 text-ink-2 border-b border-line/70 whitespace-nowrap">{{ r.classNum }}</td>
+                  <td class="py-[7px] px-3 text-ink-2 border-b border-line/70 whitespace-nowrap">{{ r.number }}</td>
                 </tr>
                 </tbody>
               </table>
@@ -1034,11 +927,9 @@ function resetWizard() {
           </template>
           <!-- 필드 직접 지정 모드 -->
           <template v-else>
-            <div v-for="field in ['grade','classNum','number']" :key="field" class="col-map-row">
-              <label class="col-map-label">
-                {{ FIELD_LABELS_A[field] }} <span class="required">*</span>
-              </label>
-              <select class="col-map-select" v-model="colMap[field]">
+            <div v-for="field in ['grade','classNum','number']" :key="field" class="grid grid-cols-[160px_1fr] items-center gap-4">
+              <label class="text-base text-ink-2">{{ FIELD_LABELS_A[field] }} <span class="text-red ml-0.5">*</span></label>
+              <select class="py-2 px-3 bg-surface border border-line rounded-lg text-ink text-sm outline-none cursor-pointer focus:border-blue/50" v-model="colMap[field]">
                 <option :value="null">— 선택 안 함 —</option>
                 <option v-for="(h, i) in rawHeaders" :key="i" :value="i">{{ h }}</option>
               </select>
@@ -1046,9 +937,9 @@ function resetWizard() {
           </template>
 
           <!-- 이름 (공통, 선택) -->
-          <div class="col-map-row">
-            <label class="col-map-label">이름 (선택)</label>
-            <select class="col-map-select" v-model="colMap['name']">
+          <div class="grid grid-cols-[160px_1fr] items-center gap-4">
+            <label class="text-base text-ink-2">이름 (선택)</label>
+            <select class="py-2 px-3 bg-surface border border-line rounded-lg text-ink text-sm outline-none cursor-pointer focus:border-blue/50" v-model="colMap['name']">
               <option :value="null">— 선택 안 함 —</option>
               <option v-for="(h, i) in rawHeaders" :key="i" :value="i">{{ h }}</option>
             </select>
@@ -1056,11 +947,9 @@ function resetWizard() {
 
           <!-- A타입 활동 필드 -->
           <template v-if="fileType === 'A'">
-            <div v-for="field in ['activityName','activityContent']" :key="field" class="col-map-row">
-              <label class="col-map-label">
-                {{ FIELD_LABELS_A[field] }} <span class="required">*</span>
-              </label>
-              <select class="col-map-select" v-model="colMap[field]">
+            <div v-for="field in ['activityName','activityContent']" :key="field" class="grid grid-cols-[160px_1fr] items-center gap-4">
+              <label class="text-base text-ink-2">{{ FIELD_LABELS_A[field] }} <span class="text-red ml-0.5">*</span></label>
+              <select class="py-2 px-3 bg-surface border border-line rounded-lg text-ink text-sm outline-none cursor-pointer focus:border-blue/50" v-model="colMap[field]">
                 <option :value="null">— 선택 안 함 —</option>
                 <option v-for="(h, i) in rawHeaders" :key="i" :value="i">{{ h }}</option>
               </select>
@@ -1068,38 +957,42 @@ function resetWizard() {
           </template>
           <!-- B타입 활동 열 자동 표시 -->
           <template v-else>
-            <div class="col-map-row">
-              <label class="col-map-label">활동 열 (자동)</label>
-              <div class="activity-cols-preview">
-                <span v-if="extractedActivities.length === 0"
-                      class="activity-cols-hint">학생 정보 열을 선택하면 나머지가 활동 열로 지정됩니다.</span>
-                <span v-for="n in extractedActivities" :key="n" class="activity-col-tag">{{ n }}</span>
+            <div class="grid grid-cols-[160px_1fr] items-center gap-4">
+              <label class="text-base text-ink-2">활동 열 (자동)</label>
+              <div class="flex flex-wrap gap-1.5 items-center min-h-9">
+                <span v-if="extractedActivities.length === 0" class="text-sm text-ink-5">학생 정보 열을 선택하면 나머지가 활동 열로 지정됩니다.</span>
+                <span v-for="n in extractedActivities" :key="n"
+                      class="text-sm text-blue-2 bg-blue/[0.10] border border-blue/25 rounded-[6px] py-[3px] px-2">{{ n }}</span>
               </div>
             </div>
           </template>
 
-          <p v-if="hasDuplicateCols" class="col-map-error">동일한 열을 여러 필드에 지정할 수 없습니다. 각 필드에 서로 다른 열을 선택해 주세요.</p>
-          <p v-if="importError" class="col-map-error">{{ importError }}</p>
+          <p v-if="hasDuplicateCols" class="text-sm text-red m-0 mt-2">동일한 열을 여러 필드에 지정할 수 없습니다. 각 필드에 서로 다른 열을 선택해 주세요.</p>
+          <p v-if="importError" class="text-sm text-red m-0 mt-2">{{ importError }}</p>
         </div>
       </div>
 
       <!-- Step 4: 활동 매칭 -->
-      <div v-else-if="step === 4" class="step-content">
-        <h3 class="step-title">Step 4. 활동 매칭</h3>
-        <p class="step-desc">파일의 활동명을 기존 활동에 연결하거나 새로 만드세요. 이름이 일치하면 자동 매칭됩니다.</p>
+      <div v-else-if="step === 4">
+        <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 4. 활동 매칭</h3>
+        <p class="text-base text-ink-5 m-0 mb-6">파일의 활동명을 기존 활동에 연결하거나 새로 만드세요. 이름이 일치하면 자동 매칭됩니다.</p>
 
-        <p v-if="extractedActivities.length === 0" class="empty-hint">파일에서 활동을 찾을 수 없습니다. 이전 단계로 돌아가 열 매핑을 확인하세요.</p>
+        <p v-if="extractedActivities.length === 0" class="text-base text-ink-5 m-0">파일에서 활동을 찾을 수 없습니다. 이전 단계로 돌아가 열 매핑을 확인하세요.</p>
 
-        <div v-else class="activity-match-list">
-          <div class="activity-match-header">
+        <div v-else class="flex flex-col border border-line rounded-[10px] overflow-hidden">
+          <div class="grid items-center gap-3 py-2.5 px-4 bg-surface text-sm font-semibold text-ink-5 border-b border-line"
+               style="grid-template-columns: 1fr 32px 1fr">
             <span>파일의 활동명</span>
             <span></span>
             <span>연결할 활동</span>
           </div>
-          <div v-for="actName in extractedActivities" :key="actName" class="activity-match-row">
-            <span class="import-act-name">{{ actName }}</span>
-            <span class="match-arrow">→</span>
-            <select class="activity-match-select" v-model="activityMatchMap[actName]">
+          <div v-for="actName in extractedActivities" :key="actName"
+               class="grid items-center gap-3 py-2.5 px-4 border-b border-line/70 last:border-b-0"
+               style="grid-template-columns: 1fr 32px 1fr">
+            <span class="text-base text-ink-2">{{ actName }}</span>
+            <span class="text-base text-ink-5 text-center">→</span>
+            <select class="py-[7px] px-2.5 bg-surface border border-line rounded-lg text-ink text-sm outline-none cursor-pointer w-full focus:border-blue/50"
+                    v-model="activityMatchMap[actName]">
               <option :value="0">＋ 새로 만들기</option>
               <option v-for="a in dbActivities" :key="a.id" :value="a.id">{{ a.name }}</option>
             </select>
@@ -1108,98 +1001,96 @@ function resetWizard() {
       </div>
 
       <!-- Step 5: 변경사항 확인 -->
-      <div v-else-if="step === 5" class="step-content">
-        <h3 class="step-title">Step 5. 변경사항 확인</h3>
-        <p class="step-desc">기존 데이터와 비교하여 변경될 항목을 확인하고 업데이트할 항목을 선택하세요.</p>
+      <div v-else-if="step === 5">
+        <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 5. 변경사항 확인</h3>
+        <p class="text-base text-ink-5 m-0 mb-6">기존 데이터와 비교하여 변경될 항목을 확인하고 업데이트할 항목을 선택하세요.</p>
 
-        <div v-if="previewLoading" class="diff-loading">기존 데이터와 비교 중...</div>
-        <p v-if="previewError" class="error-text">{{ previewError }}<br><span class="error-hint">미리보기 오류가 있어도 다음 단계로 진행하면 모든 항목이 가져와집니다.</span>
+        <div v-if="previewLoading" class="py-12 text-center text-ink-5 text-base">기존 데이터와 비교 중...</div>
+        <p v-if="previewError" class="text-sm text-red my-3 mb-6">
+          {{ previewError }}<br>
+          <span class="text-xs text-ink-5">미리보기 오류가 있어도 다음 단계로 진행하면 모든 항목이 가져와집니다.</span>
         </p>
 
         <template v-if="!previewLoading">
           <!-- 통계 바 -->
-          <div class="diff-stats-bar">
-            <span class="diff-stat diff-stat--changed">변경 {{ changedPreviewItems.length }}건</span>
-            <span class="diff-stat diff-stat--new">신규 {{ newPreviewItemsCount }}건</span>
-            <span class="diff-stat diff-stat--same">동일 {{ unchangedCount }}건</span>
+          <div class="flex gap-2.5 mb-5 flex-wrap">
+            <span class="text-sm font-semibold py-1 px-2.5 rounded-[6px] border text-amber bg-amber/[0.10] border-amber/30">변경 {{ changedPreviewItems.length }}건</span>
+            <span class="text-sm font-semibold py-1 px-2.5 rounded-[6px] border text-green bg-green/[0.10] border-green/30">신규 {{ newPreviewItemsCount }}건</span>
+            <span class="text-sm font-semibold py-1 px-2.5 rounded-[6px] border text-ink-5 bg-white/[0.03] border-line">동일 {{ unchangedCount }}건</span>
           </div>
 
           <!-- 변경 항목 없음 -->
-          <div v-if="changedPreviewItems.length === 0" class="diff-empty">
-            <p class="diff-empty-msg">변경되는 항목이 없습니다.</p>
-            <p v-if="newPreviewItemsCount > 0" class="diff-empty-sub">신규 기록 {{ newPreviewItemsCount }}건이 자동으로 추가됩니다.</p>
-            <p v-if="unchangedCount > 0" class="diff-empty-sub">{{ unchangedCount }}건은 기존과 동일하여 건너뜁니다.</p>
+          <div v-if="changedPreviewItems.length === 0" class="py-10 text-center">
+            <p class="text-base text-ink m-0 mb-2">변경되는 항목이 없습니다.</p>
+            <p v-if="newPreviewItemsCount > 0" class="text-base text-ink-5 m-0 mt-1">신규 기록 {{ newPreviewItemsCount }}건이 자동으로 추가됩니다.</p>
+            <p v-if="unchangedCount > 0" class="text-base text-ink-5 m-0 mt-1">{{ unchangedCount }}건은 기존과 동일하여 건너뜁니다.</p>
           </div>
 
           <!-- 변경 항목 목록 -->
           <template v-else>
-            <div class="diff-controls">
-              <label class="diff-select-all">
+            <div class="flex items-center justify-between mb-3.5 flex-wrap gap-2.5">
+              <label class="flex items-center gap-2 text-sm text-ink-2 cursor-pointer select-none">
                 <input
                     type="checkbox"
+                    class="w-[15px] h-[15px] cursor-pointer accent-blue"
                     :checked="allChangedChecked"
                     @change="toggleAllChanged"
                 />
                 전체 선택/해제
-                <span class="diff-count">({{ checkedChangedCount }}/{{ changedPreviewItems.length }})</span>
+                <span class="text-ink-5 text-sm">({{ checkedChangedCount }}/{{ changedPreviewItems.length }})</span>
               </label>
-              <div class="diff-mode-buttons">
+              <div class="flex border border-line rounded-lg overflow-hidden">
                 <button
-                    class="diff-mode-btn"
-                    :class="{ 'diff-mode-btn--active': diffViewMode === 'raw' }"
+                    class="py-1.5 px-3.5 bg-transparent border-none text-sm cursor-pointer transition-[background-color,color]"
+                    :class="diffViewMode === 'raw' ? 'bg-blue/[0.12] text-blue-2' : 'text-ink-5'"
                     @click="diffViewMode = 'raw'"
                 >원문 보기
                 </button>
                 <button
-                    class="diff-mode-btn"
-                    :class="{ 'diff-mode-btn--active': diffViewMode === 'diff' }"
+                    class="py-1.5 px-3.5 bg-transparent border-none text-sm cursor-pointer transition-[background-color,color] border-l border-line"
+                    :class="diffViewMode === 'diff' ? 'bg-blue/[0.12] text-blue-2' : 'text-ink-5'"
                     @click="diffViewMode = 'diff'"
                 >변경사항 보기
                 </button>
               </div>
             </div>
 
-            <div class="diff-list">
+            <div class="flex flex-col gap-3">
               <div
                   v-for="item in changedPreviewItems"
                   :key="item.key"
-                  class="diff-item"
-                  :class="{ 'diff-item--unchecked': !checkedKeys.has(item.key) }"
+                  class="rounded-[10px] overflow-hidden transition-[opacity,border-color] duration-200 border"
+                  :class="checkedKeys.has(item.key) ? 'border-amber/30' : 'opacity-45 border-line'"
               >
-                <div class="diff-item-header">
+                <div
+                    class="flex items-center gap-2.5 py-2.5 px-3.5 border-b"
+                    :class="checkedKeys.has(item.key) ? 'bg-amber/[0.05] border-amber/15' : 'bg-surface border-line'"
+                >
                   <input
                       type="checkbox"
-                      class="diff-checkbox"
+                      class="w-[15px] h-[15px] cursor-pointer accent-blue shrink-0"
                       :checked="checkedKeys.has(item.key)"
                       @change="toggleItem(item.key)"
                   />
-                  <span class="diff-student-label">
+                  <span class="text-sm text-ink-2 font-semibold">
                     {{ item.grade }}학년 {{ item.class_num }}반 {{ item.number }}번
                     <template v-if="item.student_name"> · {{ item.student_name }}</template>
                   </span>
-                  <span class="diff-separator">|</span>
-                  <span class="diff-activity-label">{{ item.activity_name }}</span>
+                  <span class="text-ink-5 text-sm">|</span>
+                  <span class="text-sm text-amber">{{ item.activity_name }}</span>
                 </div>
-                <div class="diff-boxes">
-                  <div class="diff-box">
-                    <div class="diff-box-label">기존</div>
-                    <div class="diff-box-content">
-                      <DiffView
-                          v-if="diffViewMode === 'diff'"
-                          :before="item.new_content"
-                          :after="item.existing_content"
-                      />
+                <div class="grid grid-cols-2">
+                  <div class="py-3 px-3.5">
+                    <div class="text-[11px] font-semibold text-ink-5 uppercase tracking-[0.06em] mb-1.5">기존</div>
+                    <div class="text-sm text-ink-2 leading-relaxed whitespace-pre-wrap break-all">
+                      <DiffView v-if="diffViewMode === 'diff'" :before="item.new_content" :after="item.existing_content"/>
                       <template v-else>{{ item.existing_content }}</template>
                     </div>
                   </div>
-                  <div class="diff-box diff-box--after">
-                    <div class="diff-box-label">변경 후</div>
-                    <div class="diff-box-content">
-                      <DiffView
-                          v-if="diffViewMode === 'diff'"
-                          :before="item.existing_content"
-                          :after="item.new_content"
-                      />
+                  <div class="py-3 px-3.5 border-l border-line">
+                    <div class="text-[11px] font-semibold text-ink-5 uppercase tracking-[0.06em] mb-1.5">변경 후</div>
+                    <div class="text-sm text-ink-2 leading-relaxed whitespace-pre-wrap break-all">
+                      <DiffView v-if="diffViewMode === 'diff'" :before="item.existing_content" :after="item.new_content"/>
                       <template v-else>{{ item.new_content }}</template>
                     </div>
                   </div>
@@ -1207,10 +1098,10 @@ function resetWizard() {
               </div>
             </div>
 
-            <p v-if="newPreviewItemsCount > 0" class="diff-auto-note diff-auto-note--new">
+            <p v-if="newPreviewItemsCount > 0" class="text-sm text-green mt-3.5">
               + 신규 기록 {{ newPreviewItemsCount }}건은 자동으로 추가됩니다.
             </p>
-            <p v-if="unchangedCount > 0" class="diff-auto-note diff-auto-note--same">
+            <p v-if="unchangedCount > 0" class="text-sm text-ink-5 mt-3.5">
               {{ unchangedCount }}건은 기존과 동일하여 건너뜁니다.
             </p>
           </template>
@@ -1218,81 +1109,86 @@ function resetWizard() {
       </div>
 
       <!-- Step 6: 실행 -->
-      <div v-else-if="step === 6" class="step-content">
-        <h3 class="step-title">Step 6. 가져오기 실행</h3>
+      <div v-else-if="step === 6">
+        <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 6. 가져오기 실행</h3>
 
         <div v-if="!importResult">
-          <div class="summary-box">
-            <div class="summary-row">
-              <span class="summary-key">파일</span>
-              <span class="summary-val">{{ fileName }}</span>
+          <div class="border border-line rounded-[10px] overflow-hidden mb-6">
+            <div class="grid gap-3 py-[11px] px-4 border-b border-line/70 last:border-b-0" style="grid-template-columns: 140px 1fr">
+              <span class="text-sm text-ink-5">파일</span>
+              <span class="text-sm text-ink-2">{{ fileName }}</span>
             </div>
-            <div class="summary-row">
-              <span class="summary-key">양식</span>
-              <span class="summary-val">{{ fileType === 'A' ? 'A타입 — 행 단위 활동 형식' : 'B타입 — 열 단위 활동 형식' }}</span>
+            <div class="grid gap-3 py-[11px] px-4 border-b border-line/70 last:border-b-0" style="grid-template-columns: 140px 1fr">
+              <span class="text-sm text-ink-5">양식</span>
+              <span class="text-sm text-ink-2">{{ fileType === 'A' ? 'A타입 — 행 단위 활동 형식' : 'B타입 — 열 단위 활동 형식' }}</span>
             </div>
-            <div class="summary-row">
-              <span class="summary-key">데이터 행</span>
-              <span class="summary-val">{{ rawData.length }}행</span>
+            <div class="grid gap-3 py-[11px] px-4 border-b border-line/70 last:border-b-0" style="grid-template-columns: 140px 1fr">
+              <span class="text-sm text-ink-5">데이터 행</span>
+              <span class="text-sm text-ink-2">{{ rawData.length }}행</span>
             </div>
-            <div class="summary-row">
-              <span class="summary-key">활동 수</span>
-              <span class="summary-val">{{ extractedActivities.length }}개</span>
+            <div class="grid gap-3 py-[11px] px-4 border-b border-line/70 last:border-b-0" style="grid-template-columns: 140px 1fr">
+              <span class="text-sm text-ink-5">활동 수</span>
+              <span class="text-sm text-ink-2">{{ extractedActivities.length }}개</span>
             </div>
-            <div class="summary-row">
-              <span class="summary-key">새로 만들 활동</span>
-              <span class="summary-val">{{ Object.values(activityMatchMap).filter(v => v === 0).length }}개</span>
+            <div class="grid gap-3 py-[11px] px-4" style="grid-template-columns: 140px 1fr">
+              <span class="text-sm text-ink-5">새로 만들 활동</span>
+              <span class="text-sm text-ink-2">{{ Object.values(activityMatchMap).filter(v => v === 0).length }}개</span>
             </div>
           </div>
 
-          <p v-if="importError" class="error-text">{{ importError }}</p>
+          <p v-if="importError" class="text-sm text-red my-3 mb-6">{{ importError }}</p>
 
-          <button class="btn-import" :disabled="importing" @click="doImport">
+          <button
+              class="py-2.5 px-7 bg-blue/[0.15] border border-blue/40 rounded-lg text-blue-2 text-base font-semibold cursor-pointer transition-colors enabled:hover:bg-blue/25 disabled:opacity-40 disabled:cursor-not-allowed"
+              :disabled="importing"
+              @click="doImport"
+          >
             {{ importing ? '가져오는 중...' : '가져오기 실행' }}
           </button>
         </div>
       </div>
 
-      <div v-else-if="step === 7" class="result-box">
-        <div class="result-check">✓</div>
-        <p class="result-title">가져오기 완료</p>
-        <div class="result-stats">
-          <div class="stat-item">
-            <span class="stat-val">{{ importResult.students_created }}</span>
-            <span class="stat-label">학생 신규 생성</span>
+      <!-- 완료 -->
+      <div v-else-if="step === 7" class="flex flex-col items-center gap-4 py-12">
+        <div class="text-[40px] text-green">✓</div>
+        <p class="text-xl font-bold text-ink m-0">가져오기 완료</p>
+        <div class="flex gap-8">
+          <div class="flex flex-col items-center gap-1">
+            <span class="text-[28px] font-bold text-blue-2">{{ importResult.students_created }}</span>
+            <span class="text-sm text-ink-5">학생 신규 생성</span>
           </div>
-          <div class="stat-item">
-            <span class="stat-val">{{ importResult.students_updated }}</span>
-            <span class="stat-label">학생 업데이트</span>
+          <div class="flex flex-col items-center gap-1">
+            <span class="text-[28px] font-bold text-blue-2">{{ importResult.students_updated }}</span>
+            <span class="text-sm text-ink-5">학생 업데이트</span>
           </div>
-          <div class="stat-item">
-            <span class="stat-val">{{ importResult.records_saved }}</span>
-            <span class="stat-label">기록 저장</span>
+          <div class="flex flex-col items-center gap-1">
+            <span class="text-[28px] font-bold text-blue-2">{{ importResult.records_saved }}</span>
+            <span class="text-sm text-ink-5">기록 저장</span>
           </div>
         </div>
-        <button class="btn-reset" @click="resetWizard">새로 가져오기</button>
+        <button
+            class="mt-2 py-[9px] px-6 bg-transparent border border-line rounded-lg text-ink-5 text-base cursor-pointer transition-colors hover:bg-line hover:text-ink-3"
+            @click="resetWizard"
+        >새로 가져오기</button>
       </div>
 
-      <!-- 파일 미리보기 (Step 3에서만 하단에 미리보기 표시) -->
+      <!-- Step 3 하단 파일 미리보기 -->
       <div v-if="step === 3 && rawHeaders.length > 0">
-        <div class="border-hr"></div>
-
-        <div class="persistent-preview">
-
-          <div class="persistent-preview-header" @click="previewCollapsed = !previewCollapsed">
-            <span class="persistent-preview-label">{{ fileName }} · {{ rawData.length }}행</span>
-            <span class="persistent-preview-toggle">{{ previewCollapsed ? '펼치기 ▾' : '접기 ▴' }}</span>
+        <div class="mb-3 pb-3 border-b border-line"></div>
+        <div class="border border-line rounded-[10px] overflow-hidden mt-8 mb-2">
+          <div class="flex items-center justify-between py-[9px] px-3.5 bg-surface cursor-pointer select-none"
+               @click="previewCollapsed = !previewCollapsed">
+            <span class="text-sm text-ink-5">{{ fileName }} · {{ rawData.length }}행</span>
+            <span class="text-sm text-ink-5">{{ previewCollapsed ? '펼치기 ▾' : '접기 ▴' }}</span>
           </div>
-          <div v-if="!previewCollapsed" class="preview-table-wrap">
-            <table class="preview-table">
-              <thead>
-              <tr>
-                <th v-for="h in rawHeaders" :key="h">{{ h }}</th>
-              </tr>
-              </thead>
+          <div v-if="!previewCollapsed" class="overflow-x-auto border-t border-line">
+            <table class="border-collapse min-w-full text-sm">
+              <thead><tr>
+                <th v-for="h in rawHeaders" :key="h" class="py-2 px-3 bg-surface text-ink-5 font-semibold text-left whitespace-nowrap border-b border-line">{{ h }}</th>
+              </tr></thead>
               <tbody>
               <tr v-for="(row, i) in previewRows" :key="i">
-                <td v-for="(cell, j) in row" :key="j">{{ cell }}</td>
+                <td v-for="(cell, j) in row" :key="j" class="py-[7px] px-3 text-ink-2 border-b border-line/70 whitespace-nowrap max-w-[200px] overflow-hidden text-ellipsis">{{ cell }}</td>
               </tr>
               </tbody>
             </table>
@@ -1306,231 +1202,16 @@ function resetWizard() {
 </template>
 
 <style scoped>
-.section {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
+/* 학번 오류 행 — 자식 td에 색 적용 */
+.sid-row-error td {
+  color: var(--c-red);
 }
 
-/* 툴바 */
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 36px 40px 24px;
-  border-bottom: 1px solid #1a2035;
-  flex-shrink: 0;
-}
-
-.section-header {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.section-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0 0 6px;
-}
-
-.section-desc {
-  font-size: 16px;
-  color: #7ba3d4;
-  margin: 0;
-}
-
-.step-content {
-}
-
-.step-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0 0 6px;
-}
-
-.step-desc {
-  font-size: 15px;
-  color: var(--clr-text-subtle);
-  margin: 0 0 24px;
-}
-
-.required {
-  color: #f87171;
-  margin-left: 2px;
-}
-
-.error-text {
-  font-size: 14px;
-  color: #f87171;
-  margin: 12px 0 24px;
-}
-
-.col-map-error {
-  font-size: 13px;
-  color: #f87171;
-  margin: 8px 0 0;
-}
-
-.empty-hint {
-  font-size: 15px;
-  color: var(--clr-text-subtle);
-  margin: 0;
-}
-
-/* 단계 하단 미리보기 */
-.persistent-preview {
-  border: 1px solid #1a2035;
-  border-radius: 10px;
-  overflow: hidden;
-  margin-top: 32px;
-  margin-bottom: 8px;
-}
-
-.persistent-preview .preview-table-wrap {
-  border: none;
-  border-radius: 0;
-}
-
-.persistent-preview-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 9px 14px;
-  background: #0d1220;
-  cursor: pointer;
-  user-select: none;
-}
-
-.persistent-preview-label {
-  font-size: 14px;
-  color: var(--clr-text-subtle);
-}
-
-.persistent-preview-toggle {
-  font-size: 13px;
-  color: var(--clr-text-hint);
-}
-
-/* Step 1: 드롭존 */
-.drop-zone {
-  border: 2px dashed #1a2035;
-  border-radius: 12px;
-  padding: 48px 24px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.drop-zone:hover,
-.drop-zone--dragging {
-  border-color: rgba(59, 91, 219, 0.5);
-  background-color: rgba(59, 91, 219, 0.04);
-}
-
-.drop-zone--loaded {
-  border-color: rgba(52, 211, 153, 0.4);
-  border-style: solid;
-}
-
-.drop-icon {
-  color: var(--clr-text-hint);
-}
-
-.drop-main {
-  font-size: 16px;
-  color: var(--clr-text-subtle);
-  margin: 0;
-}
-
-.drop-main--loaded {
-  color: #c8d8f0;
-  font-weight: 600;
-}
-
-.drop-hint {
-  font-size: 13px;
-  color: var(--clr-text-hint);
-  margin: 0;
-}
-
-/* 미리보기 테이블 */
-.preview-block {
-}
-
-.preview-label {
-  font-size: 14px;
-  color: var(--clr-text-subtle);
-  margin: 0 0 10px;
-}
-
-.preview-table-wrap {
-  overflow-x: auto;
-  border: 1px solid #1a2035;
-  border-radius: 8px;
-}
-
-.preview-table {
-  border-collapse: collapse;
-  min-width: 100%;
-  font-size: 14px;
-}
-
-.preview-table th {
-  padding: 8px 12px;
-  background: #0d1220;
-  color: var(--clr-text-subtle);
-  font-weight: 600;
-  text-align: left;
-  white-space: nowrap;
-  border-bottom: 1px solid #1a2035;
-}
-
-.preview-table td {
-  padding: 7px 12px;
-  color: #c8d8f0;
-  border-bottom: 1px solid rgba(26, 32, 53, 0.7);
-  white-space: nowrap;
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 예시 파일 다운로드 */
-.sample-section {
-  margin-bottom: 6px;
-}
-
-.sample-section-summary {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  list-style: none;
-  user-select: none;
-  margin-bottom: 6px;
-}
-
-.sample-section-summary::-webkit-details-marker {
-  display: none;
-}
-
-.sample-section-summary .step-title {
-  margin: 0;
-}
-
+/* details 토글 화살표 — ::after pseudo-element 필수 */
 .sample-section-summary::after {
   content: '▶';
   font-size: 11px;
-  color: var(--clr-text-hint);
+  color: var(--c-ink-5);
   transition: transform 0.2s;
   flex-shrink: 0;
   margin-left: 6px;
@@ -1540,667 +1221,11 @@ details[open] .sample-section-summary::after {
   transform: rotate(90deg);
 }
 
-.sample-section-toggle-label {
-  margin-left: 16px;
-  font-size: 15px;
-  color: var(--clr-text-hint);
-  white-space: nowrap;
-  font-weight: 400;
-}
-
 details:not([open]) .sample-section-toggle-label::after {
   content: '펼치기';
 }
 
 details[open] .sample-section-toggle-label::after {
   content: '접기';
-}
-
-.border-hr {
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #1a2035;
-}
-
-.sample-type-card {
-  cursor: default;
-}
-
-.sample-type-card:hover {
-  border-color: #1a2035;
-  background-color: transparent;
-}
-
-.btn-sample-dl {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 14px;
-  padding: 7px 14px;
-  background: rgba(59, 91, 219, 0.08);
-  border: 1px solid rgba(59, 91, 219, 0.25);
-  border-radius: 7px;
-  color: #7ba8f0;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.btn-sample-dl:hover {
-  background: rgba(59, 91, 219, 0.18);
-  color: #93c5fd;
-}
-
-/* Step 2: 타입 카드 */
-.type-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(max(300px, calc(50% - 8px)), 1fr));
-  gap: 16px;
-}
-
-.type-card {
-  border: 2px solid #1a2035;
-  border-radius: 12px;
-  padding: 20px;
-  cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s;
-}
-
-.type-card:hover {
-  border-color: rgba(59, 91, 219, 0.4);
-  background-color: rgba(59, 91, 219, 0.03);
-}
-
-.type-card--selected {
-  border-color: rgba(59, 91, 219, 0.7);
-  background-color: rgba(59, 91, 219, 0.06);
-}
-
-.type-card-top {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.type-badge {
-  font-size: 12px;
-  font-weight: 700;
-  border-radius: 6px;
-  padding: 2px 8px;
-  color: #7ba8f0;
-  background: rgba(59, 91, 219, 0.15);
-  border: 1px solid rgba(59, 91, 219, 0.3);
-}
-
-.type-badge--a {
-  color: #f87171;
-  background: rgba(248, 113, 113, 0.12);
-  border-color: rgba(248, 113, 113, 0.35);
-}
-
-.type-badge--b {
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.15);
-  border-color: rgba(251, 191, 36, 0.4);
-}
-
-.type-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: #e2e8f0;
-}
-
-.type-desc {
-  font-size: 14px;
-  color: var(--clr-text-subtle);
-  margin: 0 0 14px;
-  line-height: 1.6;
-}
-
-.sample-table-wrap {
-  overflow-x: auto;
-  border: 1px solid #1a2035;
-  border-radius: 6px;
-}
-
-.sample-table {
-  border-collapse: collapse;
-  width: 100%;
-  font-size: 12px;
-}
-
-.sample-table th {
-  padding: 6px 8px;
-  background: #0a0f1e;
-  color: var(--clr-text-hint);
-  font-weight: 600;
-  text-align: left;
-  border-bottom: 1px solid #1a2035;
-  white-space: nowrap;
-}
-
-.sample-table td {
-  padding: 5px 8px;
-  color: #7ba3d4;
-  border-bottom: 1px solid rgba(26, 32, 53, 0.5);
-  white-space: nowrap;
-}
-
-.sample-table tr:last-child td {
-  border-bottom: none;
-}
-
-/* Step 3: 열 매핑 */
-.id-mode-section {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.id-mode-label {
-  font-size: 15px;
-  color: #c8d8f0;
-  white-space: nowrap;
-}
-
-.id-mode-buttons {
-  display: flex;
-  gap: 0;
-  border: 1px solid #1a2035;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.id-mode-btn {
-  padding: 7px 16px;
-  background: none;
-  border: none;
-  color: var(--clr-text-subtle);
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.id-mode-btn + .id-mode-btn {
-  border-left: 1px solid #1a2035;
-}
-
-.id-mode-btn--active {
-  background: rgba(59, 91, 219, 0.12);
-  color: #7ba8f0;
-}
-
-.sid-preview {
-  margin-top: 4px;
-  padding: 14px 16px;
-  background: #0d1220;
-  border: 1px solid #1a2035;
-  border-radius: 8px;
-}
-
-.sid-preview-label {
-  font-size: 13px;
-  color: var(--clr-text-hint);
-  margin: 0 0 10px;
-}
-
-.sid-preview-table {
-  width: auto;
-}
-
-.sid-row-error td {
-  color: #f87171;
-}
-
-.col-map-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.col-map-row {
-  display: grid;
-  grid-template-columns: 160px 1fr;
-  align-items: center;
-  gap: 16px;
-}
-
-.col-map-label {
-  font-size: 15px;
-  color: #c8d8f0;
-}
-
-.col-map-select {
-  padding: 8px 12px;
-  background: #0d1220;
-  border: 1px solid #1a2035;
-  border-radius: 8px;
-  color: #e2e8f0;
-  font-size: 14px;
-  outline: none;
-  cursor: pointer;
-}
-
-.col-map-select:focus {
-  border-color: rgba(59, 91, 219, 0.5);
-}
-
-.activity-cols-preview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
-  min-height: 36px;
-}
-
-.activity-cols-hint {
-  font-size: 13px;
-  color: var(--clr-text-hint);
-}
-
-.activity-col-tag {
-  font-size: 13px;
-  color: #7ba8f0;
-  background: rgba(59, 91, 219, 0.1);
-  border: 1px solid rgba(59, 91, 219, 0.25);
-  border-radius: 6px;
-  padding: 3px 8px;
-}
-
-/* Step 4: 활동 매칭 */
-.activity-match-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  border: 1px solid #1a2035;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.activity-match-header {
-  display: grid;
-  grid-template-columns: 1fr 32px 1fr;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
-  background: #0d1220;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--clr-text-hint);
-  border-bottom: 1px solid #1a2035;
-}
-
-.activity-match-row {
-  display: grid;
-  grid-template-columns: 1fr 32px 1fr;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
-  border-bottom: 1px solid rgba(26, 32, 53, 0.7);
-}
-
-.activity-match-row:last-child {
-  border-bottom: none;
-}
-
-.import-act-name {
-  font-size: 15px;
-  color: #c8d8f0;
-}
-
-.match-arrow {
-  font-size: 16px;
-  color: var(--clr-text-hint);
-  text-align: center;
-}
-
-.activity-match-select {
-  padding: 7px 10px;
-  background: #0d1220;
-  border: 1px solid #1a2035;
-  border-radius: 8px;
-  color: #e2e8f0;
-  font-size: 14px;
-  outline: none;
-  cursor: pointer;
-  width: 100%;
-}
-
-.activity-match-select:focus {
-  border-color: rgba(59, 91, 219, 0.5);
-}
-
-/* Step 5: 요약 & 결과 */
-.summary-box {
-  border: 1px solid #1a2035;
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 24px;
-}
-
-.summary-row {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  gap: 12px;
-  padding: 11px 16px;
-  border-bottom: 1px solid rgba(26, 32, 53, 0.7);
-}
-
-.summary-row:last-child {
-  border-bottom: none;
-}
-
-.summary-key {
-  font-size: 14px;
-  color: var(--clr-text-subtle);
-}
-
-.summary-val {
-  font-size: 14px;
-  color: #c8d8f0;
-}
-
-.btn-import {
-  padding: 10px 28px;
-  background: rgba(59, 91, 219, 0.15);
-  border: 1px solid rgba(59, 91, 219, 0.4);
-  border-radius: 8px;
-  color: #7ba8f0;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.btn-import:hover:not(:disabled) {
-  background: rgba(59, 91, 219, 0.25);
-  color: #93c5fd;
-}
-
-.btn-import:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.result-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 48px 0;
-}
-
-.result-check {
-  font-size: 40px;
-  color: #34d399;
-}
-
-.result-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0;
-}
-
-.result-stats {
-  display: flex;
-  gap: 32px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.stat-val {
-  font-size: 28px;
-  font-weight: 700;
-  color: #7ba8f0;
-}
-
-.stat-label {
-  font-size: 13px;
-  color: var(--clr-text-subtle);
-}
-
-.btn-reset {
-  margin-top: 8px;
-  padding: 9px 24px;
-  background: none;
-  border: 1px solid #1a2035;
-  border-radius: 8px;
-  color: var(--clr-text-subtle);
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.btn-reset:hover {
-  background: #1a2035;
-  color: #93afd4;
-}
-
-
-/* Step 5: Diff 미리보기 */
-.diff-loading {
-  padding: 48px 0;
-  text-align: center;
-  color: var(--clr-text-subtle);
-  font-size: 15px;
-}
-
-.error-hint {
-  font-size: 12px;
-  color: var(--clr-text-hint);
-}
-
-.diff-stats-bar {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.diff-stat {
-  font-size: 13px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid;
-}
-
-.diff-stat--changed {
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.1);
-  border-color: rgba(251, 191, 36, 0.3);
-}
-
-.diff-stat--new {
-  color: #34d399;
-  background: rgba(52, 211, 153, 0.1);
-  border-color: rgba(52, 211, 153, 0.3);
-}
-
-.diff-stat--same {
-  color: var(--clr-text-hint);
-  background: rgba(255, 255, 255, 0.03);
-  border-color: #1a2035;
-}
-
-.diff-empty {
-  padding: 40px 0;
-  text-align: center;
-}
-
-.diff-empty-msg {
-  font-size: 16px;
-  color: #e2e8f0;
-  margin: 0 0 8px;
-}
-
-.diff-empty-sub {
-  font-size: 16px;
-  color: var(--clr-text-subtle);
-  margin: 4px 0 0;
-}
-
-.diff-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.diff-select-all {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #c8d8f0;
-  cursor: pointer;
-  user-select: none;
-}
-
-.diff-select-all input[type='checkbox'] {
-  width: 15px;
-  height: 15px;
-  cursor: pointer;
-  accent-color: #3b5bdb;
-}
-
-.diff-count {
-  color: var(--clr-text-hint);
-  font-size: 13px;
-}
-
-.diff-mode-buttons {
-  display: flex;
-  border: 1px solid #1a2035;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.diff-mode-btn {
-  padding: 6px 14px;
-  background: none;
-  border: none;
-  color: var(--clr-text-subtle);
-  font-size: 13px;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.diff-mode-btn + .diff-mode-btn {
-  border-left: 1px solid #1a2035;
-}
-
-.diff-mode-btn--active {
-  background: rgba(59, 91, 219, 0.12);
-  color: #7ba8f0;
-}
-
-.diff-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.diff-item {
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  border-radius: 10px;
-  overflow: hidden;
-  transition: opacity 0.2s, border-color 0.2s;
-}
-
-.diff-item--unchecked {
-  opacity: 0.45;
-  border-color: #1a2035;
-}
-
-.diff-item-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  background: rgba(251, 191, 36, 0.05);
-  border-bottom: 1px solid rgba(251, 191, 36, 0.15);
-}
-
-.diff-item--unchecked .diff-item-header {
-  background: #0d1220;
-  border-bottom-color: #1a2035;
-}
-
-.diff-checkbox {
-  width: 15px;
-  height: 15px;
-  cursor: pointer;
-  accent-color: #3b5bdb;
-  flex-shrink: 0;
-}
-
-.diff-student-label {
-  font-size: 14px;
-  color: #c8d8f0;
-  font-weight: 600;
-}
-
-.diff-separator {
-  color: var(--clr-text-hint);
-  font-size: 13px;
-}
-
-.diff-activity-label {
-  font-size: 13px;
-  color: #fbbf24;
-}
-
-.diff-boxes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-}
-
-.diff-box {
-  padding: 12px 14px;
-}
-
-.diff-box + .diff-box {
-  border-left: 1px solid #1a2035;
-}
-
-.diff-box-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--clr-text-hint);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 6px;
-}
-
-.diff-box-content {
-  font-size: 14px;
-  color: #c8d8f0;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
-.diff-auto-note {
-  font-size: 13px;
-  margin-top: 14px;
-}
-
-.diff-auto-note--new {
-  color: #34d399;
-}
-
-.diff-auto-note--same {
-  color: var(--clr-text-hint);
 }
 </style>

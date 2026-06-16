@@ -326,13 +326,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="section">
+  <div class="flex flex-col h-full overflow-hidden box-border">
 
     <!-- 헤더 -->
-    <div class="toolbar">
-      <div class="section-header">
-        <h2 class="section-title">유의어 점검(Inspect)</h2>
-        <p class="section-desc">중·고등학교 학교생활기록부 기재요령에 근거하여 유의어 및 금지어를 점검합니다.</p>
+    <div class="flex items-center justify-between px-10 pt-9 pb-6 border-b border-line shrink-0">
+      <div class="flex flex-col">
+        <h2 class="text-[22px] font-bold text-ink m-0 mb-1.5">유의어 점검(Inspect)</h2>
+        <p class="text-base text-ink-3 m-0">중·고등학교 학교생활기록부 기재요령에 근거하여 유의어 및 금지어를 점검합니다.</p>
       </div>
     </div>
 
@@ -345,84 +345,94 @@ onMounted(() => {
         @prev="goPrev"
         @next="goNext"
     >
-    <!-- 본문 -->
 
       <!-- ─── Step 1: 유의어 그룹 관리 ─────────────────────── -->
-      <div v-if="step === 1" class="step-content">
-        <div class="step-header">
-          <h3 class="step-title">Step 1. 유의어 관리</h3>
-          <p class="step-desc">학교생활기록부 점검에 사용할 유의어 그룹과 검색 대상 단어를 관리합니다.</p>
-        </div>
+      <div v-if="step === 1">
+        <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 1. 유의어 관리</h3>
+        <p class="text-base text-ink-5 m-0 mb-6">학교생활기록부 점검에 사용할 유의어 그룹과 검색 대상 단어를 관리합니다.</p>
 
         <!-- 로딩 -->
-        <div v-if="store.loading" class="state-box">
-          <Loader2 :size="22" class="spin"/>
-          <span class="state-text">불러오는 중...</span>
+        <div v-if="store.loading" class="flex items-center gap-2.5 py-8 text-ink-5 text-sm">
+          <Loader2 :size="22" class="animate-spin"/>
+          불러오는 중...
         </div>
 
         <!-- 에러 -->
-        <div v-else-if="store.error" class="error-box">{{ store.error }}</div>
+        <div v-else-if="store.error" class="msg-error">{{ store.error }}</div>
 
         <template v-else>
 
           <!-- 그룹 삭제 에러 -->
-          <div v-if="removeGroupError" class="error-box" style="margin-bottom: 12px;">{{ removeGroupError }}</div>
+          <div v-if="removeGroupError" class="msg-error mb-3">{{ removeGroupError }}</div>
 
           <!-- 그룹 카드 목록 -->
-          <div class="group-list">
-            <div v-for="group in store.groups" :key="group.id" class="group-card">
+          <div class="flex flex-col gap-4 mb-6">
+            <div v-for="group in store.groups" :key="group.id"
+                 class="bg-surface border border-line rounded-[10px] py-4 px-5 flex flex-col gap-3">
 
               <!-- 그룹 헤더 -->
-              <div class="group-header">
-                <span class="group-name">{{ group.name }}</span>
-                <span class="group-count">{{ group.items.length }}개</span>
-                <button class="btn-icon btn-danger" @click="removeGroup(group.id)" title="그룹 삭제">
+              <div class="flex items-center gap-2.5">
+                <span class="text-base font-semibold text-ink flex-1">{{ group.name }}</span>
+                <span class="text-xs text-ink-5 bg-line py-[2px] px-2 rounded-xl">{{ group.items.length }}개</span>
+                <button
+                    class="flex items-center justify-center w-7 h-7 border-none rounded-[6px] cursor-pointer bg-transparent text-red transition-colors hover:bg-red/[0.15]"
+                    @click="removeGroup(group.id)" title="그룹 삭제"
+                >
                   <Trash2 :size="14"/>
                 </button>
               </div>
 
               <!-- 단어 chips -->
-              <div class="word-chips">
-                <span v-for="item in group.items" :key="item.id" class="chip">
+              <div class="flex flex-wrap gap-1.5 min-h-7">
+                <span v-for="item in group.items" :key="item.id"
+                      class="inline-flex items-center gap-1 bg-line border border-line-2 rounded-[20px] py-[3px] px-2.5 text-sm text-ink-2">
                   {{ item.word }}
-                  <button class="chip-del" @click="store.deleteWord(item.id)">
+                  <button
+                      class="flex items-center bg-transparent border-none cursor-pointer text-ink-4 p-0 ml-0.5 transition-colors hover:text-red"
+                      @click="store.deleteWord(item.id)"
+                  >
                     <X :size="11"/>
                   </button>
                 </span>
-                <span v-if="group.items.length === 0" class="chip-empty">단어 없음</span>
+                <span v-if="group.items.length === 0" class="text-xs text-line-2 italic">단어 없음</span>
               </div>
 
               <!-- 단어 추가 입력 -->
-              <div class="word-add-row">
+              <div class="flex gap-2 items-center">
                 <input
-                    class="input-sm"
+                    class="flex-1 bg-line border border-line-2 rounded-[6px] py-1.5 px-2.5 text-sm text-ink outline-none transition-colors focus:border-blue"
                     placeholder="단어 추가..."
                     :value="getWordInput(group.id)"
                     @input="setWordInput(group.id, $event.target.value)"
                     @keydown.enter="submitWord(group.id)"
                 />
-                <button class="btn-sm btn-primary" @click="submitWord(group.id)">
+                <button
+                    class="inline-flex items-center gap-1 py-1.5 px-3 rounded-[6px] border-none text-sm font-medium cursor-pointer transition-colors bg-blue text-white hover:bg-blue-2"
+                    @click="submitWord(group.id)"
+                >
                   <Plus :size="13"/>
                   추가
                 </button>
               </div>
 
               <!-- 유의어 일괄 등록 -->
-              <details class="csv-section">
-                <summary class="csv-toggle">유의어 일괄 등록</summary>
-                <div class="csv-body">
+              <details class="border-t border-line pt-2.5">
+                <summary class="text-xs text-ink-5 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+                  유의어 일괄 등록
+                </summary>
+                <div class="flex flex-col gap-2 mt-2.5">
                   <textarea
-                      class="csv-textarea"
+                      class="w-full min-h-[80px] bg-line border border-line-2 rounded-[6px] py-2 px-2.5 text-sm text-ink resize-y outline-none box-border transition-colors focus:border-blue"
                       placeholder="줄바꿈 또는 쉼표로 구분하여 여러 단어를 입력하세요"
                       :value="getCsvInput(group.id)"
                       @input="setCsvInput(group.id, $event.target.value)"
                   />
                   <button
-                      class="btn-sm btn-primary"
+                      class="inline-flex items-center gap-1 py-1.5 px-3 rounded-[6px] border-none text-sm font-medium cursor-pointer transition-colors bg-blue text-white enabled:hover:bg-blue-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       :disabled="csvUploading[group.id]"
                       @click="submitCsv(group.id)"
                   >
-                    <Loader2 v-if="csvUploading[group.id]" :size="13" class="spin"/>
+                    <Loader2 v-if="csvUploading[group.id]" :size="13" class="animate-spin"/>
                     <span v-else>업로드</span>
                   </button>
                 </div>
@@ -432,26 +442,35 @@ onMounted(() => {
           </div>
 
           <!-- 그룹 추가 -->
-          <div class="add-group-area">
+          <div class="mt-1">
             <template v-if="showAddGroup">
-              <div class="add-group-form">
+              <div class="flex gap-2 items-center">
                 <input
                     v-model="newGroupName"
-                    class="input-md"
+                    class="flex-1 bg-line border border-line-2 rounded-[6px] py-2 px-3 text-sm text-ink outline-none transition-colors focus:border-blue"
                     placeholder="새 그룹 이름"
                     @keydown.enter="submitNewGroup"
                     @keydown.esc="showAddGroup = false; addGroupError = ''"
                     autofocus
                 />
-                <button class="btn-sm btn-primary" @click="submitNewGroup">
+                <button
+                    class="inline-flex items-center gap-1 py-1.5 px-3 rounded-[6px] border-none text-sm font-medium cursor-pointer transition-colors bg-blue text-white hover:bg-blue-2"
+                    @click="submitNewGroup"
+                >
                   <Plus :size="13"/>
                   생성
                 </button>
-                <button class="btn-ghost" @click="showAddGroup = false; addGroupError = ''">취소</button>
+                <button
+                    class="py-2 px-3.5 border border-line-2 rounded-[6px] bg-transparent text-ink-5 text-sm cursor-pointer transition-[border-color,color] hover:border-ink-5 hover:text-ink-2"
+                    @click="showAddGroup = false; addGroupError = ''"
+                >취소</button>
               </div>
-              <p v-if="addGroupError" class="field-error">{{ addGroupError }}</p>
+              <p v-if="addGroupError" class="text-xs text-red m-0 mt-1.5">{{ addGroupError }}</p>
             </template>
-            <button v-else class="btn-add-group" @click="showAddGroup = true">
+            <button v-else
+                    class="inline-flex items-center gap-1.5 py-2 px-4 bg-transparent border border-dashed border-line-2 rounded-lg text-ink-5 text-sm cursor-pointer transition-[border-color,color] hover:border-blue hover:text-violet"
+                    @click="showAddGroup = true"
+            >
               <Plus :size="15"/>
               그룹 추가
             </button>
@@ -461,18 +480,16 @@ onMounted(() => {
       </div>
 
       <!-- ─── Step 2: 그룹 선택 ─────────────────────────────── -->
-      <div v-if="step === 2" class="step-content">
-        <div class="step-header">
-          <h3 class="step-title">Step 2. 점검할 그룹 선택</h3>
-          <p class="step-desc">검색에 사용할 유의어 그룹을 하나 이상 선택하세요.</p>
-        </div>
+      <div v-if="step === 2">
+        <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 2. 점검할 그룹 선택</h3>
+        <p class="text-base text-ink-5 m-0 mb-6">검색에 사용할 유의어 그룹을 하나 이상 선택하세요.</p>
 
-        <div class="group-select-list">
+        <div class="flex flex-col gap-2 mb-5">
           <label
               v-for="group in store.groups"
               :key="group.id"
-              class="group-select-card"
-              :class="{ 'group-select-card--on': isSelected(group.id) }"
+              class="flex items-center gap-3.5 py-3.5 px-[18px] bg-surface border border-line rounded-[10px] cursor-pointer transition-[border-color,background-color]"
+              :class="isSelected(group.id) ? 'border-blue bg-blue/[0.08]' : 'hover:border-line-2 hover:bg-raised'"
           >
             <input
                 type="checkbox"
@@ -480,150 +497,158 @@ onMounted(() => {
                 @change="toggleGroup(group.id)"
                 class="sr-only"
             />
-            <div class="gsc-check">
+            <div
+                class="flex items-center justify-center w-5 h-5 rounded-[5px] border-[1.5px] shrink-0 transition-[border-color,background-color]"
+                :class="isSelected(group.id) ? 'border-blue bg-blue text-white' : 'border-line-2 bg-transparent text-green'"
+            >
               <Check v-if="isSelected(group.id)" :size="13"/>
             </div>
-            <div class="gsc-info">
-              <span class="gsc-name">{{ group.name }}</span>
-              <span class="gsc-count">{{ group.items.length }}개 단어</span>
+            <div class="flex-1 flex flex-col gap-0.5">
+              <span class="text-sm font-semibold text-ink">{{ group.name }}</span>
+              <span class="text-xs text-ink-5">{{ group.items.length }}개 단어</span>
             </div>
-            <ChevronRight :size="16" class="gsc-arrow"/>
+            <ChevronRight :size="16" class="text-ink-5"/>
           </label>
         </div>
 
-        <div class="search-summary">
-          선택된 그룹: <strong>{{ selectedGroupIds.length }}개</strong> &nbsp;|&nbsp;
-          중복 제거 단어: <strong>{{ selectedWordCount }}개</strong>
+        <div class="text-sm text-ink-5 mb-5">
+          선택된 그룹: <strong class="text-violet">{{ selectedGroupIds.length }}개</strong> &nbsp;|&nbsp;
+          중복 제거 단어: <strong class="text-violet">{{ selectedWordCount }}개</strong>
         </div>
       </div>
 
       <!-- ─── Step 3: 점검 범위 선택 ──────────────────────────── -->
-      <div v-if="step === 3" class="step-content">
-        <div class="step-header">
-          <h3 class="step-title">Step 3. 점검 범위 선택</h3>
-          <p class="step-desc">유의어를 점검할 생기부 범위를 선택하세요.</p>
-        </div>
+      <div v-if="step === 3">
+        <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 3. 점검 범위 선택</h3>
+        <p class="text-base text-ink-5 m-0 mb-6">유의어를 점검할 생기부 범위를 선택하세요.</p>
 
         <!-- 모드 카드 2개: 전체 영역 / 특정 영역 -->
-        <div class="scope-mode-cards">
+        <div class="grid grid-cols-2 gap-3 mb-6">
           <div
-              class="scope-mode-card"
-              :class="{ 'scope-mode-card--on': scopeMode === 'all' }"
+              class="relative border-2 rounded-[10px] py-[18px] px-5 cursor-pointer flex flex-col gap-1.5 transition-[border-color,background-color] duration-200"
+              :class="scopeMode === 'all' ? 'border-blue/70 bg-blue/[0.06]' : 'border-line hover:border-blue/40 hover:bg-blue/[0.03]'"
               @click="scopeMode = 'all'"
           >
-            <Check v-if="scopeMode === 'all'" :size="14" class="scope-mode-check"/>
-            <span class="scope-mode-title">전체 영역</span>
-            <span class="scope-mode-desc">모든 생기부 기록을 점검합니다</span>
+            <Check v-if="scopeMode === 'all'" :size="14" class="absolute top-2.5 right-3 text-blue-2"/>
+            <span class="text-base font-semibold text-ink">전체 영역</span>
+            <span class="text-sm text-ink-5">모든 생기부 기록을 점검합니다</span>
           </div>
           <div
-              class="scope-mode-card"
-              :class="{ 'scope-mode-card--on': scopeMode === 'specific' }"
+              class="relative border-2 rounded-[10px] py-[18px] px-5 cursor-pointer flex flex-col gap-1.5 transition-[border-color,background-color] duration-200"
+              :class="scopeMode === 'specific' ? 'border-blue/70 bg-blue/[0.06]' : 'border-line hover:border-blue/40 hover:bg-blue/[0.03]'"
               @click="scopeMode = 'specific'"
           >
-            <Check v-if="scopeMode === 'specific'" :size="14" class="scope-mode-check"/>
-            <span class="scope-mode-title">특정 영역</span>
-            <span class="scope-mode-desc">점검할 영역을 직접 선택합니다</span>
+            <Check v-if="scopeMode === 'specific'" :size="14" class="absolute top-2.5 right-3 text-blue-2"/>
+            <span class="text-base font-semibold text-ink">특정 영역</span>
+            <span class="text-sm text-ink-5">점검할 영역을 직접 선택합니다</span>
           </div>
         </div>
 
-        <!-- 개별 영역 카드 그리드 (scopeMode='specific'일 때 활성) -->
-        <div class="area-section" :class="{ 'area-section--disabled': scopeMode !== 'specific' }">
-          <p class="area-section-label">점검할 영역 선택</p>
-          <p v-if="areaStore.areas.length === 0" class="empty-hint">등록된 영역이 없습니다.</p>
-          <div v-else class="area-cards">
+        <!-- 개별 영역 카드 그리드 -->
+        <div
+            class="mb-5 transition-opacity"
+            :class="{ 'opacity-35 pointer-events-none': scopeMode !== 'specific' }"
+        >
+          <p class="text-sm text-ink-5 m-0 mb-3">점검할 영역 선택</p>
+          <p v-if="areaStore.areas.length === 0" class="text-sm text-line-2">등록된 영역이 없습니다.</p>
+          <div v-else class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))">
             <div
                 v-for="area in areaStore.areas"
                 :key="area.id"
-                class="area-card"
-                :class="{ 'area-card--selected': isAreaSelected(area.id) }"
+                class="relative border-2 rounded-[10px] py-4 px-5 cursor-pointer transition-[border-color,background-color] duration-200 flex flex-col gap-1.5"
+                :class="isAreaSelected(area.id) ? 'border-blue/70 bg-blue/[0.06]' : 'border-line hover:border-blue/40 hover:bg-blue/[0.03]'"
                 @click="toggleArea(area.id)"
             >
-              <Check v-if="isAreaSelected(area.id)" :size="14" class="area-card-check"/>
-              <span class="area-card-name">{{ area.name }}</span>
-              <span class="area-card-meta">활동 {{ area.activities.length }}개</span>
+              <Check v-if="isAreaSelected(area.id)" :size="14" class="absolute top-2.5 right-3 text-blue-2"/>
+              <span class="text-base font-semibold text-ink">{{ area.name }}</span>
+              <span class="text-sm text-ink-5">활동 {{ area.activities.length }}개</span>
             </div>
           </div>
-          <p v-if="scopeMode === 'specific' && selectedAreaIds.length > 0" class="area-summary">
+          <p v-if="scopeMode === 'specific' && selectedAreaIds.length > 0" class="text-sm text-ink-5 mt-3">
             {{ selectedAreaIds.length }}개 영역 선택됨
           </p>
         </div>
 
         <!-- 검색 에러 -->
-        <div v-if="searchError" class="error-box" style="margin-bottom: 12px;">{{ searchError }}</div>
+        <div v-if="searchError" class="msg-error mb-3">{{ searchError }}</div>
 
         <!-- 검색 시작 버튼 -->
         <button
-            class="btn-search"
+            class="inline-flex items-center gap-2 py-3 px-7 bg-blue border-none rounded-lg text-white text-base font-semibold cursor-pointer transition-colors enabled:hover:bg-blue-2 disabled:opacity-45 disabled:cursor-not-allowed"
             :disabled="searching || (scopeMode === 'specific' && selectedAreaIds.length === 0)"
             @click="startSearch"
         >
-          <Loader2 v-if="searching" :size="16" class="spin"/>
+          <Loader2 v-if="searching" :size="16" class="animate-spin"/>
           <ScanSearch v-else :size="16"/>
           {{ searching ? '검색 중...' : '검색 시작' }}
         </button>
       </div>
 
       <!-- ─── Step 4: 결과 보고 ──────────────────────────────── -->
-      <div v-if="step === 4" class="step-content">
+      <div v-if="step === 4">
 
-        <!-- 점검 결과 테이블 -->
-        <div class="step-header result-header">
+        <!-- 점검 결과 헤더 -->
+        <div class="flex items-start justify-between gap-5 mb-6">
           <div>
-            <h3 class="step-title">Step 4. 점검 결과</h3>
-            <p v-if="inspectResults.length > 0" class="step-desc">
+            <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 4. 점검 결과</h3>
+            <p v-if="inspectResults.length > 0" class="text-base text-ink-5 m-0">
               총 <strong>{{ inspectResults.length }}건</strong>의 기록에서 유의어가 탐지되었습니다.
             </p>
-            <p v-else class="step-desc">
+            <p v-else class="text-base text-ink-5 m-0">
               선택한 유의어 그룹에 해당하는 기록이 없습니다.
             </p>
           </div>
-          <button v-if="inspectResults.length > 0" class="btn-export" :disabled="exporting" @click="exportToExcel">
-            <Loader2 v-if="exporting" :size="15" class="spin"/>
+          <button v-if="inspectResults.length > 0"
+                  class="inline-flex items-center gap-[7px] py-[9px] px-[18px] bg-green/25 border border-green/40 rounded-lg text-green text-sm font-semibold cursor-pointer whitespace-nowrap shrink-0 transition-colors enabled:hover:bg-green/35 disabled:opacity-50 disabled:cursor-not-allowed"
+                  :disabled="exporting"
+                  @click="exportToExcel"
+          >
+            <Loader2 v-if="exporting" :size="15" class="animate-spin"/>
             <FileDown v-else :size="15"/>
             {{ exporting ? '저장 중...' : 'Excel 내보내기' }}
           </button>
         </div>
 
-        <div v-if="inspectResults.length === 0" class="empty-state">
-          <ScanSearch :size="40" class="empty-icon"/>
-          <p class="empty-title">탐지된 유의어가 없습니다</p>
-          <p class="empty-desc">유의어가 발견되지 않았습니다.</p>
+        <div v-if="inspectResults.length === 0" class="flex flex-col items-center justify-center py-16 gap-3">
+          <ScanSearch :size="40" class="text-line-2"/>
+          <p class="text-lg font-semibold text-ink-5 m-0">탐지된 유의어가 없습니다</p>
+          <p class="text-base text-line-2 m-0">유의어가 발견되지 않았습니다.</p>
         </div>
 
-        <div v-else class="result-table-wrap">
-          <table class="result-table">
-            <thead>
+        <div v-else class="overflow-x-auto border border-line rounded-[10px]">
+          <table class="w-full border-collapse text-sm [&_tr:hover_td]:bg-blue/[0.04] [&_tr:last-child_td]:border-b-0">
+            <thead class="bg-surface">
             <tr>
-              <th>학년</th>
-              <th>반</th>
-              <th>번호</th>
-              <th>이름</th>
-              <th>영역</th>
-              <th>활동</th>
-              <th>원본 내용</th>
-              <th>발견된 유의어</th>
+              <th class="py-2.5 px-3.5 text-left font-semibold text-ink-5 border-b border-line whitespace-nowrap">학년</th>
+              <th class="py-2.5 px-3.5 text-left font-semibold text-ink-5 border-b border-line whitespace-nowrap">반</th>
+              <th class="py-2.5 px-3.5 text-left font-semibold text-ink-5 border-b border-line whitespace-nowrap">번호</th>
+              <th class="py-2.5 px-3.5 text-left font-semibold text-ink-5 border-b border-line whitespace-nowrap">이름</th>
+              <th class="py-2.5 px-3.5 text-left font-semibold text-ink-5 border-b border-line whitespace-nowrap">영역</th>
+              <th class="py-2.5 px-3.5 text-left font-semibold text-ink-5 border-b border-line whitespace-nowrap">활동</th>
+              <th class="py-2.5 px-3.5 text-left font-semibold text-ink-5 border-b border-line whitespace-nowrap">원본 내용</th>
+              <th class="py-2.5 px-3.5 text-left font-semibold text-ink-5 border-b border-line whitespace-nowrap">발견된 유의어</th>
             </tr>
             </thead>
             <tbody>
             <tr v-for="{ record, detectedWords } in inspectResults" :key="record.id">
-              <td class="cell-student">{{ record.grade || '' }}</td>
-              <td class="cell-student">{{ record.class_num || '' }}</td>
-              <td class="cell-student">{{ record.number || '—' }}</td>
-              <td class="cell-student">{{ record.student_name || '—' }}</td>
-              <td class="cell-area">{{ record.area_name || '—' }}</td>
-              <td class="cell-activity">{{ record.activity_name }}</td>
-              <td class="cell-content">
+              <td class="py-2.5 px-3.5 align-top border-b border-raised text-ink-2 whitespace-nowrap text-xs text-ink-4">{{ record.grade || '' }}</td>
+              <td class="py-2.5 px-3.5 align-top border-b border-raised text-ink-2 whitespace-nowrap text-xs text-ink-4">{{ record.class_num || '' }}</td>
+              <td class="py-2.5 px-3.5 align-top border-b border-raised text-ink-2 whitespace-nowrap text-xs text-ink-4">{{ record.number || '—' }}</td>
+              <td class="py-2.5 px-3.5 align-top border-b border-raised text-ink-2 whitespace-nowrap text-xs text-ink-4">{{ record.student_name || '—' }}</td>
+              <td class="py-2.5 px-3.5 align-top border-b border-raised whitespace-nowrap text-ink-5 text-xs">{{ record.area_name || '—' }}</td>
+              <td class="py-2.5 px-3.5 align-top border-b border-raised text-ink-2 whitespace-nowrap font-medium">{{ record.activity_name }}</td>
+              <td class="cell-content py-2.5 px-3.5 align-top border-b border-raised text-ink-2 leading-relaxed break-all max-w-[400px]">
                 <DiffView
                     :before="buildBeforeText(record.content, detectedWords)"
                     :after="record.content"
                 />
               </td>
-              <td class="cell-words">
-                    <span
-                        v-for="word in detectedWords"
-                        :key="word"
-                        class="word-badge"
-                    >{{ word }}</span>
+              <td class="py-2.5 px-3.5 align-top border-b border-raised text-ink-2 whitespace-nowrap">
+                <span
+                    v-for="word in detectedWords"
+                    :key="word"
+                    class="inline-block my-[2px] mr-[3px] py-[2px] px-2 bg-violet/[0.12] border border-violet/25 rounded-xl text-xs text-violet"
+                >{{ word }}</span>
               </td>
             </tr>
             </tbody>
@@ -633,19 +658,25 @@ onMounted(() => {
       </div>
 
       <!-- 내보내기 완료 화면 -->
-      <div v-if="step === 5 && exportResult" class="result-box">
-        <div class="result-check">✓</div>
-        <p class="result-title">내보내기 완료</p>
-        <div class="result-stats">
-          <div class="stat-item">
-            <span class="stat-val">{{ exportResult.rowCount }}</span>
-            <span class="stat-label">행 저장됨</span>
+      <div v-if="step === 5 && exportResult" class="flex flex-col items-center gap-4 py-16">
+        <div class="text-[48px] text-green">✓</div>
+        <p class="text-[22px] font-bold text-ink m-0">내보내기 완료</p>
+        <div class="flex gap-8">
+          <div class="flex flex-col items-center gap-1">
+            <span class="text-[36px] font-bold text-blue-2">{{ exportResult.rowCount }}</span>
+            <span class="text-sm text-ink-5">행 저장됨</span>
           </div>
         </div>
-        <p class="result-filename">{{ exportResult.fileName }}</p>
-        <div class="result-actions">
-          <button class="btn-reveal" @click="revealItemInDir(exportResult.filePath)">파일 확인</button>
-          <button class="btn-reset" @click="resetWizard">처음으로 돌아가기</button>
+        <p class="text-sm text-ink-5 m-0">{{ exportResult.fileName }}</p>
+        <div class="flex gap-2.5 mt-2">
+          <button
+              class="py-[9px] px-6 bg-blue/[0.12] border border-blue/35 rounded-lg text-blue-2 text-base cursor-pointer transition-colors hover:bg-blue/[0.22] hover:text-ink-2"
+              @click="revealItemInDir(exportResult.filePath)"
+          >파일 확인</button>
+          <button
+              class="py-[9px] px-6 bg-transparent border border-line rounded-lg text-ink-5 text-base cursor-pointer transition-colors hover:bg-line hover:text-ink-3"
+              @click="resetWizard"
+          >처음으로 돌아가기</button>
         </div>
       </div>
 
@@ -655,689 +686,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* ── 레이아웃 ─────────────────────────────────────────────── */
-.section {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 36px 40px 24px;
-  border-bottom: 1px solid #1a2035;
-  flex-shrink: 0;
-}
-
-.section-header {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.toolbar-icon {
-  color: #7c8db5;
-}
-
-.section-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0 0 6px;
-}
-
-.section-desc {
-  font-size: 16px;
-  color: #7ba3d4;
-  margin: 0;
-}
-
-.step-content {
-}
-
-.step-header {
-  margin-bottom: 24px;
-}
-
-.step-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0 0 6px;
-}
-
-.step-desc {
-  font-size: 15px;
-  color: #7c8db5;
-  margin: 0 0 24px;
-}
-
-/* ── 상태 박스 ───────────────────────────────────────────── */
-.state-box {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 32px 0;
-  color: #7c8db5;
-  font-size: 14px;
-}
-
-.state-text {
-  font-size: 14px;
-}
-
-.error-box {
-  padding: 16px;
-  background: rgba(220, 53, 69, 0.1);
-  border: 1px solid rgba(220, 53, 69, 0.3);
-  border-radius: 8px;
-  color: #f87171;
-  font-size: 13px;
-}
-
-/* ── 그룹 카드 (Step 1) ──────────────────────────────────── */
-.group-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.group-card {
-  background: #0d1526;
-  border: 1px solid #1a2035;
-  border-radius: 10px;
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.group-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.group-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: #e2e8f0;
-  flex: 1;
-}
-
-.group-count {
-  font-size: 12px;
-  color: #7c8db5;
-  background: #1a2035;
-  padding: 2px 8px;
-  border-radius: 12px;
-}
-
-.btn-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  background: transparent;
-  transition: background 0.15s;
-}
-
-.btn-danger {
-  color: #f87171;
-}
-
-.btn-danger:hover {
-  background: rgba(248, 113, 113, 0.15);
-}
-
-/* 단어 chips */
-.word-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  min-height: 28px;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: #1a2035;
-  border: 1px solid #2a3355;
-  border-radius: 20px;
-  padding: 3px 10px 3px 10px;
-  font-size: 13px;
-  color: #cbd5e1;
-}
-
-.chip-del {
-  display: flex;
-  align-items: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #7c8db5;
-  padding: 0;
-  margin-left: 2px;
-  transition: color 0.15s;
-}
-
-.chip-del:hover {
-  color: #f87171;
-}
-
-.chip-empty {
-  font-size: 12px;
-  color: #4a5568;
-  font-style: italic;
-}
-
-/* 단어 추가 행 */
-.word-add-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.input-sm {
-  flex: 1;
-  background: #1a2035;
-  border: 1px solid #2a3355;
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 13px;
-  color: #e2e8f0;
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.input-sm:focus {
-  border-color: #3b5bdb;
-}
-
-.btn-sm {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.btn-primary {
-  background: #3b5bdb;
-  color: #fff;
-}
-
-.btn-primary:hover {
-  background: #4c6ef5;
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* CSV 섹션 */
-.csv-section {
-  border-top: 1px solid #1a2035;
-  padding-top: 10px;
-}
-
-.csv-toggle {
-  font-size: 12px;
-  color: #7c8db5;
-  cursor: pointer;
-  user-select: none;
-  list-style: none;
-}
-
-.csv-toggle::-webkit-details-marker {
-  display: none;
-}
-
-.csv-body {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.csv-textarea {
-  width: 100%;
-  min-height: 80px;
-  background: #1a2035;
-  border: 1px solid #2a3355;
-  border-radius: 6px;
-  padding: 8px 10px;
-  font-size: 13px;
-  color: #e2e8f0;
-  resize: vertical;
-  outline: none;
-  box-sizing: border-box;
-  transition: border-color 0.15s;
-}
-
-.csv-textarea:focus {
-  border-color: #3b5bdb;
-}
-
-/* 그룹 추가 */
-.add-group-area {
-  margin-top: 4px;
-}
-
-.add-group-form {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.input-md {
-  flex: 1;
-  background: #1a2035;
-  border: 1px solid #2a3355;
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 14px;
-  color: #e2e8f0;
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.input-md:focus {
-  border-color: #3b5bdb;
-}
-
-.btn-ghost {
-  padding: 8px 14px;
-  border: 1px solid #2a3355;
-  border-radius: 6px;
-  background: transparent;
-  color: #7c8db5;
-  font-size: 14px;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-}
-
-.btn-ghost:hover {
-  border-color: #4a5568;
-  color: #cbd5e1;
-}
-
-.field-error {
-  font-size: 12px;
-  color: #f87171;
-  margin: 6px 0 0;
-}
-
-.btn-add-group {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: transparent;
-  border: 1px dashed #2a3355;
-  border-radius: 8px;
-  color: #7c8db5;
-  font-size: 14px;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-}
-
-.btn-add-group:hover {
-  border-color: #3b5bdb;
-  color: #a5b4fc;
-}
-
-/* ── Step 2: 그룹 선택 ───────────────────────────────────── */
-.group-select-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.group-select-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  background: #0d1526;
-  border: 1px solid #1a2035;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-}
-
-.group-select-card:hover {
-  border-color: #2a3355;
-  background: #111b30;
-}
-
-.group-select-card--on {
-  border-color: #3b5bdb;
-  background: rgba(59, 91, 219, 0.08);
-}
-
-.gsc-check {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  border: 1.5px solid #2a3355;
-  background: transparent;
-  color: #52b788;
-  flex-shrink: 0;
-  transition: border-color 0.15s, background 0.15s;
-}
-
-.group-select-card--on .gsc-check {
-  border-color: #3b5bdb;
-  background: #3b5bdb;
-  color: #fff;
-}
-
-.gsc-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.gsc-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: #e2e8f0;
-}
-
-.gsc-count {
-  font-size: 12px;
-  color: #7c8db5;
-}
-
-.gsc-arrow {
-  color: #4a5568;
-}
-
-.search-summary {
-  font-size: 13px;
-  color: #7c8db5;
-  margin-bottom: 20px;
-}
-
-.search-summary strong {
-  color: #a5b4fc;
-}
-
-.btn-search {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 28px;
-  background: #3b5bdb;
-  border: none;
-  border-radius: 8px;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.btn-search:hover:not(:disabled) {
-  background: #4c6ef5;
-}
-
-.btn-search:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-/* ── Step 3: 범위 선택 ───────────────────────────────────── */
-.scope-mode-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.scope-mode-card {
-  position: relative;
-  border: 2px solid #1a2035;
-  border-radius: 10px;
-  padding: 18px 20px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  transition: border-color 0.2s, background-color 0.2s;
-}
-
-.scope-mode-card:hover {
-  border-color: rgba(59, 91, 219, 0.4);
-  background-color: rgba(59, 91, 219, 0.03);
-}
-
-.scope-mode-card--on {
-  border-color: rgba(59, 91, 219, 0.7);
-  background-color: rgba(59, 91, 219, 0.06);
-}
-
-.scope-mode-check {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  color: #7ba8f0;
-}
-
-.scope-mode-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #e2e8f0;
-}
-
-.scope-mode-desc {
-  font-size: 13px;
-  color: var(--clr-text-subtle);
-}
-
-.area-section {
-  margin-bottom: 20px;
-  transition: opacity 0.2s;
-}
-
-.area-section--disabled {
-  opacity: 0.35;
-  pointer-events: none;
-}
-
-.area-section-label {
-  font-size: 13px;
-  color: #7c8db5;
-  margin: 0 0 12px;
-}
-
-.area-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-}
-
-.area-card {
-  position: relative;
-  border: 2px solid #1a2035;
-  border-radius: 10px;
-  padding: 16px 20px;
-  cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.area-card:hover {
-  border-color: rgba(59, 91, 219, 0.4);
-  background-color: rgba(59, 91, 219, 0.03);
-}
-
-.area-card--selected {
-  border-color: rgba(59, 91, 219, 0.7);
-  background-color: rgba(59, 91, 219, 0.06);
-}
-
-.area-card-check {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  color: #7ba8f0;
-}
-
-.area-card-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: #e2e8f0;
-}
-
-.area-card-meta {
-  font-size: 13px;
-  color: var(--clr-text-subtle);
-}
-
-.area-summary {
-  font-size: 13px;
-  color: #7c8db5;
-  margin-top: 12px;
-}
-
-.empty-hint {
-  font-size: 13px;
-  color: #4a5568;
-}
-
-/* ── Step 4: 결과 ────────────────────────────────────────── */
-.result-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.btn-export {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 18px;
-  background: #2d6a4f;
-  border: none;
-  border-radius: 8px;
-  color: #d8f3dc;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: background 0.15s;
-}
-
-.btn-export:hover:not(:disabled) {
-  background: #40916c;
-}
-
-.btn-export:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.result-table-wrap {
-  overflow-x: auto;
-  border: 1px solid #1a2035;
-  border-radius: 10px;
-}
-
-.result-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.result-table thead {
-  background: #0d1526;
-}
-
-.result-table th {
-  padding: 10px 14px;
-  text-align: left;
-  font-weight: 600;
-  color: #7c8db5;
-  border-bottom: 1px solid #1a2035;
-  white-space: nowrap;
-}
-
-.result-table td {
-  padding: 10px 14px;
-  vertical-align: top;
-  border-bottom: 1px solid #111b30;
-  color: #cbd5e1;
-}
-
-.result-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.result-table tbody tr:hover td {
-  background: rgba(59, 91, 219, 0.04);
-}
-
-.col-content {
-  min-width: 280px;
-}
-
-.cell-area {
-  white-space: nowrap;
-  color: #7c8db5;
-  font-size: 12px;
-}
-
-.cell-activity {
-  white-space: nowrap;
-  font-weight: 500;
-}
-
-.cell-student {
-  white-space: nowrap;
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-.student-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: #cbd5e1;
-}
-
-.cell-content {
-  line-height: 1.6;
-  word-break: break-all;
-  max-width: 400px;
-}
-
+/* DiffView 내부 유의어 하이라이트 — :deep() 필수 */
 .cell-content :deep(.diff-added) {
   background-color: rgba(251, 191, 36, 0.3);
   color: #f59e0b;
@@ -1345,155 +694,5 @@ onMounted(() => {
 
 .cell-content :deep(.diff-removed) {
   display: none;
-}
-
-.cell-words {
-  white-space: nowrap;
-}
-
-.word-badge {
-  display: inline-block;
-  margin: 2px 3px 2px 0;
-  padding: 2px 8px;
-  background: rgba(165, 180, 252, 0.12);
-  border: 1px solid rgba(165, 180, 252, 0.25);
-  border-radius: 12px;
-  font-size: 12px;
-  color: #a5b4fc;
-}
-
-/* ── Step 3: 빈 상태 ─────────────────────────────────────── */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 64px 0;
-  gap: 12px;
-}
-
-.empty-icon {
-  color: #2a3355;
-}
-
-.empty-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #7c8db5;
-  margin: 0;
-}
-
-.empty-desc {
-  font-size: 16px;
-  color: #4a5568;
-  margin: 0;
-}
-
-/* ── 내보내기 완료 화면 ──────────────────────────────────── */
-.result-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 64px 0;
-}
-
-.result-check {
-  font-size: 48px;
-  color: #34d399;
-}
-
-.result-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0;
-}
-
-.result-stats {
-  display: flex;
-  gap: 32px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.stat-val {
-  font-size: 36px;
-  font-weight: 700;
-  color: #7ba8f0;
-}
-
-.stat-label {
-  font-size: 13px;
-  color: #7c8db5;
-}
-
-.result-filename {
-  font-size: 13px;
-  color: #7c8db5;
-  margin: 0;
-}
-
-.result-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.btn-reveal {
-  padding: 9px 24px;
-  background: rgba(59, 91, 219, 0.12);
-  border: 1px solid rgba(59, 91, 219, 0.35);
-  border-radius: 8px;
-  color: #7ba8f0;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.btn-reveal:hover {
-  background: rgba(59, 91, 219, 0.22);
-  color: #93c5fd;
-}
-
-.btn-reset {
-  padding: 9px 24px;
-  background: none;
-  border: 1px solid #1a2035;
-  border-radius: 8px;
-  color: #7c8db5;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.btn-reset:hover {
-  background: #1a2035;
-  color: #93afd4;
-}
-
-/* ── 유틸 ────────────────────────────────────────────────── */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-}
-
-.spin {
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 </style>

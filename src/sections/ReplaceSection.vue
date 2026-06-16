@@ -229,13 +229,13 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="section">
+  <div class="flex flex-col h-full overflow-hidden box-border">
 
     <!-- 헤더 -->
-    <div class="toolbar">
-      <div class="section-header">
-        <h2 class="section-title">텍스트 치환(Replace)</h2>
-        <p class="section-desc">학교생활기록부 문장의 특수문자, 텍스트 등을 일괄 교체합니다.</p>
+    <div class="flex items-center justify-between px-10 pt-9 pb-6 border-b border-line shrink-0">
+      <div class="flex flex-col">
+        <h2 class="text-[22px] font-bold text-ink m-0 mb-1.5">텍스트 치환(Replace)</h2>
+        <p class="text-base text-ink-3 m-0">학교생활기록부 문장의 특수문자, 텍스트 등을 일괄 교체합니다.</p>
       </div>
     </div>
 
@@ -248,138 +248,173 @@ onMounted(async () => {
         @prev="goPrev"
         @next="goNext"
     >
-    <!-- 본문 -->
 
       <!-- ─── Step 1: 규칙 관리 ─────────────────────────────── -->
-      <div v-if="step === 1" class="step-content">
-        <div class="step-header">
-          <h3 class="step-title">Step 1. 텍스트 치환 규칙</h3>
-          <p class="step-desc">찾아 바꿀 텍스트 규칙을 관리합니다. <u>우선순위 숫자가 작은 규칙부터 먼저 실행</u>됩니다.</p>
-        </div>
+      <div v-if="step === 1">
+        <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 1. 텍스트 치환 규칙</h3>
+        <p class="text-base text-ink-5 m-0 mb-6">찾아 바꿀 텍스트 규칙을 관리합니다. <u>우선순위 숫자가 작은 규칙부터 먼저 실행</u>됩니다.</p>
 
-        <div class="panel">
-          <div class="panel-head">
-            <span class="panel-title">치환 규칙 목록</span>
-            <button class="btn-sm btn-add" @click="showAddForm = !showAddForm">
+        <div class="bg-surface border border-line rounded-[10px] p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-lg font-semibold text-ink-4 uppercase tracking-[0.05em]">치환 규칙 목록</span>
+            <button
+                class="inline-flex items-center gap-[5px] py-1.5 px-3 rounded-[6px] border-none text-sm cursor-pointer transition-colors bg-blue/20 text-blue-2 hover:bg-blue/[0.35]"
+                @click="showAddForm = !showAddForm"
+            >
               <Plus :size="14"/>
               규칙 추가
             </button>
           </div>
 
           <!-- 추가 폼 -->
-          <div v-if="showAddForm" class="add-form">
+          <div v-if="showAddForm" class="flex items-center gap-2 flex-wrap p-3 bg-raised rounded-lg mb-2.5">
             <input
                 v-model="newRule.oldText"
-                class="input-sm"
+                class="bg-raised border border-line-2 rounded-[6px] text-ink-2 text-base py-1.5 px-2.5 outline-none flex-1 min-w-[80px] focus:border-blue"
                 placeholder="찾을 텍스트"
                 @keydown.enter="submitAdd"
             />
-            <span class="arrow-label">→</span>
+            <span class="text-ink-5 shrink-0 text-base">→</span>
             <input
                 v-model="newRule.newText"
-                class="input-sm"
+                class="bg-raised border border-line-2 rounded-[6px] text-ink-2 text-base py-1.5 px-2.5 outline-none flex-1 min-w-[80px] focus:border-blue"
                 placeholder="바꿀 텍스트"
                 @keydown.enter="submitAdd"
             />
             <input
                 v-model.number="newRule.priority"
                 type="number"
-                class="input-sm input-priority"
+                class="bg-raised border border-line-2 rounded-[6px] text-ink-2 text-base py-1.5 px-2.5 outline-none flex-[0_0_68px] min-w-[68px] focus:border-blue"
                 placeholder="우선순위"
                 @keydown.enter="submitAdd"
             />
-            <label class="regex-toggle-label">
+            <label class="flex items-center gap-1 text-sm text-ink-5 whitespace-nowrap cursor-pointer shrink-0">
               <input type="checkbox" v-model="newRule.isRegex"/>
               정규식
             </label>
-            <button class="btn-icon btn-confirm" @click="submitAdd" title="추가">
+            <button
+                class="inline-flex items-center justify-center w-7 h-7 rounded-[5px] border-none bg-transparent text-green cursor-pointer transition-[background-color,color] shrink-0 hover:bg-green/10"
+                @click="submitAdd" title="추가"
+            >
               <Check :size="14"/>
             </button>
-            <button class="btn-icon btn-cancel" @click="showAddForm = false; addError = ''" title="취소">
+            <button
+                class="inline-flex items-center justify-center w-7 h-7 rounded-[5px] border-none bg-transparent text-red cursor-pointer transition-[background-color,color] shrink-0 hover:bg-red/10"
+                @click="showAddForm = false; addError = ''" title="취소"
+            >
               <X :size="14"/>
             </button>
-            <p v-if="addError" class="error-msg">{{ addError }}</p>
+            <p v-if="addError" class="text-red text-sm m-0 mt-1 w-full">{{ addError }}</p>
           </div>
 
-          <p v-if="ruleStore.error" class="error-msg mt-2">{{ ruleStore.error }}</p>
-          <p v-if="operationError" class="error-msg mt-2">{{ operationError }}</p>
+          <p v-if="ruleStore.error" class="text-red text-sm m-0 mt-2">{{ ruleStore.error }}</p>
+          <p v-if="operationError" class="text-red text-sm m-0 mt-2">{{ operationError }}</p>
 
           <!-- 규칙 테이블 -->
-          <div v-if="ruleStore.rules.length === 0 && !ruleStore.loading" class="empty-state">
+          <div v-if="ruleStore.rules.length === 0 && !ruleStore.loading" class="text-line-2 text-sm py-3.5 text-center">
             규칙이 없습니다. 추가 버튼으로 새 규칙을 만드세요.
           </div>
 
-          <div v-else class="rule-table">
-            <div class="rule-header-row">
-              <span class="col-priority">우선순위</span>
-              <span class="col-old">찾을 텍스트</span>
-              <span class="col-arrow">→</span>
-              <span class="col-new">바꿀 텍스트</span>
-              <span class="col-toggle">활성화</span>
-              <span class="col-actions">편집</span>
+          <div v-else class="flex flex-col gap-0.5">
+            <!-- 헤더 행 -->
+            <div class="grid gap-2 items-center py-1 px-2.5 text-sm text-ink-5 uppercase tracking-[0.05em]"
+                 style="grid-template-columns: 72px 1fr 36px 1fr 64px 76px">
+              <span class="flex justify-center text-center">우선순위</span>
+              <span>찾을 텍스트</span>
+              <span class="flex justify-center text-center">→</span>
+              <span>바꿀 텍스트</span>
+              <span class="flex justify-center text-center">활성화</span>
+              <span class="flex justify-center text-center">편집</span>
             </div>
 
             <div
                 v-for="rule in ruleStore.rules"
                 :key="rule.id"
-                :class="['rule-row', !rule.enabled && 'rule-row--disabled']"
+                class="grid gap-2 items-center py-2 px-2.5 rounded-[6px] transition-colors hover:bg-raised"
+                :class="{ 'opacity-45': !rule.enabled }"
+                style="grid-template-columns: 72px 1fr 36px 1fr 64px 76px"
             >
               <!-- 인라인 편집 모드 -->
               <template v-if="editingId === rule.id">
-                <div class="edit-row">
-                  <input v-model.number="editForm.priority" type="number" class="input-sm input-priority" title="우선순위"/>
-                  <input v-model="editForm.oldText" class="input-sm" placeholder="찾을 텍스트"/>
-                  <span class="arrow-label">→</span>
-                  <input v-model="editForm.newText" class="input-sm" placeholder="바꿀 텍스트"/>
-                  <label class="regex-toggle-label">
+                <div class="col-span-full flex items-center gap-2 flex-wrap">
+                  <input v-model.number="editForm.priority" type="number"
+                         class="bg-raised border border-line-2 rounded-[6px] text-ink-2 text-base py-1.5 px-2.5 outline-none flex-[0_0_68px] min-w-[68px] focus:border-blue"
+                         title="우선순위"/>
+                  <input v-model="editForm.oldText"
+                         class="bg-raised border border-line-2 rounded-[6px] text-ink-2 text-base py-1.5 px-2.5 outline-none flex-1 min-w-[80px] focus:border-blue"
+                         placeholder="찾을 텍스트"/>
+                  <span class="text-ink-5 shrink-0 text-base">→</span>
+                  <input v-model="editForm.newText"
+                         class="bg-raised border border-line-2 rounded-[6px] text-ink-2 text-base py-1.5 px-2.5 outline-none flex-1 min-w-[80px] focus:border-blue"
+                         placeholder="바꿀 텍스트"/>
+                  <label class="flex items-center gap-1 text-sm text-ink-5 whitespace-nowrap cursor-pointer shrink-0">
                     <input type="checkbox" v-model="editForm.isRegex"/>
                     정규식
                   </label>
-                  <button class="btn-icon btn-confirm" @click="commitEdit(rule)" title="저장">
+                  <button
+                      class="inline-flex items-center justify-center w-7 h-7 rounded-[5px] border-none bg-transparent text-green cursor-pointer shrink-0 hover:bg-green/10"
+                      @click="commitEdit(rule)" title="저장"
+                  >
                     <Check :size="15"/>
                   </button>
-                  <button class="btn-icon btn-cancel" @click="cancelEdit" title="취소">
+                  <button
+                      class="inline-flex items-center justify-center w-7 h-7 rounded-[5px] border-none bg-transparent text-red cursor-pointer shrink-0 hover:bg-red/10"
+                      @click="cancelEdit" title="취소"
+                  >
                     <X :size="15"/>
                   </button>
                 </div>
-                <p v-if="editError" class="error-msg">{{ editError }}</p>
+                <p v-if="editError" class="text-red text-sm m-0 mt-1 w-full col-span-full">{{ editError }}</p>
               </template>
 
               <!-- 표시 모드 -->
               <template v-else>
-                <div class="col-priority priority-ctrl">
-                  <button class="btn-icon-tiny" :disabled="isAdjusting" @click="adjustPriority(rule, -1)" title="우선순위 높이기">
+                <!-- 우선순위 컨트롤 -->
+                <div class="flex flex-row items-center justify-center gap-1">
+                  <button
+                      class="flex items-center justify-center w-5 h-5 rounded-[3px] border-none bg-transparent text-ink-5 cursor-pointer hover:bg-raised hover:text-ink-4"
+                      :disabled="isAdjusting" @click="adjustPriority(rule, -1)" title="우선순위 높이기"
+                  >
                     <ChevronLeft :size="14"/>
                   </button>
-                  <span class="priority-val">{{ rule.priority }}</span>
-                  <button class="btn-icon-tiny" :disabled="isAdjusting" @click="adjustPriority(rule, 1)" title="우선순위 낮추기">
+                  <span class="text-sm text-ink-5 min-w-[26px] text-center tabular-nums">{{ rule.priority }}</span>
+                  <button
+                      class="flex items-center justify-center w-5 h-5 rounded-[3px] border-none bg-transparent text-ink-5 cursor-pointer hover:bg-raised hover:text-ink-4"
+                      :disabled="isAdjusting" @click="adjustPriority(rule, 1)" title="우선순위 낮추기"
+                  >
                     <ChevronRight :size="14"/>
                   </button>
                 </div>
 
-                <div class="col-old">
-                  <span v-if="rule.is_regex" class="badge-regex">정규식</span>
-                  <span class="old-text">{{ rule.old_text }}</span>
+                <!-- 찾을 텍스트 -->
+                <div class="flex items-center gap-1.5 overflow-hidden justify-end">
+                  <span v-if="rule.is_regex"
+                        class="inline-block text-xs py-[1px] px-[5px] rounded-[4px] bg-blue/20 text-blue-2 font-semibold shrink-0 mr-1">정규식</span>
+                  <span class="text-red font-mono text-base whitespace-pre overflow-hidden text-ellipsis">{{ rule.old_text }}</span>
                   <span
                       v-if="rule.conflicts?.length > 0"
-                      class="conflict-badge"
+                      class="text-amber shrink-0 cursor-help flex items-center"
                       :title="`충돌 규칙 ID: ${rule.conflicts.join(', ')}`"
                   >
                     <TriangleAlert :size="14"/>
                   </span>
                 </div>
 
-                <div class="col-arrow">
-                  <span class="arrow-label">→</span>
+                <!-- 화살표 -->
+                <div class="flex items-center justify-center">
+                  <span class="text-ink-5 shrink-0 text-base">→</span>
                 </div>
 
-                <div class="col-new">
-                  <span class="new-text">{{ rule.new_text || '(빈 문자열)' }}</span>
+                <!-- 바꿀 텍스트 -->
+                <div class="flex items-center gap-1.5 overflow-hidden">
+                  <span class="text-green font-mono text-base whitespace-pre overflow-hidden text-ellipsis">{{ rule.new_text || '(빈 문자열)' }}</span>
                 </div>
 
-                <div class="col-toggle">
+                <!-- 활성화 토글 -->
+                <div class="flex items-center justify-center">
                   <button
-                      :class="['toggle-btn', rule.enabled ? 'toggle-btn--on' : 'toggle-btn--off']"
+                      class="text-xs font-bold py-[3px] px-2 rounded-[5px] border-none cursor-pointer transition-colors"
+                      :class="rule.enabled ? 'bg-green/[0.15] text-green' : 'bg-ink-5/[0.15] text-ink-5'"
                       @click="toggleEnabled(rule)"
                       :title="rule.enabled ? '비활성화' : '활성화'"
                   >
@@ -387,12 +422,19 @@ onMounted(async () => {
                   </button>
                 </div>
 
-                <div class="col-actions action-btns">
-                  <button class="btn-icon" @click="startEdit(rule)" title="편집">
+                <!-- 액션 -->
+                <div class="flex items-center justify-end gap-1">
+                  <button
+                      class="inline-flex items-center justify-center w-7 h-7 rounded-[5px] border-none bg-transparent text-ink-5 cursor-pointer transition-[background-color,color] shrink-0 hover:bg-raised hover:text-ink-2"
+                      @click="startEdit(rule)" title="편집"
+                  >
                     <Pencil :size="15"/>
                   </button>
-                  <button class="btn-icon" @click="deleteRule(rule.id)" title="삭제">
-                    <Trash2 :size="15" color="rgba(248, 113, 113, 0.7)"/>
+                  <button
+                      class="inline-flex items-center justify-center w-7 h-7 rounded-[5px] border-none bg-transparent cursor-pointer transition-[background-color,color] shrink-0 hover:bg-red/10"
+                      @click="deleteRule(rule.id)" title="삭제"
+                  >
+                    <Trash2 :size="15" class="text-red/70"/>
                   </button>
                 </div>
               </template>
@@ -402,68 +444,67 @@ onMounted(async () => {
       </div>
 
       <!-- ─── Step 2: 적용 범위 선택 ───────────────────────────── -->
-      <div v-if="step === 2" class="step-content">
-        <div class="step-header">
-          <h3 class="step-title">Step 2. 적용 범위 선택</h3>
-          <p class="step-desc">텍스트를 치환할 생기부 범위를 선택하세요.</p>
-        </div>
+      <div v-if="step === 2">
+        <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 2. 적용 범위 선택</h3>
+        <p class="text-base text-ink-5 m-0 mb-6">텍스트를 치환할 생기부 범위를 선택하세요.</p>
 
         <!-- 모드 카드 2개: 전체 영역 / 특정 영역 -->
-        <div class="scope-mode-cards">
+        <div class="grid grid-cols-2 gap-3 mb-6">
           <div
-              class="scope-mode-card"
-              :class="{ 'scope-mode-card--on': scopeMode === 'all' }"
+              class="relative border-2 rounded-[10px] py-[18px] px-5 cursor-pointer flex flex-col gap-1.5 transition-[border-color,background-color] duration-200"
+              :class="scopeMode === 'all' ? 'border-blue/70 bg-blue/[0.06]' : 'border-line hover:border-blue/40 hover:bg-blue/[0.03]'"
               @click="scopeMode = 'all'"
           >
-            <Check v-if="scopeMode === 'all'" :size="14" class="scope-mode-check"/>
-            <span class="scope-mode-title">전체 영역</span>
-            <span class="scope-mode-desc">모든 생기부 기록에 치환을 적용합니다</span>
+            <Check v-if="scopeMode === 'all'" :size="14" class="absolute top-2.5 right-3 text-blue-2"/>
+            <span class="text-base font-semibold text-ink">전체 영역</span>
+            <span class="text-sm text-ink-5">모든 생기부 기록에 치환을 적용합니다</span>
           </div>
           <div
-              class="scope-mode-card"
-              :class="{ 'scope-mode-card--on': scopeMode === 'specific' }"
+              class="relative border-2 rounded-[10px] py-[18px] px-5 cursor-pointer flex flex-col gap-1.5 transition-[border-color,background-color] duration-200"
+              :class="scopeMode === 'specific' ? 'border-blue/70 bg-blue/[0.06]' : 'border-line hover:border-blue/40 hover:bg-blue/[0.03]'"
               @click="scopeMode = 'specific'"
           >
-            <Check v-if="scopeMode === 'specific'" :size="14" class="scope-mode-check"/>
-            <span class="scope-mode-title">특정 영역</span>
-            <span class="scope-mode-desc">치환을 적용할 영역을 직접 선택합니다</span>
+            <Check v-if="scopeMode === 'specific'" :size="14" class="absolute top-2.5 right-3 text-blue-2"/>
+            <span class="text-base font-semibold text-ink">특정 영역</span>
+            <span class="text-sm text-ink-5">치환을 적용할 영역을 직접 선택합니다</span>
           </div>
         </div>
 
-        <!-- 개별 영역 카드 그리드 (scopeMode='specific'일 때 활성) -->
-        <div class="area-section" :class="{ 'area-section--disabled': scopeMode !== 'specific' }">
-          <p class="area-section-label">치환을 적용할 영역 선택</p>
-          <p v-if="areaStore.areas.length === 0" class="empty-hint">등록된 영역이 없습니다.</p>
-          <div v-else class="area-cards">
+        <!-- 개별 영역 카드 그리드 -->
+        <div
+            class="mb-6 transition-opacity"
+            :class="{ 'opacity-35 pointer-events-none': scopeMode !== 'specific' }"
+        >
+          <p class="text-sm text-ink-5 m-0 mb-3">치환을 적용할 영역 선택</p>
+          <p v-if="areaStore.areas.length === 0" class="text-sm text-line-2">등록된 영역이 없습니다.</p>
+          <div v-else class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))">
             <div
                 v-for="area in areaStore.areas"
                 :key="area.id"
-                class="area-card"
-                :class="{ 'area-card--selected': isAreaSelected(area.id) }"
+                class="relative border-2 rounded-[10px] py-4 px-5 cursor-pointer transition-[border-color,background-color] duration-200 flex flex-col gap-1.5"
+                :class="isAreaSelected(area.id) ? 'border-blue/70 bg-blue/[0.06]' : 'border-line hover:border-blue/40 hover:bg-blue/[0.03]'"
                 @click="toggleArea(area.id)"
             >
-              <Check v-if="isAreaSelected(area.id)" :size="14" class="area-card-check"/>
-              <span class="area-card-name">{{ area.name }}</span>
-              <span class="area-card-meta">활동 {{ area.activities.length }}개</span>
+              <Check v-if="isAreaSelected(area.id)" :size="14" class="absolute top-2.5 right-3 text-blue-2"/>
+              <span class="text-base font-semibold text-ink">{{ area.name }}</span>
+              <span class="text-sm text-ink-5">활동 {{ area.activities.length }}개</span>
             </div>
           </div>
-          <p v-if="scopeMode === 'specific' && selectedAreaIds.length > 0" class="area-summary">
+          <p v-if="scopeMode === 'specific' && selectedAreaIds.length > 0" class="text-sm text-ink-5 mt-3">
             {{ selectedAreaIds.length }}개 영역 선택됨
           </p>
         </div>
       </div>
 
       <!-- ─── Step 3: 미리보기 및 적용 ─────────────────────────── -->
-      <div v-if="step === 3" class="step-content">
-        <div class="step-header">
-          <h3 class="step-title">Step 3. 미리보기 및 적용</h3>
-          <p class="step-desc">변경될 항목을 미리 확인한 후 치환을 적용하세요.</p>
-        </div>
+      <div v-if="step === 3">
+        <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 3. 미리보기 및 적용</h3>
+        <p class="text-base text-ink-5 m-0 mb-6">변경될 항목을 미리 확인한 후 치환을 적용하세요.</p>
 
-        <!-- 미리보기 버튼 -->
-        <div class="action-row">
+        <!-- 버튼 행 -->
+        <div class="flex gap-2 mb-4">
           <button
-              class="btn-primary"
+              class="inline-flex items-center gap-[7px] py-[9px] px-5 rounded-lg border-none bg-blue/25 text-blue-2 text-base cursor-pointer transition-colors enabled:hover:bg-blue/40 disabled:opacity-40 disabled:cursor-not-allowed"
               :disabled="isPreviewing"
               @click="runPreview"
           >
@@ -472,7 +513,7 @@ onMounted(async () => {
           </button>
 
           <button
-              class="btn-apply"
+              class="inline-flex items-center gap-[7px] py-[9px] px-[22px] rounded-lg border-none bg-green/[0.18] text-green text-base font-semibold cursor-pointer transition-colors enabled:hover:bg-green/[0.28] disabled:opacity-40 disabled:cursor-not-allowed"
               :disabled="isApplying || previewItems.length === 0"
               @click="runApply"
           >
@@ -482,859 +523,84 @@ onMounted(async () => {
         </div>
 
         <!-- 스냅샷 권장 안내 -->
-        <div class="snapshot-notice">
+        <div class="flex items-center gap-1.5 text-amber text-sm mt-3 mb-3 py-[9px] px-3 bg-amber/[0.06] rounded-[6px] border border-amber/15">
           <TriangleAlert :size="14"/>
           적용 전 스냅샷 생성을 권장합니다. (사이드바 하단 → 스냅샷)
         </div>
 
         <!-- 오류 -->
-        <div v-if="previewError" class="error-box">{{ previewError }}</div>
+        <div v-if="previewError" class="msg-error mb-4">{{ previewError }}</div>
 
         <!-- diff 목록 -->
-        <div v-if="previewItems.length > 0" class="panel">
-          <div class="panel-head">
-            <span class="panel-title">
+        <div v-if="previewItems.length > 0" class="bg-surface border border-line rounded-[10px] p-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-lg font-semibold text-ink-4 uppercase tracking-[0.05em]">
               변경 예정 항목 {{ previewItems.length }}건
-              <span v-if="previewItems.length > PREVIEW_LIMIT && !showAllPreview" class="hint-text">
+              <span v-if="previewItems.length > PREVIEW_LIMIT && !showAllPreview" class="text-ink-5 text-sm font-normal normal-case tracking-normal">
                 ({{ PREVIEW_LIMIT }}건만 표시)
               </span>
             </span>
           </div>
 
-          <div v-for="item in visiblePreviewItems" :key="`${item.activity_id}-${item.student_id}`" class="diff-item">
-            <div class="diff-meta">
-              <span class="diff-label">{{ item.student_name }}</span>
-              <span class="diff-sep">/</span>
-              <span class="diff-label">{{ item.activity_name }}</span>
+          <div v-for="item in visiblePreviewItems" :key="`${item.activity_id}-${item.student_id}`"
+               class="py-3 border-b border-line last:border-b-0">
+            <div class="flex items-center gap-1.5 mb-1.5">
+              <span class="text-sm text-ink-5">{{ item.student_name }}</span>
+              <span class="text-line-2">/</span>
+              <span class="text-sm text-ink-5">{{ item.activity_name }}</span>
             </div>
             <DiffView :before="item.original" :after="item.result"/>
           </div>
 
           <button
               v-if="previewItems.length > PREVIEW_LIMIT && !showAllPreview"
-              class="btn-sm btn-ghost mt-3"
+              class="inline-flex items-center gap-[5px] py-1.5 px-3 rounded-[6px] border border-line bg-transparent text-ink-5 text-sm cursor-pointer transition-colors hover:bg-line hover:text-ink-4 mt-3"
               @click="showAllPreview = true"
           >
             전체 {{ previewItems.length }}건 모두 보기
           </button>
-
         </div>
 
         <!-- 0건 결과 -->
         <div v-else-if="hasRanPreview && previewItems.length === 0 && applyResult === null && !previewError"
-             class="empty-preview empty-preview--no-result">
-          <SearchX :size="36" class="empty-preview__icon"/>
-          <p class="empty-preview__title">변경될 항목이 없습니다</p>
-          <p class="empty-preview__desc">활성화된 규칙과 일치하는 텍스트를 찾지 못했습니다.</p>
+             class="flex flex-col items-center gap-2 py-9 px-[18px] text-center border border-dashed border-green/20 bg-green/[0.03] rounded-lg">
+          <SearchX :size="36" class="text-green/40"/>
+          <p class="text-base font-semibold text-green m-0">변경될 항목이 없습니다</p>
+          <p class="text-sm text-ink-5 m-0">활성화된 규칙과 일치하는 텍스트를 찾지 못했습니다.</p>
         </div>
 
         <!-- 초기 안내 -->
         <div v-else-if="!hasRanPreview && !isPreviewing && applyResult === null && !previewError"
-             class="empty-preview">
+             class="text-line-2 text-sm py-9 px-[18px] text-center border border-dashed border-line rounded-lg">
           미리보기를 실행하면 변경될 항목이 표시됩니다.
         </div>
-
       </div>
 
+      <!-- ─── Step 4: 완료 ──────────────────────────────────────── -->
       <div v-if="step === 4">
-        <!-- 적용 결과 -->
-        <div v-if="applyResult" class="result-box">
-          <div class="result-check">✓</div>
-          <p class="result-title">텍스트 치환 완료</p>
-          <div class="result-stats">
-            <div class="stat-item">
-              <span class="stat-val">{{ applyResult.changed_count }}건 적용 완료</span>
-              <span class="stat-label">(전체 {{ applyResult.total_count }}건 중)</span>
+        <div v-if="applyResult" class="flex flex-col items-center gap-4 py-12">
+          <div class="text-[40px] text-green">✓</div>
+          <p class="text-xl font-bold text-ink m-0">텍스트 치환 완료</p>
+          <div class="flex gap-8">
+            <div class="flex flex-col items-center gap-1">
+              <span class="text-[28px] font-bold text-blue-2">{{ applyResult.changed_count }}건 적용 완료</span>
+              <span class="text-sm text-ink-5">(전체 {{ applyResult.total_count }}건 중)</span>
             </div>
           </div>
-          <div class="result-actions">
-            <button class="btn-reset" @click="resetWizard">새로 치환하기</button>
+          <div class="flex gap-2.5 mt-2">
+            <button
+                class="py-[9px] px-6 bg-transparent border border-line rounded-lg text-ink-5 text-base cursor-pointer transition-colors hover:bg-line hover:text-ink-3"
+                @click="resetWizard"
+            >새로 치환하기</button>
           </div>
         </div>
 
-        <div v-else-if="applyError" class="error-box">
+        <div v-else-if="applyError" class="msg-error">
           {{ applyError }}
         </div>
-
       </div>
 
     </WizardLayout>
 
   </div>
 </template>
-
-<style scoped>
-/* ── 레이아웃 ─────────────────────────────────────────────── */
-.section {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 36px 40px 24px;
-  border-bottom: 1px solid #1a2035;
-  flex-shrink: 0;
-}
-
-.section-header {
-  display: flex;
-  flex-direction: column;
-}
-
-.section-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0 0 6px;
-}
-
-.section-desc {
-  font-size: 16px;
-  color: #7ba3d4;
-  margin: 0;
-}
-
-.step-content {
-}
-
-.step-header {
-  margin-bottom: 24px;
-}
-
-.step-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0 0 6px;
-}
-
-.step-desc {
-  font-size: 15px;
-  color: #7c8db5;
-  margin: 0 0 24px;
-}
-
-/* ── Step 2: 범위 선택 카드 ──────────────────────────────── */
-.scope-mode-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.scope-mode-card {
-  position: relative;
-  border: 2px solid #1a2035;
-  border-radius: 10px;
-  padding: 18px 20px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  transition: border-color 0.2s, background-color 0.2s;
-}
-
-.scope-mode-card:hover {
-  border-color: rgba(59, 91, 219, 0.4);
-  background-color: rgba(59, 91, 219, 0.03);
-}
-
-.scope-mode-card--on {
-  border-color: rgba(59, 91, 219, 0.7);
-  background-color: rgba(59, 91, 219, 0.06);
-}
-
-.scope-mode-check {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  color: #7ba8f0;
-}
-
-.scope-mode-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #e2e8f0;
-}
-
-.scope-mode-desc {
-  font-size: 13px;
-  color: var(--clr-text-subtle);
-}
-
-.area-section {
-  margin-bottom: 24px;
-  transition: opacity 0.2s;
-}
-
-.area-section--disabled {
-  opacity: 0.35;
-  pointer-events: none;
-}
-
-.area-section-label {
-  font-size: 13px;
-  color: #7c8db5;
-  margin: 0 0 12px;
-}
-
-.area-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-}
-
-.area-card {
-  position: relative;
-  border: 2px solid #1a2035;
-  border-radius: 10px;
-  padding: 16px 20px;
-  cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.area-card:hover {
-  border-color: rgba(59, 91, 219, 0.4);
-  background-color: rgba(59, 91, 219, 0.03);
-}
-
-.area-card--selected {
-  border-color: rgba(59, 91, 219, 0.7);
-  background-color: rgba(59, 91, 219, 0.06);
-}
-
-.area-card-check {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  color: #7ba8f0;
-}
-
-.area-card-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: #e2e8f0;
-}
-
-.area-card-meta {
-  font-size: 13px;
-  color: var(--clr-text-subtle);
-}
-
-.area-summary {
-  font-size: 13px;
-  color: #7c8db5;
-  margin-top: 12px;
-}
-
-.empty-hint {
-  font-size: 13px;
-  color: #4a5568;
-}
-
-/* ── 패널 ─────────────────────────────────────────────────── */
-.panel {
-  background-color: #0d1120;
-  border: 1px solid #1a2035;
-  border-radius: 10px;
-  padding: 16px;
-}
-
-.panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.panel-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* ── 추가 폼 ─────────────────────────────────────────────── */
-.add-form {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 12px;
-  background: #111827;
-  border-radius: 8px;
-  margin-bottom: 10px;
-}
-
-/* ── 규칙 테이블 ─────────────────────────────────────────── */
-.rule-table {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-/* 6열: 순위 | 찾을 텍스트 | → | 바꿀 텍스트 | 활성 | 액션 */
-.rule-header-row,
-.rule-row {
-  display: grid;
-  grid-template-columns: 72px 1fr 36px 1fr 64px 76px;
-  gap: 8px;
-  font-size: 18px;
-  align-items: center;
-}
-
-.rule-header-row {
-  padding: 4px 10px;
-  font-size: 14px;
-  color: #6b8ab5;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.rule-header-row .col-priority,
-.rule-header-row .col-toggle,
-.rule-header-row .col-actions {
-  display: flex;
-  justify-content: center;
-  text-align: center;
-}
-
-.rule-row {
-  padding: 8px 10px;
-  border-radius: 6px;
-  transition: background-color 0.1s;
-}
-
-.rule-row:hover {
-  background-color: #151c2e;
-}
-
-.rule-row--disabled {
-  opacity: 0.45;
-}
-
-.edit-row {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-/* 우선순위 컨트롤 */
-.priority-ctrl {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-}
-
-.priority-val {
-  font-size: 14px;
-  color: #64748b;
-  min-width: 26px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-/* 텍스트 열 */
-.col-old,
-.col-new {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  overflow: hidden;
-}
-
-.col-old {
-  justify-content: flex-end;
-}
-
-.old-text {
-  color: #f87171;
-  font-family: monospace;
-  font-size: 20px;
-  white-space: pre;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.new-text {
-  color: #4ade80;
-  font-family: monospace;
-  font-size: 20px;
-  white-space: pre;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.col-arrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.arrow-label {
-  color: #475569;
-  flex-shrink: 0;
-  font-size: 16px;
-}
-
-.conflict-badge {
-  color: #f59e0b;
-  flex-shrink: 0;
-  cursor: help;
-  display: flex;
-  align-items: center;
-}
-
-.badge-regex {
-  display: inline-block;
-  font-size: 10px;
-  padding: 1px 5px;
-  border-radius: 4px;
-  background: #dbeafe;
-  color: #1d4ed8;
-  font-weight: 600;
-  flex-shrink: 0;
-  margin-right: 4px;
-}
-
-.regex-toggle-label {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: #475569;
-  white-space: nowrap;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.action-btns {
-  display: flex;
-  gap: 4px;
-  justify-content: flex-end;
-}
-
-/* 토글 버튼 */
-.toggle-btn {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 5px;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.toggle-btn--on {
-  background-color: rgba(74, 222, 128, 0.15);
-  color: #4ade80;
-}
-
-.toggle-btn--off {
-  background-color: rgba(100, 116, 139, 0.15);
-  color: #475569;
-}
-
-/* ── 버튼류 ──────────────────────────────────────────────── */
-.btn-sm {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.btn-add {
-  background-color: rgba(59, 91, 219, 0.2);
-  color: #93c5fd;
-}
-
-.btn-add:hover {
-  background-color: rgba(59, 91, 219, 0.35);
-}
-
-.btn-ghost {
-  background: none;
-  color: #64748b;
-  border: 1px solid #1a2035;
-}
-
-.btn-ghost:hover {
-  background-color: #1a2035;
-  color: #94a3b8;
-}
-
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 5px;
-  border: none;
-  background: none;
-  color: #64748b;
-  cursor: pointer;
-  transition: background-color 0.1s, color 0.1s;
-  flex-shrink: 0;
-}
-
-.btn-icon:hover {
-  background-color: #1e293b;
-  color: #c8d8f0;
-}
-
-.btn-icon-tiny {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 3px;
-  border: none;
-  background: none;
-  color: #475569;
-  cursor: pointer;
-}
-
-.btn-icon-tiny:hover {
-  background-color: #1e293b;
-  color: #94a3b8;
-}
-
-.btn-confirm {
-  color: #4ade80 !important;
-}
-
-.btn-confirm:hover {
-  background-color: rgba(74, 222, 128, 0.1) !important;
-}
-
-.btn-cancel {
-  color: #f87171 !important;
-}
-
-.btn-cancel:hover {
-  background-color: rgba(248, 113, 113, 0.1) !important;
-}
-
-.btn-danger:hover {
-  background-color: rgba(248, 113, 113, 0.12) !important;
-  color: #f87171 !important;
-}
-
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 20px;
-  border-radius: 8px;
-  border: none;
-  background-color: rgba(59, 91, 219, 0.25);
-  color: #93c5fd;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: rgba(59, 91, 219, 0.4);
-}
-
-.btn-primary:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.btn-apply {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 22px;
-  border-radius: 8px;
-  border: none;
-  background-color: rgba(74, 222, 128, 0.18);
-  color: #4ade80;
-  font-size: 15px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.15s;
-}
-
-.btn-apply:hover:not(:disabled) {
-  background-color: rgba(74, 222, 128, 0.28);
-}
-
-.btn-apply:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* ── 입력 ─────────────────────────────────────────────────── */
-.input-sm {
-  background-color: #111827;
-  border: 1px solid #1e293b;
-  border-radius: 6px;
-  color: #c8d8f0;
-  font-size: 18px;
-  padding: 6px 10px;
-  outline: none;
-  flex: 1;
-  min-width: 80px;
-}
-
-.input-sm:focus {
-  border-color: #3b5bdb;
-}
-
-.input-priority {
-  flex: 0 0 68px;
-  min-width: 68px;
-}
-
-/* ── diff 항목 ───────────────────────────────────────────── */
-.diff-item {
-  padding: 12px 0;
-  border-bottom: 1px solid #1a2035;
-}
-
-.diff-item:last-child {
-  border-bottom: none;
-}
-
-.diff-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
-}
-
-.diff-label {
-  font-size: 14px;
-  color: #64748b;
-}
-
-.diff-sep {
-  color: #334155;
-}
-
-/* ── 기타 ─────────────────────────────────────────────────── */
-.action-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.mt-2 {
-  margin-top: 8px;
-}
-
-.mt-3 {
-  margin-top: 12px;
-}
-
-.error-msg {
-  color: #f87171;
-  font-size: 14px;
-  margin: 4px 0 0;
-  width: 100%;
-}
-
-.error-box {
-  background-color: rgba(248, 113, 113, 0.08);
-  border: 1px solid rgba(248, 113, 113, 0.2);
-  border-radius: 8px;
-  color: #f87171;
-  padding: 12px 16px;
-  font-size: 14px;
-  margin-bottom: 16px;
-}
-
-.result-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 48px 0;
-}
-
-.result-check {
-  font-size: 40px;
-  color: #34d399;
-}
-
-.result-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0;
-}
-
-.result-stats {
-  display: flex;
-  gap: 32px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.stat-val {
-  font-size: 28px;
-  font-weight: 700;
-  color: #7ba8f0;
-}
-
-.stat-label {
-  font-size: 13px;
-  color: var(--clr-text-subtle);
-}
-
-.result-filename {
-  font-size: 14px;
-  color: var(--clr-text-subtle);
-  margin: 0;
-}
-
-.result-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.btn-reveal {
-  padding: 9px 24px;
-  background: rgba(59, 91, 219, 0.12);
-  border: 1px solid rgba(59, 91, 219, 0.35);
-  border-radius: 8px;
-  color: #7ba8f0;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.btn-reveal:hover {
-  background: rgba(59, 91, 219, 0.22);
-  color: #93c5fd;
-}
-
-.btn-reset {
-  padding: 9px 24px;
-  margin-top: 0;
-  background: none;
-  border: 1px solid #1a2035;
-  border-radius: 8px;
-  color: var(--clr-text-subtle);
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.btn-reset:hover {
-  background: #1a2035;
-  color: #93afd4;
-}
-
-.empty-state {
-  color: #334155;
-  font-size: 14px;
-  padding: 14px 0;
-  text-align: center;
-}
-
-.empty-preview {
-  color: #334155;
-  font-size: 14px;
-  padding: 36px 18px;
-  text-align: center;
-  border: 1px dashed #1a2035;
-  border-radius: 8px;
-}
-
-.empty-preview--no-result {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 36px 18px;
-  border-color: #1e3a2f;
-  background-color: rgba(74, 222, 128, 0.03);
-}
-
-.empty-preview__icon {
-  color: #2d6a4a;
-}
-
-.empty-preview__title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #4ade80;
-  margin: 0;
-}
-
-.empty-preview__desc {
-  font-size: 14px;
-  color: #475569;
-  margin: 0;
-}
-
-.snapshot-notice {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #f59e0b;
-  font-size: 14px;
-  margin-top: 12px;
-  margin-bottom: 12px;
-  padding: 9px 12px;
-  background-color: rgba(245, 158, 11, 0.06);
-  border-radius: 6px;
-  border: 1px solid rgba(245, 158, 11, 0.15);
-}
-
-.hint-text {
-  color: #475569;
-  font-size: 14px;
-  font-weight: normal;
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-.col-priority {
-  display: flex;
-  align-items: center;
-}
-
-.col-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.col-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-</style>

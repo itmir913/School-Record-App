@@ -101,15 +101,15 @@ const navGroups = [
 
 <template>
   <aside
-      class="flex flex-col min-h-screen bg-[#0b0f1c] border-r border-line transition-[width] duration-[250ms] ease-linear overflow-hidden shrink-0"
-      :class="collapsed ? 'w-[60px]' : 'w-60'"
+      class="flex flex-col min-h-screen bg-[#0b0f1c] border-r border-line text-ink-3 transition-[width] duration-250 ease-linear overflow-hidden shrink-0"
+      :class="collapsed ? 'w-15' : 'w-60'"
   >
 
     <!-- 상단: 타이틀 + 토글 -->
-    <div class="flex items-center justify-between px-3 pt-4 pb-3 border-b border-line min-h-[60px] gap-2">
+    <div class="flex items-center justify-between px-3 pt-4 pb-3 border-b border-line min-h-15 gap-2">
       <div v-if="!collapsed" class="flex items-center gap-1.5 overflow-hidden whitespace-nowrap">
-        <span class="text-[11px] font-bold text-amber bg-amber/[12%] border border-amber/25 rounded-[5px] py-px px-1.5 shrink-0">에디터</span>
-        <span class="text-base font-semibold text-ink-2 whitespace-nowrap">학교생활기록부</span>
+        <span class="text-[11px] font-bold text-amber bg-amber/12 border border-amber/25 rounded-[5px] py-px px-1.5 shrink-0">에디터</span>
+        <span class="font-semibold text-ink-2 whitespace-nowrap">학교생활기록부</span>
       </div>
       <button
           class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-transparent border-none text-ink-5 cursor-pointer transition-colors ml-auto hover:bg-line hover:text-ink-3"
@@ -130,7 +130,7 @@ const navGroups = [
             :key="item.id"
             class="flex items-center gap-2.5 w-full rounded-btn bg-transparent border-none cursor-pointer text-base font-medium text-left whitespace-nowrap transition-colors"
             :class="[
-              collapsed ? 'justify-center p-[9px]' : 'py-[9px] px-2.5',
+              collapsed ? 'justify-center p-2.25' : 'py-2.25 px-2.5',
               activeSection === item.id
                 ? 'bg-blue/20 text-blue-2 hover:bg-blue/30 hover:text-ink-2'
                 : 'text-ink-3 hover:bg-[#1e293b] hover:text-ink'
@@ -145,19 +145,19 @@ const navGroups = [
     </nav>
 
     <!-- 하단: 파일 정보 + 저장 -->
-    <div class="flex flex-col px-2 pb-2 pt-0 gap-[5px]">
+    <div class="flex flex-col px-2 pb-2 pt-0 gap-1.25">
       <div class="h-px bg-line mb-2"/>
 
       <!-- 파일 경로 버튼 -->
       <button
           v-if="fileName"
-          class="flex items-center gap-2 w-full rounded-btn bg-transparent border-none text-ink-4 cursor-pointer text-base text-left whitespace-nowrap overflow-hidden transition-colors hover:bg-[#1e293b] hover:text-ink-2"
+          class="flex items-center gap-2 w-full rounded-btn bg-transparent border-none text-ink-4 cursor-pointer text-left whitespace-nowrap overflow-hidden transition-colors hover:bg-[#1e293b] hover:text-ink-2"
           :class="collapsed ? 'justify-center p-2' : 'py-2 px-2.5'"
           @click="openFolder"
           :title="filePath"
       >
         <FolderOpen :size="20" class="shrink-0"/>
-        <span v-if="!collapsed" class="overflow-hidden text-ellipsis text-base">{{ fileName }}</span>
+        <span v-if="!collapsed">{{ fileName }}</span>
       </button>
 
       <!-- 스냅샷 버튼 -->
@@ -169,7 +169,7 @@ const navGroups = [
           title="스냅샷 관리"
       >
         <GitBranch :size="20" class="shrink-0 text-blue-2 opacity-60"/>
-        <span v-if="!collapsed" class="text-base overflow-hidden text-ellipsis">스냅샷(Snapshot)</span>
+        <span v-if="!collapsed">스냅샷(Snapshot)</span>
       </button>
 
       <!-- 설정 버튼 -->
@@ -188,7 +188,7 @@ const navGroups = [
                   class="shrink-0"
                   :class="activeSection === 'settings' ? 'text-blue-2 opacity-100' : 'text-blue-2 opacity-60'"
         />
-        <span v-if="!collapsed" class="text-base overflow-hidden text-ellipsis">설정(Settings)</span>
+        <span v-if="!collapsed">설정(Settings)</span>
       </button>
     </div>
   </aside>
