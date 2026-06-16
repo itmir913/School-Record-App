@@ -56,7 +56,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="workspace">
+  <div class="flex h-screen bg-base overflow-hidden">
     <WorkspaceSidebar
         v-model:collapsed="collapsed"
         :active-section="activeSection"
@@ -64,7 +64,7 @@ onMounted(async () => {
         @select="activeSection = $event"
         @openSnapshot="showSnapshotModal = true"
     />
-    <main class="workspace-main">
+    <main class="flex-1 overflow-y-auto bg-base">
       <component :is="currentSection" :key="sectionKey" @navigate="activeSection = $event"/>
     </main>
     <SnapshotModal
@@ -74,18 +74,3 @@ onMounted(async () => {
     />
   </div>
 </template>
-
-<style scoped>
-.workspace {
-  display: flex;
-  height: 100vh;
-  background-color: #080b14;
-  overflow: hidden;
-}
-
-.workspace-main {
-  flex: 1;
-  overflow-y: auto;
-  background-color: #080b14;
-}
-</style>

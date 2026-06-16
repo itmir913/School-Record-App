@@ -3,10 +3,10 @@ import { useSlots } from 'vue'
 import { X } from 'lucide-vue-next'
 
 defineProps({
-  title: { type: String, required: true },
-  maxWidth: { type: String, default: '640px' },
+  title:     { type: String, required: true },
+  maxWidth:  { type: String, default: '640px' },
   maxHeight: { type: String, default: '85vh' },
-  label: { type: String, default: null },
+  label:     { type: String, default: null },
 })
 
 const emit = defineEmits(['close'])
@@ -19,8 +19,8 @@ const slots = useSlots()
       <div class="modal-overlay">
         <div class="modal-container" :style="{ maxWidth, maxHeight }">
           <div class="modal-hdr" :class="{ 'modal-hdr--top': label }">
-            <div v-if="label" class="base-header-text">
-              <span class="base-header-label">{{ label }}</span>
+            <div v-if="label" class="flex flex-col gap-0.5">
+              <span class="text-sm font-medium text-ink-3">{{ label }}</span>
               <h2 class="modal-title">{{ title }}</h2>
             </div>
             <h2 v-else class="modal-title">{{ title }}</h2>
@@ -39,17 +39,3 @@ const slots = useSlots()
     </Transition>
   </Teleport>
 </template>
-
-<style scoped>
-.base-header-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.base-header-label {
-  font-size: 13px;
-  color: #7ba8f0;
-  font-weight: 500;
-}
-</style>

@@ -1,163 +1,197 @@
 @import "tailwindcss";
 @import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 
+/* ── 런타임 테마 토큰 (다크 기본) ───────────────── */
 :root {
-  --clr-bg-base:     #080b14;
-  --clr-bg-surface:  #0e1220;
-  --clr-bg-raised:   #131c30;
-  --clr-border:      #1a2035;
-  --clr-blue:        #3b5bdb;
-  --clr-blue-hover:  #4c6ef5;
-  --clr-red-bg:      rgba(239,68,68,0.1);
-  --clr-red-border:  rgba(239,68,68,0.25);
-  --clr-red-text:    #f87171;
-  --clr-text-main:   #e2e8f0;
-  --clr-text-sub:    #c8d8f0;
-  --clr-text-hint:   #6b8ab5;
-  --clr-text-subtle: #7c8db5;
+  --c-base:    #080b14;
+  --c-surface: #0e1220;
+  --c-raised:  #131c30;
+  --c-line:    #1a2035;
+  --c-line-2:  #2a3355;
+  --c-blue:    #3b5bdb;
+  --c-blue-2:  #4c6ef5;
+  --c-ink:     #e2e8f0;
+  --c-ink-2:   #c8d8f0;
+  --c-ink-3:   #93afd4;
+  --c-ink-4:   #7c8db5;
+  --c-ink-5:   #6b8ab5;
+  --c-red:     #f87171;
+  --c-green:   #34d399;
+  --c-amber:   #fbbf24;
+  --c-violet:  #a855f7;
+  --c-overlay: rgba(4, 6, 12, 0.75);
+
+  /* 하위 호환 별칭 — 파일 마이그레이션 완료 시 순차 제거 */
+  --clr-bg-base:     var(--c-base);
+  --clr-bg-surface:  var(--c-surface);
+  --clr-bg-raised:   var(--c-raised);
+  --clr-border:      var(--c-line);
+  --clr-blue:        var(--c-blue);
+  --clr-blue-hover:  var(--c-blue-2);
+  --clr-red-bg:      color-mix(in srgb, var(--c-red)  10%, transparent);
+  --clr-red-border:  color-mix(in srgb, var(--c-red)  25%, transparent);
+  --clr-red-text:    var(--c-red);
+  --clr-text-main:   var(--c-ink);
+  --clr-text-sub:    var(--c-ink-2);
+  --clr-text-hint:   var(--c-ink-5);
+  --clr-text-subtle: var(--c-ink-4);
 }
 
+/* ── 라이트 테마 오버라이드 ─────────────────────── */
+[data-theme="light"] {
+  --c-base:    #f0f4f8;
+  --c-surface: #ffffff;
+  --c-raised:  #e8edf5;
+  --c-line:    #d0d9e8;
+  --c-line-2:  #b0bdd4;
+  --c-blue:    #3b5bdb;
+  --c-blue-2:  #2f4fc4;
+  --c-ink:     #1a2035;
+  --c-ink-2:   #3a4f6c;
+  --c-ink-3:   #5a7090;
+  --c-ink-4:   #7a90a8;
+  --c-ink-5:   #9aabb8;
+  --c-red:     #dc2626;
+  --c-green:   #059669;
+  --c-amber:   #d97706;
+  --c-violet:  #9333ea;
+  --c-overlay: rgba(0, 0, 0, 0.50);
+}
+
+/* ── Tailwind 커스텀 값 ──────────────────────────── */
+@theme {
+  --radius-btn:   10px;
+  --radius-modal: 20px;
+}
+
+/* ── Tailwind 색상 브릿지 (inline = var() 직접 주입) ── */
+@theme inline {
+  --color-base:    var(--c-base);
+  --color-surface: var(--c-surface);
+  --color-raised:  var(--c-raised);
+  --color-line:    var(--c-line);
+  --color-line-2:  var(--c-line-2);
+  --color-blue:    var(--c-blue);
+  --color-blue-2:  var(--c-blue-2);
+  --color-ink:     var(--c-ink);
+  --color-ink-2:   var(--c-ink-2);
+  --color-ink-3:   var(--c-ink-3);
+  --color-ink-4:   var(--c-ink-4);
+  --color-ink-5:   var(--c-ink-5);
+  --color-red:     var(--c-red);
+  --color-green:   var(--c-green);
+  --color-amber:   var(--c-amber);
+  --color-violet:  var(--c-violet);
+  --color-overlay: var(--c-overlay);
+}
+
+/* ── 폰트 ────────────────────────────────────────── */
 body, code, pre {
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
-}
-
-::-webkit-scrollbar-track {
-  background-color: #0d1220;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: #2d3a5a;
+/* ── 스크롤바 ─────────────────────────────────────── */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track  { background-color: var(--c-surface); }
+::-webkit-scrollbar-thumb  {
+  background-color: var(--c-line-2);
   border-radius: 6px;
-  border: 3px solid #0d1220;
+  border: 3px solid var(--c-surface);
 }
+::-webkit-scrollbar-thumb:hover { background-color: var(--c-ink-5); }
+::-webkit-scrollbar-corner      { background-color: var(--c-surface); }
 
-::-webkit-scrollbar-thumb:hover {
-  background-color: #4a5f8a;
-}
-
-::-webkit-scrollbar-corner {
-  background-color: #0d1220;
-}
-
-/* ── Overlay ─────────────────────────────── */
+/* ── Modal overlay ────────────────────────────────── */
 .modal-overlay {
-    position: fixed; inset: 0; z-index: 50;
-    display: flex; align-items: center; justify-content: center;
-    background-color: rgba(4, 6, 12, 0.75);
-    backdrop-filter: blur(6px);
+  @apply fixed inset-0 z-50 flex items-center justify-center;
+  background-color: var(--c-overlay);
+  backdrop-filter: blur(6px);
 }
 
-/* ── Container ───────────────────────────── */
+/* ── Modal container ──────────────────────────────── */
 .modal-container {
-    background-color: var(--clr-bg-surface);
-    border: 1px solid var(--clr-border);
-    border-radius: 20px;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
-    display: flex; flex-direction: column;
-    width: 100%;
-    overflow: hidden;
+  @apply bg-surface border border-line w-full flex flex-col overflow-hidden;
+  border-radius: var(--radius-modal);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
 }
 
-/* ── Header / Footer ─────────────────────── */
+/* ── Modal header / footer ────────────────────────── */
 .modal-hdr {
-    display: flex; align-items: center;
-    justify-content: space-between;
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--clr-border);
-    flex-shrink: 0;
+  @apply flex items-center justify-between px-6 py-5 border-b border-line shrink-0;
 }
-
 .modal-ftr {
-    display: flex; align-items: center;
-    justify-content: space-between;
-    padding: 16px 24px;
-    border-top: 1px solid var(--clr-border);
-    flex-shrink: 0;
+  @apply flex items-center justify-between px-6 py-4 border-t border-line shrink-0;
 }
+.modal-hdr--top { @apply items-start; }
 
-/* ── Header modifier ─────────────────────── */
-.modal-hdr--top { align-items: flex-start; }
+/* ── Modal title ──────────────────────────────────── */
+.modal-title { @apply text-lg font-bold text-ink m-0; }
 
-/* ── Modal title ─────────────────────────── */
-.modal-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--clr-text-main);
-    margin: 0;
-}
-
-/* ── Close Button ────────────────────────── */
+/* ── Modal close button ───────────────────────────── */
 .modal-close {
-    width: 32px; height: 32px;
-    display: flex; align-items: center; justify-content: center;
-    border: none; background: none; cursor: pointer;
-    border-radius: 8px; color: var(--clr-text-subtle);
-    transition: background-color 0.15s, color 0.15s;
+  @apply w-8 h-8 flex items-center justify-center border-none bg-transparent;
+  @apply cursor-pointer rounded-lg text-ink-4 transition-colors duration-150;
 }
-.modal-close:hover { background-color: var(--clr-border); color: #93afd4; }
+.modal-close:hover {
+  background-color: var(--c-line);
+  color: var(--c-ink-3);
+}
 
-/* ── Buttons ─────────────────────────────── */
+/* ── Buttons ──────────────────────────────────────── */
 .btn-primary {
-    padding: 10px 24px; border: none; border-radius: 10px;
-    background-color: var(--clr-blue); color: #fff; font-size: 16px; font-weight: 600;
-    cursor: pointer; box-shadow: 0 4px 16px rgba(59, 91, 219, 0.2);
-    transition: background-color 0.15s;
+  @apply inline-flex items-center gap-1.5 px-6 py-2.5 border-none bg-blue text-white;
+  @apply text-base font-semibold cursor-pointer transition-colors duration-150;
+  border-radius: var(--radius-btn);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--c-blue) 20%, transparent);
 }
-.btn-primary:hover:not(:disabled) { background-color: var(--clr-blue-hover); }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary:hover:not(:disabled) { background-color: var(--c-blue-2); }
+.btn-primary:disabled { @apply opacity-50 cursor-not-allowed; }
 
 .btn-secondary {
-    padding: 10px 20px; border-radius: 10px;
-    border: 1px solid var(--clr-border); background: none;
-    color: #93afd4; font-size: 16px; cursor: pointer;
-    transition: background-color 0.15s;
+  @apply inline-flex items-center gap-1.5 px-5 py-2.5 border border-line bg-transparent;
+  @apply text-ink-3 text-base cursor-pointer transition-colors duration-150;
+  border-radius: var(--radius-btn);
 }
-.btn-secondary:hover { background-color: var(--clr-border); }
+.btn-secondary:hover { background-color: var(--c-line); }
 
 .btn-danger {
-    padding: 8px 14px; border-radius: 8px;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    background-color: var(--clr-red-bg);
-    color: var(--clr-red-text); font-size: 15px; cursor: pointer;
-    transition: background-color 0.15s;
+  @apply inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-red text-base cursor-pointer;
+  @apply transition-colors duration-150;
+  border: 1px solid color-mix(in srgb, var(--c-red) 30%, transparent);
+  background-color: color-mix(in srgb, var(--c-red) 10%, transparent);
 }
-.btn-danger:hover { background-color: rgba(239, 68, 68, 0.18); }
+.btn-danger:hover { background-color: color-mix(in srgb, var(--c-red) 18%, transparent); }
 
-/* ── Messages ────────────────────────────── */
+/* ── Messages ─────────────────────────────────────── */
 .msg-error {
-    padding: 10px 14px; border-radius: 8px;
-    color: var(--clr-red-text); background-color: rgba(248, 113, 113, 0.08);
-    border: 1px solid rgba(248, 113, 113, 0.2);
-    font-size: 15px;
+  @apply px-3.5 py-2.5 rounded-lg text-red text-base;
+  background-color: color-mix(in srgb, var(--c-red)  8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-red) 20%, transparent);
 }
 .msg-success {
-    padding: 10px 14px; border-radius: 8px;
-    color: #6ee7b7; background-color: rgba(52, 211, 153, 0.07);
-    border: 1px solid rgba(52, 211, 153, 0.25);
-    font-size: 15px;
+  @apply px-3.5 py-2.5 rounded-lg text-green text-base;
+  background-color: color-mix(in srgb, var(--c-green)  7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-green) 25%, transparent);
 }
 
-/* ── Input ───────────────────────────────── */
+/* ── Input ────────────────────────────────────────── */
 .ui-input {
-    width: 100%; padding: 10px 14px; border-radius: 10px;
-    border: 1px solid var(--clr-border); background-color: var(--clr-bg-base);
-    color: var(--clr-text-main); font-size: 15px; box-sizing: border-box;
-    transition: border-color 0.15s;
+  @apply w-full px-3.5 py-2.5 rounded-xl border border-line bg-base text-ink text-base box-border;
+  @apply transition-colors duration-150;
 }
-.ui-input:focus { outline: none; border-color: rgba(59, 91, 219, 0.6); }
+.ui-input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--c-blue) 60%, transparent);
+}
 
-/* ── State Box ───────────────────────────── */
+/* ── State box ────────────────────────────────────── */
 .state-box {
-    display: flex; align-items: center; justify-content: center;
-    flex-direction: column;
-    padding: 48px; border: 1px solid var(--clr-border); border-radius: 16px;
+  @apply flex items-center justify-center flex-col p-12 border border-line rounded-2xl;
 }
-.state-box--error { border-color: rgba(239, 68, 68, 0.3); }
+.state-box--error {
+  border-color: color-mix(in srgb, var(--c-red) 30%, transparent);
+}
 
-.modal-enter-from, .modal-leave-to { opacity: 0; transform: scale(0.97); }
+/* ── Vue 모달 트랜지션 ────────────────────────────── */
+.modal-enter-from, .modal-leave-to  { opacity: 0; transform: scale(0.97); }
 .modal-enter-active, .modal-leave-active { transition: all 0.2s; }

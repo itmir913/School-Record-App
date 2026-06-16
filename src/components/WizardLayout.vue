@@ -3,12 +3,12 @@ import {ref, watch} from 'vue'
 import {ArrowLeft, ArrowRight} from 'lucide-vue-next'
 
 const props = defineProps({
-  stepCount: {type: Number, required: true},
-  currentStep: {type: Number, required: true},
-  canGoNext: {type: Boolean, required: true},
+  stepCount:    {type: Number,  required: true},
+  currentStep:  {type: Number,  required: true},
+  canGoNext:    {type: Boolean, required: true},
   isNavigating: {type: Boolean, required: true},
-  showFooter: {type: Boolean, default: true},
-  nextLabel: {type: String, default: '다음'},
+  showFooter:   {type: Boolean, default: true},
+  nextLabel:    {type: String,  default: '다음'},
 })
 
 const emit = defineEmits(['prev', 'next'])
@@ -20,21 +20,26 @@ watch(() => props.currentStep, () => {
 </script>
 
 <template>
-  <div class="wizard-layout">
-    <div class="step-indicator">
+  <div class="flex-1 overflow-hidden flex flex-col">
+    <div class="flex items-center justify-end gap-2 px-10 py-2.5 border-b border-line shrink-0">
       <div
           v-for="n in stepCount"
           :key="n"
-          class="step-dot"
-          :class="{ 'step-dot--active': currentStep === n, 'step-dot--done': currentStep > n }"
+          class="flex items-center justify-center w-7 h-7 rounded-full text-sm font-semibold border border-line text-ink-5 bg-transparent transition-all duration-200"
+          :class="[
+            currentStep === n ? 'border-blue/80 text-ink-3 bg-blue/12' : '',
+            currentStep > n  ? 'border-green/50 text-green bg-green/8' : '',
+          ]"
       >
         {{ currentStep > n ? '✓' : n }}
       </div>
     </div>
-    <div class="wizard-body" ref="bodyRef">
+
+    <div class="flex-1 overflow-y-auto px-10 py-8" ref="bodyRef">
       <slot/>
     </div>
-    <div v-if="showFooter" class="wizard-footer">
+
+    <div v-if="showFooter" class="flex items-center justify-between px-10 py-4 border-t border-line shrink-0">
       <button class="btn-secondary" :disabled="currentStep === 1" @click="emit('prev')">
         <ArrowLeft :size="15"/>
         이전
@@ -51,71 +56,3 @@ watch(() => props.currentStep, () => {
     </div>
   </div>
 </template>
-
-<style scoped>
-.wizard-layout {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.step-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 10px 40px;
-  border-bottom: 1px solid var(--clr-border);
-  flex-shrink: 0;
-}
-
-.step-dot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  font-size: 13px;
-  font-weight: 600;
-  border: 1px solid var(--clr-border);
-  color: var(--clr-text-hint);
-  background: transparent;
-  transition: all 0.2s;
-}
-
-.step-dot--active {
-  border-color: rgba(59, 91, 219, 0.8);
-  color: #7ba8f0;
-  background: rgba(59, 91, 219, 0.12);
-}
-
-.step-dot--done {
-  border-color: rgba(52, 211, 153, 0.5);
-  color: #34d399;
-  background: rgba(52, 211, 153, 0.08);
-}
-
-.wizard-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 32px 40px;
-}
-
-.wizard-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 40px;
-  border-top: 1px solid var(--clr-border);
-  flex-shrink: 0;
-}
-
-.wizard-footer .btn-secondary,
-.wizard-footer .btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-</style>
