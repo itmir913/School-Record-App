@@ -701,8 +701,11 @@ function resetWizard() {
       <div v-if="step === 1" class="step-content">
 
         <!-- 예시 파일 다운로드 -->
-        <div class="sample-section">
-          <h3 class="step-title">Step 0. 가져오기(Import) 가능한 파일 안내</h3>
+        <details class="sample-section">
+          <summary class="sample-section-summary">
+            <h3 class="step-title">Step 0. 가져오기(Import) 가능한 파일 안내</h3>
+            <span class="sample-section-toggle-label"></span>
+          </summary>
           <p class="step-desc">가져오기 가능한 파일은 두 가지 유형(행 단위, 열 단위)입니다. 예시 다운로드 버튼을 눌러 각 유형의 예시를 확인하세요.</p>
 
           <div class="type-cards">
@@ -810,7 +813,7 @@ function resetWizard() {
               </button>
             </div>
           </div>
-        </div>
+        </details>
 
         <div class="border-hr"></div>
 
@@ -1504,11 +1507,58 @@ function resetWizard() {
 
 /* 예시 파일 다운로드 */
 .sample-section {
+  margin-bottom: 6px;
+}
+
+.sample-section-summary {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  margin-bottom: 6px;
+}
+
+.sample-section-summary::-webkit-details-marker {
+  display: none;
+}
+
+.sample-section-summary .step-title {
+  margin: 0;
+}
+
+.sample-section-summary::after {
+  content: '▶';
+  font-size: 11px;
+  color: var(--clr-text-hint);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+
+details[open] .sample-section-summary::after {
+  transform: rotate(90deg);
+}
+
+.sample-section-toggle-label {
+  margin-left: 16px;
+  font-size: 15px;
+  color: var(--clr-text-hint);
+  white-space: nowrap;
+  font-weight: 400;
+}
+
+details:not([open]) .sample-section-toggle-label::after {
+  content: '펼치기';
+}
+
+details[open] .sample-section-toggle-label::after {
+  content: '접기';
 }
 
 .border-hr {
-  margin-bottom: 32px;
-  padding-bottom: 32px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
   border-bottom: 1px solid #1a2035;
 }
 

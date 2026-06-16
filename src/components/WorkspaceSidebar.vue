@@ -3,6 +3,7 @@ import {computed} from 'vue'
 import {revealItemInDir} from '@tauri-apps/plugin-opener'
 import {
   BookOpen,
+  BookMarked,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
@@ -18,6 +19,7 @@ import {
   Upload,
   Users,
 } from 'lucide-vue-next'
+import {WebviewWindow} from '@tauri-apps/api/webviewWindow'
 
 const props = defineProps({
   collapsed: Boolean,
@@ -46,10 +48,27 @@ async function openFolder() {
   }
 }
 
+async function openManual() {
+  const existing = await WebviewWindow.getByLabel('manual')
+  if (existing) {
+    await existing.setFocus()
+    return
+  }
+  new WebviewWindow('manual', {
+    url: '/manual/index.html',
+    title: '사용 매뉴얼 — All-in-One 학교생활기록부 에디터',
+    width: 960,
+    height: 720,
+    resizable: true,
+    center: true,
+  })
+}
+
 const navGroups = [
   {
     items: [
       {id: 'overview', label: '개요', icon: LayoutDashboard},
+      {id: 'manual', label: '매뉴얼', icon: BookMarked},
     ],
   },
   {
@@ -103,7 +122,7 @@ const navGroups = [
             v-for="item in group.items"
             :key="item.id"
             :class="['nav-item', activeSection === item.id ? 'nav-item--active' : '']"
-            @click="select(item.id)"
+            @click="item.id === 'manual' ? openManual() : select(item.id)"
             :title="collapsed ? item.label : ''"
         >
           <component :is="item.icon" :size="20" class="nav-icon"/>

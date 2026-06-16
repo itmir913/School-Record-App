@@ -1,0 +1,196 @@
+<section class="page-break print-keep-bg" style="padding: 40px 0;">
+
+    <h2 class="text-xl font-bold text-slate-800 border-b-2 border-indigo-500 pb-2 mb-8">8. 텍스트 치환 (Replace)</h2>
+
+    <p class="text-lg text-slate-600 leading-relaxed mb-6">
+        좌측 메뉴에서 <strong>텍스트 치환(Replace)</strong> 탭을 선택합니다.
+        자주 반복되는 표현을 일괄 교체하거나, 불필요한 공백·줄바꿈을 정리합니다.
+    </p>
+
+    <!-- 8-1 기본 규칙 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">8-1. 기본 제공 치환 규칙</h3>
+        <p class="text-lg text-slate-600 leading-relaxed mb-5">
+            프로그램에는 몇 가지 기본 치환 규칙이 내장되어 있습니다.
+        </p>
+
+        <div class="ui-callout print-keep-bg">
+            <p class="ui-callout-label">실제 화면 — 텍스트 치환(Replace) 규칙 목록</p>
+            <div class="ui-mock print-keep-bg">
+                <div class="um-section-header" style="margin-bottom:12px;">
+                    <div>
+                        <p class="um-section-title">텍스트 치환 (Replace)</p>
+                        <p class="um-section-desc">생기부 내용에서 텍스트를 찾아 일괄 교체합니다.</p>
+                    </div>
+                    <div class="um-header-actions">
+                        <span style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:10px;background:#16a34a;color:white;font-size:13px;font-weight:600;white-space:nowrap;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg> 전체 적용
+                        </span>
+                        <span class="um-btn-secondary">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg> 규칙 추가
+                        </span>
+                    </div>
+                </div>
+                <!-- 규칙 목록 -->
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <!-- 기본 규칙 1 -->
+                    <div class="um-rule-row">
+                        <span class="um-rule-label um-rule-builtin">기본</span>
+                        <div class="um-rule-body">
+                            <span class="um-rule-regex">정규식</span>
+                            <code class="um-rule-pattern">\n+</code>
+                            <span class="um-rule-arrow">→</span>
+                            <code class="um-rule-replace">(공백)</code>
+                        </div>
+                        <span class="um-rule-desc">연속된 줄바꿈 제거</span>
+                    </div>
+                    <!-- 기본 규칙 2 -->
+                    <div class="um-rule-row">
+                        <span class="um-rule-label um-rule-builtin">기본</span>
+                        <div class="um-rule-body">
+                            <span class="um-rule-regex">정규식</span>
+                            <code class="um-rule-pattern"> {2,}</code>
+                            <span class="um-rule-arrow">→</span>
+                            <code class="um-rule-replace">(단일 공백)</code>
+                        </div>
+                        <span class="um-rule-desc">연속 공백 단일화</span>
+                    </div>
+                    <!-- 사용자 규칙 1 -->
+                    <div class="um-rule-row">
+                        <span class="um-rule-label um-rule-custom">사용자</span>
+                        <div class="um-rule-body">
+                            <code class="um-rule-pattern">보여줌</code>
+                            <span class="um-rule-arrow">→</span>
+                            <code class="um-rule-replace">보임</code>
+                        </div>
+                        <span class="um-rule-desc">어색한 표현 교정</span>
+                        <span class="um-rule-del"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5 overflow-x-auto">
+            <table class="w-full text-base border-collapse">
+                <thead>
+                    <tr class="bg-slate-100 print-keep-bg">
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">규칙</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">찾을 내용</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">바꿀 내용</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">목적</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">기본 1</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">\n+</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">공백 1개</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">줄바꿈 → 공백으로 정리</td>
+                    </tr>
+                    <tr class="bg-slate-50 print-keep-bg">
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">기본 2</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">&nbsp;&nbsp;(공백 2개 이상)</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">공백 1개</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">연속 공백 단일화</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 8-1-b 치환 예시 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">8-1-1. 사용자 정의 규칙 예시</h3>
+        <p class="text-lg text-slate-600 leading-relaxed mb-5">
+            생기부에서 자주 발생하는 어색한 표현을 교정하는 규칙 예시입니다.
+            아래 표현들을 규칙으로 등록해두면 <strong>전체 적용</strong> 한 번으로 전 학생 기록을 일괄 정리할 수 있습니다.
+        </p>
+        <div class="overflow-x-auto">
+            <table class="w-full text-base border-collapse">
+                <thead>
+                    <tr class="bg-slate-100 print-keep-bg">
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">찾을 내용</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">바꿀 내용</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">보여줌</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-emerald-700">보임</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">구어체 → 서술형 교정</td>
+                    </tr>
+                    <tr class="bg-slate-50 print-keep-bg">
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">하였음</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-emerald-700">함</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">간결한 서술형으로 통일</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">~이다</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-emerald-700">~임</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">생기부 어미 형식 통일</td>
+                    </tr>
+                    <tr class="bg-slate-50 print-keep-bg">
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">기여하였다</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-emerald-700">기여함</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">어미 통일</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">있었음</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-emerald-700">있음</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">과거 시제 중복 제거</td>
+                    </tr>
+                    <tr class="bg-slate-50 print-keep-bg">
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">OO 학생</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-emerald-700">(해당 이름)</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">가져오기한 파일에 "OO 학생" 표기가 일괄 포함된 경우</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 8-2 사용자 규칙 추가 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">8-2. 사용자 정의 규칙 추가</h3>
+        <ol class="space-y-3 text-lg text-slate-600 leading-relaxed">
+            <li class="flex gap-3">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">1</span>
+                <span>
+                    <span class="um-btn-secondary" style="font-size:13px;padding:4px 11px;border-radius:8px;display:inline-flex;align-items:center;gap:4px;vertical-align:middle;">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg> 규칙 추가
+                    </span>
+                    클릭 → <strong>찾을 내용</strong>과 <strong>바꿀 내용</strong>을 입력하고 저장합니다.
+                </span>
+            </li>
+            <li class="flex gap-3">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">2</span>
+                <span><strong>정규식(Regex)</strong> 토글을 켜면 고급 패턴을 사용할 수 있습니다.</span>
+            </li>
+            <li class="flex gap-3">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">3</span>
+                <span>규칙 목록을 확인한 후
+                    <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:8px;background:#16a34a;color:white;font-size:13px;font-weight:600;vertical-align:middle;">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg> 전체 적용
+                    </span>
+                    버튼을 클릭하면 모든 영역·활동의 기록에 일괄 적용됩니다.
+                </span>
+            </li>
+        </ol>
+    </div>
+
+    <!-- 8-3 주의사항 -->
+    <div class="mb-10">
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 flex gap-3 items-start print-keep-bg">
+            <span class="text-xl shrink-0">⚠️</span>
+            <div>
+                <p class="font-bold text-amber-800 text-base mb-1">전체 적용은 되돌릴 수 없습니다</p>
+                <p class="text-amber-700 text-base leading-relaxed">
+                    전체 적용 전에 <strong>스냅샷</strong>을 생성하거나, 적용 전 미리보기를 통해 바뀔 내용을 먼저 확인하세요.
+                    정규식 패턴이 잘못되면 의도치 않은 내용이 삭제될 수 있습니다.
+                </p>
+            </div>
+        </div>
+    </div>
+
+</section>
