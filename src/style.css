@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 
 :root {
   --clr-bg-base:     #080b14;
@@ -14,6 +15,10 @@
   --clr-text-sub:    #c8d8f0;
   --clr-text-hint:   #6b8ab5;
   --clr-text-subtle: #7c8db5;
+}
+
+body, code, pre {
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 ::-webkit-scrollbar {

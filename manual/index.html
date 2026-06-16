@@ -5,12 +5,9 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>사용 매뉴얼 — All-in-One 학교생활기록부 에디터</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../src/manual.css">
 
     <style>
-        @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
-
         body {
             font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif;
             font-size: 16px;
@@ -121,13 +118,14 @@
             color: #64748b; font-size: 13px; font-weight: 500; white-space: nowrap;
         }
         .um-nav-item.um-active { background: #e0e7ff; color: #3730a3; font-weight: 700; }
-        .um-nav-item i { width: 15px; text-align: center; font-size: 13px; flex-shrink: 0; }
+        .um-nav-item i, .um-nav-item svg { width: 15px; flex-shrink: 0; }
         .um-footer-divider { height: 1px; background: #e2e8f0; margin: 4px 8px; }
         .um-footer-item {
             display: flex; align-items: center; gap: 8px;
             padding: 8px 10px; border-radius: 8px; color: #94a3b8; font-size: 13px;
         }
-        .um-footer-item i { width: 15px; text-align: center; font-size: 13px; flex-shrink: 0; opacity: .7; }
+        .um-footer-item i, .um-footer-item svg { width: 15px; flex-shrink: 0; opacity: .7; }
+        .um-edit-btn svg { flex-shrink: 0; }
 
         /* ── Section header ── */
         .um-section-header {
@@ -418,22 +416,20 @@
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             return await res.text();
         } catch (e) {
-            return `<section class="page-break print-keep-bg p-8 text-center text-red-500 text-base">
-          섹션을 불러오지 못했습니다: ${url}
-        </section>`;
+            return `<section style="padding:32px;text-align:center;color:#ef4444;">
+                섹션을 불러오지 못했습니다: ${url}
+            </section>`;
         }
     }
 
     async function init() {
         const results = await Promise.all(SECTIONS.map(loadSection));
-
         const manual = document.getElementById('manual');
         for (const html of results) {
             const wrapper = document.createElement('div');
             wrapper.innerHTML = html;
             manual.appendChild(wrapper);
         }
-
         document.getElementById('loading').style.display = 'none';
         manual.style.display = 'block';
     }
