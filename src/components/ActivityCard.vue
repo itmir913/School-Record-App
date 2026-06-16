@@ -16,9 +16,9 @@ const areaBadgeText = computed(() => {
 
 const areaBadgeClass = computed(() => {
   const count = props.activity.areas.length
-  if (count === 0) return 'area-count-badge--empty'
-  if (count > 1) return 'area-count-badge--multi'
-  return ''
+  if (count === 0) return 'text-amber bg-amber/10 border-amber/30'
+  if (count > 1) return 'text-red bg-red/10 border-red/30'
+  return 'text-ink-3 bg-blue/12 border-blue/25'
 })
 
 const recordCountText = computed(() => {
@@ -31,102 +31,23 @@ const recordCountEmpty = computed(() => (props.activity.record_count ?? 0) === 0
 </script>
 
 <template>
-  <div class="card" @click="emit('edit', activity)">
-    <div class="card-top">
-      <span class="area-count-badge" :class="areaBadgeClass">{{ areaBadgeText }}</span>
-      <h3 class="activity-name">{{ activity.name }}</h3>
+  <div
+    class="bg-surface border border-line rounded-[14px] py-[18px] px-5 cursor-pointer transition-all duration-150 flex flex-col gap-3 hover:border-blue/50 hover:shadow-[0_4px_20px_color-mix(in_srgb,var(--c-blue)_10%,transparent)] group"
+    @click="emit('edit', activity)"
+  >
+    <div class="flex flex-col gap-2 flex-1">
+      <span
+        class="self-start text-sm font-semibold rounded px-[9px] py-0.5 whitespace-nowrap border"
+        :class="areaBadgeClass"
+      >{{ areaBadgeText }}</span>
+      <h3 class="text-lg font-bold text-ink m-0 leading-[1.4]">{{ activity.name }}</h3>
     </div>
-    <div class="card-bottom">
-      <span class="record-count" :class="recordCountEmpty ? 'record-count--empty' : ''">
-        {{ recordCountText }}
-      </span>
-      <span class="edit-hint">편집</span>
+    <div class="flex items-center justify-between pt-[10px] border-t border-line">
+      <span
+        class="text-sm font-medium"
+        :class="recordCountEmpty ? 'text-ink-5' : 'text-ink-3'"
+      >{{ recordCountText }}</span>
+      <span class="text-sm text-transparent transition-colors duration-150 group-hover:text-ink-5">편집</span>
     </div>
   </div>
 </template>
-
-<style scoped>
-.card {
-  background-color: #0e1220;
-  border: 1px solid #1e293b;
-  border-radius: 14px;
-  padding: 18px 20px;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.card:hover {
-  border-color: rgba(59, 91, 219, 0.5);
-  box-shadow: 0 4px 20px rgba(59, 91, 219, 0.1);
-}
-
-.card-top {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-}
-
-.area-count-badge {
-  align-self: flex-start;
-  font-size: 15px;
-  font-weight: 600;
-  color: #7ba8f0;
-  background-color: rgba(59, 91, 219, 0.12);
-  border: 1px solid rgba(59, 91, 219, 0.25);
-  border-radius: 5px;
-  padding: 2px 9px;
-  white-space: nowrap;
-}
-
-.area-count-badge--empty {
-  color: #fbbf24;
-  background-color: rgba(251, 191, 36, 0.1);
-  border-color: rgba(251, 191, 36, 0.3);
-}
-
-.area-count-badge--multi {
-  color: #f87171;
-  background-color: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
-}
-
-.activity-name {
-  font-size: 18px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0;
-  line-height: 1.4;
-}
-
-.card-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 10px;
-  border-top: 1px solid #1a2035;
-}
-
-.record-count {
-  font-size: 15px;
-  color: #7ba8f0;
-  font-weight: 500;
-}
-
-.record-count--empty {
-  color: #3d5070;
-}
-
-.edit-hint {
-  font-size: 13px;
-  color: transparent;
-  transition: color 0.15s;
-}
-
-.card:hover .edit-hint {
-  color: #4a6080;
-}
-</style>

@@ -76,48 +76,54 @@ async function handleDeleted() {
 </script>
 
 <template>
-  <div class="activity-section-wrapper">
-    <div class="section">
+  <div class="flex flex-col h-full">
+    <div class="flex flex-col h-full overflow-hidden box-border">
 
       <!-- 섹션 헤더 -->
-      <div class="section-header">
+      <div class="flex items-start justify-between px-10 py-9 border-b border-line shrink-0 gap-4">
         <div>
-          <h2 class="section-title">활동(Activity) 관리</h2>
-          <div class="section-desc">
-            <p>생기부 각 활동을 설정하고 해당 영역에 연결합니다.</p>
-            <p>예: 현재 탭에서 '학생자치회', '교내캠페인', '안전교육' 활동 생성 → '자율활동' 영역으로 연결</p>
+          <h2 class="text-[22px] font-bold text-ink m-0 mb-[6px]">활동(Activity) 관리</h2>
+          <div class="text-base text-ink-3">
+            <p class="m-0">생기부 각 활동을 설정하고 해당 영역에 연결합니다.</p>
+            <p class="m-0">예: 현재 탭에서 '학생자치회', '교내캠페인', '안전교육' 활동 생성 → '자율활동' 영역으로 연결</p>
           </div>
         </div>
-        <button class="btn-add" @click="openAddModal">
+        <button
+          class="flex items-center gap-2 px-5 py-[10px] rounded-xl bg-blue border-none text-white text-base font-semibold cursor-pointer whitespace-nowrap shrink-0 transition-colors duration-150 hover:bg-blue-2 shadow-[0_4px_16px_color-mix(in_srgb,var(--c-blue)_20%,transparent)]"
+          @click="openAddModal"
+        >
           <Plus :size="18"/>
           활동 추가
         </button>
       </div>
 
-      <div class="section-body">
+      <div class="flex-1 overflow-y-auto px-10 pt-8 pb-12">
         <!-- 로딩 -->
         <div v-if="activityStore.loading" class="state-box">
-          <p class="state-text">불러오는 중...</p>
+          <p class="text-base text-ink-3 m-0">불러오는 중...</p>
         </div>
 
         <!-- 에러 -->
         <div v-else-if="activityStore.error" class="state-box state-box--error">
-          <p class="state-text">{{ activityStore.error }}</p>
+          <p class="text-base text-ink-3 m-0">{{ activityStore.error }}</p>
         </div>
 
         <!-- 빈 상태 -->
-        <div v-else-if="activityStore.activities.length === 0" class="empty-state">
-          <BookOpen :size="40" color="#6b8ab5"/>
-          <p class="empty-title">등록된 활동이 없습니다</p>
-          <p class="empty-desc">활동을 추가한 후 영역에 연결하세요.</p>
-          <button class="btn-add" @click="openAddModal">
+        <div v-else-if="activityStore.activities.length === 0" class="flex flex-col items-center justify-center gap-3 py-20 px-10 border border-dashed border-line rounded-[20px]">
+          <BookOpen :size="40" class="text-ink-5"/>
+          <p class="text-lg font-semibold text-ink-3 m-0">등록된 활동이 없습니다</p>
+          <p class="text-base text-ink-4 m-0 mb-2">활동을 추가한 후 영역에 연결하세요.</p>
+          <button
+            class="flex items-center gap-2 px-5 py-[10px] rounded-xl bg-blue border-none text-white text-base font-semibold cursor-pointer whitespace-nowrap shrink-0 transition-colors duration-150 hover:bg-blue-2 shadow-[0_4px_16px_color-mix(in_srgb,var(--c-blue)_20%,transparent)]"
+            @click="openAddModal"
+          >
             <Plus :size="18"/>
             첫 활동 추가하기
           </button>
         </div>
 
         <!-- 카드 그리드 -->
-        <div v-else class="card-grid">
+        <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
           <ActivityCard
               v-for="activity in sortedActivities"
               :key="activity.id"
@@ -144,112 +150,3 @@ async function handleDeleted() {
     </transition>
   </div>
 </template>
-
-<style scoped>
-.section {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-/* 헤더 */
-.section-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 36px 40px;
-  border-bottom: 1px solid #1a2035;
-  flex-shrink: 0;
-  gap: 16px;
-}
-
-.section-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 32px 40px 48px;
-}
-
-.section-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0 0 6px;
-}
-
-.section-desc {
-  font-size: 16px;
-  color: #7ba3d4;
-  margin: 0;
-}
-
-.btn-add {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: 12px;
-  background-color: #3b5bdb;
-  border: none;
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: background-color 0.15s;
-  box-shadow: 0 4px 16px rgba(59, 91, 219, 0.2);
-}
-
-.btn-add:hover {
-  background-color: #4c6ef5;
-}
-
-.state-text {
-  font-size: 16px;
-  color: #7ba3d4;
-  margin: 0;
-}
-
-/* 빈 상태 */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 80px 40px;
-  border: 1px dashed #1a2035;
-  border-radius: 20px;
-}
-
-.empty-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #7ba3d4;
-  margin: 0;
-}
-
-.empty-desc {
-  font-size: 16px;
-  color: var(--clr-text-subtle);
-  margin: 0 0 8px;
-}
-
-/* 카드 그리드 */
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-}
-
-/* 모달 트랜지션 */
-.modal-enter-from, .modal-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-active, .modal-leave-active {
-  transition: opacity 0.2s;
-}
-</style>
