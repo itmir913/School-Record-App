@@ -17,3 +17,8 @@
 ## PROHIBITED
 - Silent failures
 - Business logic in frontend
+
+## GIT / COMMIT RULES
+- **GPG 서명 필수**: 모든 커밋에 `-S` 플래그 사용. `git commit -S -m "..."`
+- **Co-Authored-By / Co-Worked 문구 삽입 금지**: 커밋 메시지에 Claude 관련 문구 일절 포함하지 않는다.
+- 커밋 메시지: 한국어 또는 영어, 간결하게 작성.
