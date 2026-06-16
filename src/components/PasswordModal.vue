@@ -82,40 +82,45 @@ function handleCancel() {
 </script>
 
 <template>
-  <div class="overlay">
-    <div class="modal">
-      <div class="modal-header">
-        <div class="header-icon">
+  <div class="fixed inset-0 z-[100] flex items-center justify-center bg-overlay backdrop-blur-[6px]">
+    <div class="w-full max-w-[520px] bg-surface border border-line rounded-modal p-8 shadow-[0_24px_80px_rgba(0,0,0,0.7)]">
+
+      <div class="flex items-center gap-3.5 mb-5">
+        <div class="flex items-center justify-center w-[42px] h-[42px] rounded-xl bg-blue/15 border border-blue/30 text-blue-2 shrink-0 mt-0.5">
           <Lock :size="20"/>
         </div>
         <div>
-          <h2>{{ title }}</h2>
-          <p v-if="mode === 'unlock'">이 파일은 암호화되어 있습니다.</p>
-          <p v-else-if="mode === 'setup'">암호화 비밀번호를 입력하세요.</p>
-          <p v-else>현재 비밀번호와 새 비밀번호를 입력하세요.</p>
+          <h2 class="text-lg font-semibold text-ink m-0">{{ title }}</h2>
+          <p v-if="mode === 'unlock'" class="text-base text-ink-4 m-0">이 파일은 암호화되어 있습니다.</p>
+          <p v-else-if="mode === 'setup'" class="text-base text-ink-4 m-0">암호화 비밀번호를 입력하세요.</p>
+          <p v-else class="text-base text-ink-4 m-0">현재 비밀번호와 새 비밀번호를 입력하세요.</p>
         </div>
       </div>
 
       <!-- 비밀번호 분실 경고 (setup 모드) -->
-      <div v-if="mode === 'setup'" class="warning-box">
-        <AlertTriangle :size="16" class="warning-icon"/>
-        <span>비밀번호를 분실하면 데이터를 <strong><span style="text-decoration: underline;">절대로</span></strong>
+      <div v-if="mode === 'setup'"
+           class="flex items-center gap-2.5 px-3.5 py-3 rounded-btn bg-amber/[8%] border border-amber/25 text-base text-amber leading-[1.5] mb-[18px]">
+        <AlertTriangle :size="16" class="shrink-0 mt-[1px]"/>
+        <span>비밀번호를 분실하면 데이터를 <strong><span class="underline">절대로</span></strong>
           복구할 수 없습니다. 반드시 안전한 곳에 보관하세요.</span>
       </div>
 
-      <div class="form">
+      <div class="flex flex-col gap-3.5 mb-[22px]">
         <!-- 현재/기존 비밀번호 -->
-        <div class="field">
-          <label>{{ mode === 'change' ? '현재 비밀번호' : '비밀번호' }}</label>
-          <div class="input-wrap">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-base font-medium text-ink-3">{{ mode === 'change' ? '현재 비밀번호' : '비밀번호' }}</label>
+          <div class="relative">
             <input
                 :type="showPassword ? 'text' : 'password'"
                 v-model="password"
                 :placeholder="mode === 'change' ? '현재 비밀번호' : '비밀번호 입력'"
+                class="w-full py-2.5 pr-10 pl-3.5 bg-base border border-line-2 rounded-btn text-ink text-base outline-none transition-colors focus:border-blue-2 box-border placeholder:text-ink-5"
                 @keydown.enter="handleSubmit"
                 autofocus
             />
-            <button type="button" class="eye-btn" @click="showPassword = !showPassword">
+            <button type="button"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 bg-transparent border-none text-ink-5 cursor-pointer p-1 flex items-center transition-colors hover:text-ink-3"
+                    @click="showPassword = !showPassword">
               <Eye v-if="!showPassword" :size="16"/>
               <EyeOff v-else :size="16"/>
             </button>
@@ -123,16 +128,19 @@ function handleCancel() {
         </div>
 
         <!-- 새 비밀번호 (change 모드) -->
-        <div v-if="mode === 'change'" class="field">
-          <label>새 비밀번호</label>
-          <div class="input-wrap">
+        <div v-if="mode === 'change'" class="flex flex-col gap-1.5">
+          <label class="text-base font-medium text-ink-3">새 비밀번호</label>
+          <div class="relative">
             <input
                 :type="showNewPassword ? 'text' : 'password'"
                 v-model="newPassword"
                 placeholder="새 비밀번호 입력"
+                class="w-full py-2.5 pr-10 pl-3.5 bg-base border border-line-2 rounded-btn text-ink text-base outline-none transition-colors focus:border-blue-2 box-border placeholder:text-ink-5"
                 @keydown.enter="handleSubmit"
             />
-            <button type="button" class="eye-btn" @click="showNewPassword = !showNewPassword">
+            <button type="button"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 bg-transparent border-none text-ink-5 cursor-pointer p-1 flex items-center transition-colors hover:text-ink-3"
+                    @click="showNewPassword = !showNewPassword">
               <Eye v-if="!showNewPassword" :size="16"/>
               <EyeOff v-else :size="16"/>
             </button>
@@ -140,256 +148,51 @@ function handleCancel() {
         </div>
 
         <!-- 비밀번호 확인 (setup/change 모드) -->
-        <div v-if="mode === 'setup' || mode === 'change'" class="field">
-          <label>{{ mode === 'setup' ? '비밀번호 확인' : '새 비밀번호 확인' }}</label>
-          <div class="input-wrap">
+        <div v-if="mode === 'setup' || mode === 'change'" class="flex flex-col gap-1.5">
+          <label class="text-base font-medium text-ink-3">{{ mode === 'setup' ? '비밀번호 확인' : '새 비밀번호 확인' }}</label>
+          <div class="relative">
             <input
                 type="password"
                 v-model="confirmPassword"
                 :placeholder="mode === 'setup' ? '비밀번호 재입력' : '새 비밀번호 재입력'"
+                class="w-full py-2.5 pr-10 pl-3.5 bg-base border border-line-2 rounded-btn text-ink text-base outline-none transition-colors focus:border-blue-2 box-border placeholder:text-ink-5"
                 @keydown.enter="handleSubmit"
             />
           </div>
         </div>
 
         <!-- 오류 메시지 -->
-        <transition name="err">
-          <div v-if="localError" class="error-box">
-            <AlertTriangle :size="15" style="flex-shrink:0; margin-top:1px;"/>
+        <transition
+            enter-from-class="opacity-0 translate-y-1"
+            enter-active-class="transition-all duration-200"
+            leave-to-class="opacity-0 translate-y-1"
+            leave-active-class="transition-all duration-200"
+        >
+          <div v-if="localError"
+               class="flex items-center gap-2 px-3.5 py-3 rounded-btn bg-red/10 border border-red/30 text-base text-red/80 leading-[1.5]">
+            <AlertTriangle :size="15" class="shrink-0 mt-[1px]"/>
             {{ localError }}
           </div>
         </transition>
       </div>
 
-      <div class="actions">
-        <button class="btn-cancel" @click="handleCancel" :disabled="loading">
+      <div class="flex gap-2.5 justify-end">
+        <button
+            class="py-2.5 px-5 rounded-btn bg-transparent border border-line-2 text-ink-3 text-base cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed enabled:hover:bg-line enabled:hover:text-ink"
+            @click="handleCancel"
+            :disabled="loading"
+        >
           {{ mode === 'unlock' ? '뒤로 가기' : '취소' }}
         </button>
-        <button class="btn-submit" @click="handleSubmit" :disabled="loading">
-          <span v-if="loading" class="spinner"/>
+        <button
+            class="py-2.5 px-6 rounded-btn bg-blue border-none text-white text-base font-medium cursor-pointer flex items-center gap-2 transition-colors min-w-[100px] justify-center disabled:opacity-50 disabled:cursor-not-allowed enabled:hover:bg-blue-2"
+            @click="handleSubmit"
+            :disabled="loading"
+        >
+          <span v-if="loading" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
           <span v-else>{{ submitLabel }}</span>
         </button>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(4, 6, 12, 0.8);
-  backdrop-filter: blur(6px);
-}
-
-.modal {
-  width: 100%;
-  max-width: 520px;
-  background-color: #0e1220;
-  border: 1px solid #1a2035;
-  border-radius: 20px;
-  padding: 32px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 20px;
-}
-
-.header-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background-color: rgba(59, 91, 219, 0.15);
-  border: 1px solid rgba(59, 91, 219, 0.3);
-  color: #6ea8fe;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.modal-header h2 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #e2e8f0;
-  margin: 0;
-}
-
-.modal-header p {
-  font-size: 16px;
-  color: var(--clr-text-subtle);
-  margin: 0;
-}
-
-.warning-box {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 10px;
-  background-color: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  font-size: 16px;
-  color: #fbbf24;
-  line-height: 1.5;
-  margin-bottom: 18px;
-}
-
-.warning-icon {
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-bottom: 22px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.field label {
-  font-size: 16px;
-  font-weight: 500;
-  color: #94a3b8;
-}
-
-.input-wrap {
-  position: relative;
-}
-
-.input-wrap input {
-  width: 100%;
-  padding: 10px 40px 10px 14px;
-  background-color: #0b1022;
-  border: 1px solid #2e3f60;
-  border-radius: 10px;
-  color: #e2e8f0;
-  font-size: 16px;
-  outline: none;
-  transition: border-color 0.15s;
-  box-sizing: border-box;
-}
-
-.input-wrap input:focus {
-  border-color: #4c6ef5;
-}
-
-.eye-btn {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--clr-text-hint);
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  transition: color 0.15s;
-}
-
-.eye-btn:hover {
-  color: #7ba3d4;
-}
-
-.error-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 11px 14px;
-  border-radius: 10px;
-  background-color: #2a1020;
-  border: 1px solid #4a1a28;
-  font-size: 16px;
-  color: #fca5a5;
-  line-height: 1.5;
-}
-
-.err-enter-from, .err-leave-to {
-  opacity: 0;
-  transform: translateY(4px);
-}
-
-.err-enter-active, .err-leave-active {
-  transition: all 0.2s;
-}
-
-.actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.btn-cancel {
-  padding: 10px 20px;
-  border-radius: 10px;
-  background: none;
-  border: 1px solid #2e3f60;
-  color: #94a3b8;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.btn-cancel:hover:not(:disabled) {
-  background-color: #1a2035;
-  color: #e2e8f0;
-}
-
-.btn-submit {
-  padding: 10px 24px;
-  border-radius: 10px;
-  background-color: #3b5bdb;
-  border: none;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background-color 0.15s;
-  min-width: 100px;
-  justify-content: center;
-}
-
-.btn-submit:hover:not(:disabled) {
-  background-color: #4c6ef5;
-}
-
-.btn-submit:disabled, .btn-cancel:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-</style>

@@ -100,317 +100,96 @@ const navGroups = [
 </script>
 
 <template>
-  <aside :class="['sidebar', collapsed ? 'sidebar--collapsed' : '']">
+  <aside
+      class="flex flex-col min-h-screen bg-[#0b0f1c] border-r border-line transition-[width] duration-[250ms] ease-linear overflow-hidden shrink-0"
+      :class="collapsed ? 'w-[60px]' : 'w-60'"
+  >
 
     <!-- 상단: 타이틀 + 토글 -->
-    <div class="sidebar-header">
-      <div v-if="!collapsed" class="sidebar-title">
-        <span class="title-badge">에디터</span>
-        <span class="title-text">학교생활기록부</span>
+    <div class="flex items-center justify-between px-3 pt-4 pb-3 border-b border-line min-h-[60px] gap-2">
+      <div v-if="!collapsed" class="flex items-center gap-1.5 overflow-hidden whitespace-nowrap">
+        <span class="text-[11px] font-bold text-amber bg-amber/[12%] border border-amber/25 rounded-[5px] py-px px-1.5 shrink-0">에디터</span>
+        <span class="text-base font-semibold text-ink-2 whitespace-nowrap">학교생활기록부</span>
       </div>
-      <button class="toggle-btn" @click="toggle" :title="collapsed ? '사이드바 열기' : '사이드바 접기'">
+      <button
+          class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-transparent border-none text-ink-5 cursor-pointer transition-colors ml-auto hover:bg-line hover:text-ink-3"
+          @click="toggle"
+          :title="collapsed ? '사이드바 열기' : '사이드바 접기'"
+      >
         <ChevronLeft v-if="!collapsed" :size="18"/>
         <ChevronRight v-else :size="18"/>
       </button>
     </div>
 
     <!-- 네비게이션 -->
-    <nav class="sidebar-nav">
+    <nav class="flex-1 py-2.5 px-2 flex flex-col gap-0.5 overflow-y-auto">
       <template v-for="(group, gi) in navGroups" :key="gi">
-        <div class="nav-divider" v-if="gi > 0"/>
+        <div v-if="gi > 0" class="h-px bg-line-2 my-1.5 mx-1"/>
         <button
             v-for="item in group.items"
             :key="item.id"
-            :class="['nav-item', activeSection === item.id ? 'nav-item--active' : '']"
+            class="flex items-center gap-2.5 w-full rounded-btn bg-transparent border-none cursor-pointer text-base font-medium text-left whitespace-nowrap transition-colors"
+            :class="[
+              collapsed ? 'justify-center p-[9px]' : 'py-[9px] px-2.5',
+              activeSection === item.id
+                ? 'bg-blue/20 text-blue-2 hover:bg-blue/30 hover:text-ink-2'
+                : 'text-ink-3 hover:bg-[#1e293b] hover:text-ink'
+            ]"
             @click="item.id === 'manual' ? openManual() : select(item.id)"
             :title="collapsed ? item.label : ''"
         >
-          <component :is="item.icon" :size="20" class="nav-icon"/>
-          <span v-if="!collapsed" class="nav-label">{{ item.label }}</span>
+          <component :is="item.icon" :size="20" class="shrink-0"/>
+          <span v-if="!collapsed">{{ item.label }}</span>
         </button>
       </template>
     </nav>
 
     <!-- 하단: 파일 정보 + 저장 -->
-    <div class="sidebar-footer">
-      <div class="footer-divider"/>
+    <div class="flex flex-col px-2 pb-2 pt-0 gap-[5px]">
+      <div class="h-px bg-line mb-2"/>
 
       <!-- 파일 경로 버튼 -->
       <button
           v-if="fileName"
-          class="file-btn"
+          class="flex items-center gap-2 w-full rounded-btn bg-transparent border-none text-ink-4 cursor-pointer text-base text-left whitespace-nowrap overflow-hidden transition-colors hover:bg-[#1e293b] hover:text-ink-2"
+          :class="collapsed ? 'justify-center p-2' : 'py-2 px-2.5'"
           @click="openFolder"
           :title="filePath"
       >
-        <FolderOpen :size="20" class="file-icon"/>
-        <span v-if="!collapsed" class="file-name">{{ fileName }}</span>
+        <FolderOpen :size="20" class="shrink-0"/>
+        <span v-if="!collapsed" class="overflow-hidden text-ellipsis text-base">{{ fileName }}</span>
       </button>
 
       <!-- 스냅샷 버튼 -->
       <button
           v-if="fileName"
-          class="autosave-indicator"
-          :class="{ 'autosave-indicator--icon': collapsed }"
+          class="flex items-center gap-2 w-full rounded-btn bg-transparent border-none text-ink-4 cursor-pointer text-left whitespace-nowrap overflow-hidden transition-colors hover:bg-[#1e293b] hover:text-ink-2"
+          :class="collapsed ? 'justify-center p-2' : 'py-2 px-2.5'"
           @click="$emit('openSnapshot')"
           title="스냅샷 관리"
       >
-        <GitBranch :size="20" class="autosave-icon"/>
-        <span v-if="!collapsed" class="autosave-text">스냅샷(Snapshot)</span>
+        <GitBranch :size="20" class="shrink-0 text-blue-2 opacity-60"/>
+        <span v-if="!collapsed" class="text-base overflow-hidden text-ellipsis">스냅샷(Snapshot)</span>
       </button>
 
       <!-- 설정 버튼 -->
       <button
-          class="autosave-indicator"
+          class="flex items-center gap-2 w-full rounded-btn bg-transparent border-none cursor-pointer text-left whitespace-nowrap overflow-hidden transition-colors"
           :class="[
-            { 'autosave-indicator--icon': collapsed },
-            activeSection === 'settings' ? 'footer-btn--active' : ''
+            collapsed ? 'justify-center p-2' : 'py-2 px-2.5',
+            activeSection === 'settings'
+              ? 'bg-blue/20 text-blue-2 hover:bg-blue/30 hover:text-ink-2'
+              : 'text-ink-4 hover:bg-[#1e293b] hover:text-ink-2'
           ]"
           @click="select('settings')"
           title="설정(Settings)"
       >
-        <Settings :size="20" class="autosave-icon"/>
-        <span v-if="!collapsed" class="autosave-text">설정(Settings)</span>
+        <Settings :size="20"
+                  class="shrink-0"
+                  :class="activeSection === 'settings' ? 'text-blue-2 opacity-100' : 'text-blue-2 opacity-60'"
+        />
+        <span v-if="!collapsed" class="text-base overflow-hidden text-ellipsis">설정(Settings)</span>
       </button>
     </div>
   </aside>
 </template>
-
-<style scoped>
-.sidebar {
-  display: flex;
-  flex-direction: column;
-  width: 240px;
-  min-height: 100vh;
-  background-color: #0b0f1c;
-  border-right: 1px solid #1a2035;
-  transition: width 0.25s ease;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.sidebar--collapsed {
-  width: 60px;
-}
-
-/* 헤더 */
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 12px 12px;
-  border-bottom: 1px solid #1a2035;
-  min-height: 60px;
-  gap: 8px;
-}
-
-.sidebar-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.title-badge {
-  font-size: 11px;
-  font-weight: 700;
-  color: #fbbf24;
-  background-color: rgba(251, 191, 36, 0.12);
-  border: 1px solid rgba(251, 191, 36, 0.25);
-  border-radius: 5px;
-  padding: 1px 6px;
-  flex-shrink: 0;
-}
-
-.title-text {
-  font-size: 15px;
-  font-weight: 600;
-  color: #c8d8f0;
-  white-space: nowrap;
-}
-
-.toggle-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
-  border-radius: 8px;
-  background: none;
-  border: none;
-  color: var(--clr-text-hint);
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-  margin-left: auto;
-}
-
-.toggle-btn:hover {
-  background-color: #1a2035;
-  color: #7ba3d4;
-}
-
-/* 네비게이션 */
-.sidebar-nav {
-  flex: 1;
-  padding: 10px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  overflow-y: auto;
-}
-
-.nav-divider {
-  height: 1px;
-  background-color: #263246;
-  margin: 6px 4px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 9px 10px;
-  border-radius: 10px;
-  background: none;
-  border: none;
-  color: #94a3b8;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 500;
-  text-align: left;
-  white-space: nowrap;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.nav-item:hover {
-  background-color: #1e293b;
-  color: #e2e8f0;
-}
-
-.nav-item--active {
-  background-color: rgba(59, 91, 219, 0.2);
-  color: #93c5fd;
-}
-
-.nav-item--active:hover {
-  background-color: rgba(59, 91, 219, 0.3);
-  color: #bfdbfe;
-}
-
-.nav-icon {
-  flex-shrink: 0;
-}
-
-.sidebar--collapsed .nav-item {
-  justify-content: center;
-  padding: 9px;
-}
-
-/* 하단 */
-.sidebar-footer {
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
-  gap: 5px;
-}
-
-.footer-divider {
-  height: 1px;
-  background-color: #1a2035;
-  margin-bottom: 8px;
-}
-
-.file-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: none;
-  border: none;
-  color: #829ab1;
-  cursor: pointer;
-  font-size: 14px;
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.file-btn:hover {
-  background-color: #1e293b;
-  color: #c0d6f0;
-}
-
-.file-icon {
-  flex-shrink: 0;
-}
-
-.file-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 15px;
-}
-
-.autosave-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: none;
-  border: none;
-  color: #829ab1;
-  cursor: pointer;
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.autosave-indicator:hover {
-  background-color: #1e293b;
-  color: #c0d6f0;
-}
-
-.autosave-indicator--icon {
-  justify-content: center;
-  padding: 8px;
-}
-
-.autosave-icon {
-  flex-shrink: 0;
-  color: #8aaaf8;
-  opacity: 0.6;
-}
-
-.autosave-text {
-  font-size: 15px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.sidebar--collapsed .file-btn {
-  justify-content: center;
-  padding: 8px;
-}
-
-.footer-btn--active {
-  background-color: rgba(59, 91, 219, 0.2);
-  color: #93c5fd;
-}
-
-.footer-btn--active:hover {
-  background-color: rgba(59, 91, 219, 0.3);
-  color: #bfdbfe;
-}
-
-.footer-btn--active .autosave-icon {
-  color: #93c5fd;
-  opacity: 1;
-}
-</style>

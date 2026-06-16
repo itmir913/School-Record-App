@@ -74,77 +74,102 @@ onMounted(loadSnapshots)
 </script>
 
 <template>
-  <div class="modal-overlay">
-    <div class="modal">
+  <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-[1000]">
+    <div class="bg-surface border border-line rounded-[14px] w-[780px] h-[560px] max-w-[95vw] max-h-[80vh] flex flex-col overflow-hidden">
 
       <!-- 헤더 -->
-      <div class="modal-header">
-        <div class="modal-title">
-          <GitBranch :size="16" class="title-icon"/>
+      <div class="flex items-center justify-between px-6 pt-5 pb-4 border-b border-line shrink-0">
+        <div class="flex items-center gap-2 text-base font-semibold text-ink">
+          <GitBranch :size="16" class="text-blue-2"/>
           <span>스냅샷(Snapshot)</span>
         </div>
-        <button class="btn-close" @click="emit('close')"><X :size="18"/></button>
+        <button
+            class="bg-transparent border-none text-ink-5 cursor-pointer p-1 rounded-[6px] flex items-center hover:text-ink-2 hover:bg-line"
+            @click="emit('close')"
+        ><X :size="18"/></button>
       </div>
 
       <!-- 새 스냅샷 생성 영역 -->
-      <div class="create-area">
+      <div class="px-6 py-3.5 border-b border-line shrink-0">
         <template v-if="!showCreateForm">
-          <button class="btn-create" @click="showCreateForm = true">
+          <button
+              class="flex items-center gap-1.5 py-[7px] px-4 rounded-lg border border-blue/40 bg-blue/[12%] text-blue-2 text-sm cursor-pointer hover:bg-blue/[22%]"
+              @click="showCreateForm = true"
+          >
             <Plus :size="14"/>
             현재 상태로 스냅샷 생성
           </button>
         </template>
         <template v-else>
-          <div class="create-form">
+          <div class="flex gap-2 items-center">
             <input
                 v-model="memoInput"
-                class="ui-input memo-input"
+                class="ui-input flex-1 w-auto py-[7px] px-3 rounded-lg text-sm border-line-2 placeholder:text-ink-5"
                 placeholder="메모 (선택)"
                 maxlength="100"
                 autofocus
                 @keydown.enter="handleCreate"
                 @keydown.esc="showCreateForm = false; memoInput = ''"
             />
-            <button class="btn-confirm" :disabled="creating" @click="handleCreate">
+            <button
+                class="py-[7px] px-3.5 rounded-lg border-none bg-blue/70 text-ink text-sm cursor-pointer whitespace-nowrap disabled:opacity-40 disabled:cursor-default enabled:hover:bg-blue/90"
+                :disabled="creating"
+                @click="handleCreate"
+            >
               {{ creating ? '생성 중...' : '생성' }}
             </button>
-            <button class="btn-cancel" @click="showCreateForm = false; memoInput = ''">
+            <button
+                class="py-[7px] px-3 rounded-lg border border-line bg-transparent text-ink-2 text-sm cursor-pointer whitespace-nowrap hover:bg-line"
+                @click="showCreateForm = false; memoInput = ''"
+            >
               취소
             </button>
           </div>
-          <p v-if="createError" class="form-error">{{ createError }}</p>
+          <p v-if="createError" class="text-xs text-red m-0 mt-1">{{ createError }}</p>
         </template>
       </div>
 
       <!-- 스냅샷 목록 -->
-      <div class="snapshot-list">
-        <div v-if="loading" class="state-msg">불러오는 중...</div>
-        <div v-else-if="loadError" class="state-msg state-msg--error">{{ loadError }}</div>
-        <div v-else-if="snapshots.length === 0" class="state-msg">
+      <div class="overflow-y-auto flex-1 min-h-0 px-4 py-3 flex flex-col gap-2">
+        <div v-if="loading" class="text-sm text-ink-5 text-center py-8">불러오는 중...</div>
+        <div v-else-if="loadError" class="text-sm text-red text-center py-8">{{ loadError }}</div>
+        <div v-else-if="snapshots.length === 0" class="text-sm text-ink-5 text-center py-8">
           저장된 스냅샷이 없습니다.
         </div>
 
-        <div v-for="snap in snapshots" :key="snap.id" class="snapshot-item">
-          <div class="snap-info">
-            <span class="snap-dot">●</span>
-            <span class="snap-date">{{ formatDate(snap.created_at) }}</span>
-            <span v-if="snap.memo" class="snap-memo">{{ snap.memo }}</span>
+        <div v-for="snap in snapshots" :key="snap.id"
+             class="border border-line rounded-btn overflow-hidden shrink-0">
+          <div class="flex items-center gap-2 px-3.5 py-2.5 bg-base border-b border-line">
+            <span class="text-blue text-[10px]">●</span>
+            <span class="text-sm text-blue-2">{{ formatDate(snap.created_at) }}</span>
+            <span v-if="snap.memo"
+                  class="text-xs text-amber overflow-hidden text-ellipsis whitespace-nowrap">{{ snap.memo }}</span>
           </div>
 
-          <div class="snap-actions">
+          <div class="flex items-center gap-2 px-3.5 py-2">
             <template v-if="confirmRestoreId !== snap.id">
-              <button class="btn-restore" @click="confirmRestoreId = snap.id">
+              <button
+                  class="flex items-center gap-[5px] py-[5px] px-3 rounded-[7px] border border-line-2 bg-transparent text-blue-2 text-xs cursor-pointer hover:bg-line"
+                  @click="confirmRestoreId = snap.id"
+              >
                 <RotateCcw :size="13"/>
                 복원
               </button>
             </template>
             <template v-else>
-              <span class="confirm-text">이 시점으로 복원합니다. <strong><u>저장되지 않은 모든 내용이 삭제</u></strong>되고 과거 스냅샷 시점으로 덮어써집니다.</span>
-              <button class="btn-confirm-restore" :disabled="restoring" @click="handleRestore">
+              <span class="text-xs text-amber flex-1">이 시점으로 복원합니다. <strong><u>저장되지 않은 모든 내용이 삭제</u></strong>되고 과거 스냅샷 시점으로 덮어써집니다.</span>
+              <button
+                  class="py-[5px] px-3 rounded-[7px] border-none bg-red/60 text-red/80 text-xs cursor-pointer whitespace-nowrap disabled:opacity-40 disabled:cursor-default enabled:hover:bg-red/85"
+                  :disabled="restoring"
+                  @click="handleRestore"
+              >
                 {{ restoring ? '복원 중...' : '확인' }}
               </button>
-              <button class="btn-cancel" @click="confirmRestoreId = null; restoreError = ''">취소</button>
-              <p v-if="restoreError" class="form-error">{{ restoreError }}</p>
+              <button
+                  class="py-[5px] px-3 rounded-[7px] border border-line bg-transparent text-ink-2 text-xs cursor-pointer whitespace-nowrap hover:bg-line"
+                  @click="confirmRestoreId = null; restoreError = ''"
+              >취소</button>
+              <p v-if="restoreError" class="text-xs text-red m-0">{{ restoreError }}</p>
             </template>
           </div>
         </div>
@@ -153,213 +178,3 @@ onMounted(loadSnapshots)
     </div>
   </div>
 </template>
-
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal {
-  background: #0d1220;
-  border: 1px solid #1a2035;
-  border-radius: 14px;
-  width: 780px;
-  height: 560px;
-  max-width: 95vw;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid #1a2035;
-  flex-shrink: 0;
-}
-
-.modal-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #e2e8f0;
-}
-
-.title-icon { color: #8aaaf8; }
-
-.btn-close {
-  background: none;
-  border: none;
-  color: #6080a0;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-}
-.btn-close:hover { color: #c8ddf0; background: #1a2035; }
-
-.create-area {
-  padding: 14px 24px;
-  border-bottom: 1px solid #1a2035;
-  flex-shrink: 0;
-}
-
-.btn-create {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 16px;
-  border-radius: 8px;
-  border: 1px solid rgba(59, 91, 219, 0.4);
-  background: rgba(59, 91, 219, 0.12);
-  color: #a8c8ff;
-  font-size: 13px;
-  cursor: pointer;
-}
-.btn-create:hover { background: rgba(59, 91, 219, 0.22); }
-
-.create-form {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.memo-input {
-  flex: 1;
-  width: auto;
-  padding: 7px 12px;
-  border-radius: 8px;
-  border-color: #2a3a60;
-  font-size: 13px;
-}
-
-.btn-confirm {
-  padding: 7px 14px;
-  border-radius: 8px;
-  border: none;
-  background: rgba(59, 91, 219, 0.7);
-  color: #e2e8f0;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.btn-confirm:disabled { opacity: 0.4; cursor: default; }
-.btn-confirm:not(:disabled):hover { background: rgba(59, 91, 219, 0.9); }
-
-.btn-cancel {
-  padding: 7px 12px;
-  border-radius: 8px;
-  border: 1px solid #1a2035;
-  background: none;
-  color: #a0bcd8;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.btn-cancel:hover { background: #1a2035; }
-
-.snapshot-list {
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.state-msg {
-  font-size: 14px;
-  color: #6080a0;
-  text-align: center;
-  padding: 32px 0;
-}
-
-.state-msg--error {
-  color: #f87171;
-}
-
-.form-error {
-  font-size: 12px;
-  color: #f87171;
-  margin: 4px 0 0;
-}
-
-.snapshot-item {
-  border: 1px solid #1a2035;
-  border-radius: 10px;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.snap-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  background: #080b14;
-  border-bottom: 1px solid #1a2035;
-}
-
-.snap-dot { color: #3b5bdb; font-size: 10px; }
-.snap-date { font-size: 13px; color: #8aaaf8; }
-.snap-memo {
-  font-size: 12px;
-  color: #f0c060;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.snap-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-}
-
-.btn-restore {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
-  border-radius: 7px;
-  border: 1px solid #2a3a60;
-  background: none;
-  color: #8aaaf8;
-  font-size: 12px;
-  cursor: pointer;
-}
-.btn-restore:hover { background: #1a2035; }
-
-.confirm-text {
-  font-size: 12px;
-  color: #f0a060;
-  flex: 1;
-}
-
-.btn-confirm-restore {
-  padding: 5px 12px;
-  border-radius: 7px;
-  border: none;
-  background: rgba(220, 60, 60, 0.6);
-  color: #ffd0c0;
-  font-size: 12px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.btn-confirm-restore:disabled { opacity: 0.4; cursor: default; }
-.btn-confirm-restore:not(:disabled):hover { background: rgba(220, 60, 60, 0.85); }
-</style>

@@ -102,304 +102,107 @@ async function saveManualSnapshot() {
 </script>
 
 <template>
-  <div class="modal-overlay" @click.self="emit('close')">
-    <div class="modal">
+  <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-[1000]" @click.self="emit('close')">
+    <div class="bg-surface border border-line rounded-[14px] w-[680px] max-w-[95vw] h-[85vh] flex flex-col overflow-hidden">
 
       <!-- 헤더 -->
-      <div class="modal-header">
-        <div class="modal-title">
-          <span class="modal-student">{{ studentName }}</span>
-          <span class="modal-sep">/</span>
-          <span class="modal-activity">{{ activityName }}</span>
-          <span class="modal-label">히스토리</span>
+      <div class="flex items-center justify-between px-6 pt-5 pb-4 border-b border-line shrink-0">
+        <div class="flex items-center gap-1.5 text-base text-ink">
+          <span class="font-semibold">{{ studentName }}</span>
+          <span class="text-ink-5">/</span>
+          <span class="text-blue-2">{{ activityName }}</span>
+          <span class="text-ink-3 ml-1">히스토리</span>
         </div>
-        <button class="btn-close" @click="emit('close')"><X :size="18"/></button>
+        <button
+            class="bg-transparent border-none text-ink-5 cursor-pointer p-1 rounded-[6px] flex items-center hover:text-ink-2 hover:bg-line"
+            @click="emit('close')"
+        ><X :size="18"/></button>
       </div>
 
       <!-- 수동 저장 버튼 영역 -->
-      <div class="manual-save-area">
+      <div class="px-6 py-3 border-b border-line shrink-0">
         <template v-if="!showNoteForm">
-          <button class="btn-manual" @click="showNoteForm = true">현재 버전 저장</button>
+          <button
+              class="py-[7px] px-4 rounded-lg border border-blue/40 bg-blue/[12%] text-blue-2 text-sm cursor-pointer hover:bg-blue/[22%]"
+              @click="showNoteForm = true"
+          >현재 버전 저장</button>
         </template>
         <template v-else>
-          <div class="note-form">
+          <div class="flex gap-2 items-center">
             <input
-              v-model="noteInput"
-              class="ui-input note-input"
-              placeholder="메모를 입력하세요 (필수)"
-              maxlength="100"
-              @keydown.enter="saveManualSnapshot"
-              @keydown.esc="showNoteForm = false"
+                v-model="noteInput"
+                class="ui-input flex-1 w-auto py-[7px] px-3 rounded-lg text-sm border-line-2 placeholder:text-ink-5"
+                placeholder="메모를 입력하세요 (필수)"
+                maxlength="100"
+                @keydown.enter="saveManualSnapshot"
+                @keydown.esc="showNoteForm = false"
             />
-            <button class="btn-confirm" :disabled="!noteInput.trim() || saving" @click="saveManualSnapshot">
+            <button
+                class="py-[7px] px-3.5 rounded-lg border-none bg-blue/70 text-ink text-sm cursor-pointer disabled:opacity-40 disabled:cursor-default enabled:hover:bg-blue/90"
+                :disabled="!noteInput.trim() || saving"
+                @click="saveManualSnapshot"
+            >
               {{ saving ? '저장 중...' : '저장' }}
             </button>
-            <button class="btn-cancel" @click="showNoteForm = false; noteInput = ''">취소</button>
+            <button
+                class="py-[7px] px-3 rounded-lg border border-line bg-transparent text-ink-2 text-sm cursor-pointer hover:bg-line"
+                @click="showNoteForm = false; noteInput = ''"
+            >취소</button>
           </div>
-          <p v-if="saveError" class="form-error">{{ saveError }}</p>
+          <p v-if="saveError" class="text-sm text-red bg-red/[8%] border border-red/20 rounded-lg px-3 py-2 mt-1 m-0">{{ saveError }}</p>
         </template>
       </div>
 
       <!-- 뷰 모드 토글 -->
-      <div class="view-mode-bar">
+      <div class="flex gap-1.5 px-6 py-2.5 border-b border-line shrink-0">
         <button
-          class="btn-mode"
-          :class="{ active: viewMode === 'content' }"
-          @click="viewMode = 'content'"
+            class="py-[5px] px-3.5 rounded-[7px] border text-xs cursor-pointer transition-colors"
+            :class="viewMode === 'content'
+              ? 'bg-blue/[18%] border-blue/50 text-blue-2'
+              : 'border-line bg-transparent text-ink-5 hover:bg-line hover:text-ink-3'"
+            @click="viewMode = 'content'"
         >원문 보기</button>
         <button
-          class="btn-mode"
-          :class="{ active: viewMode === 'diff' }"
-          @click="viewMode = 'diff'"
+            class="py-[5px] px-3.5 rounded-[7px] border text-xs cursor-pointer transition-colors"
+            :class="viewMode === 'diff'
+              ? 'bg-blue/[18%] border-blue/50 text-blue-2'
+              : 'border-line bg-transparent text-ink-5 hover:bg-line hover:text-ink-3'"
+            @click="viewMode = 'diff'"
         >수정된 부분(diff) 보기</button>
       </div>
 
       <!-- 히스토리 목록 -->
-      <div class="history-list">
-        <p v-if="historyError" class="form-error">{{ historyError }}</p>
+      <div class="overflow-y-auto px-6 py-4 flex-1 min-h-0 flex flex-col gap-3">
+        <p v-if="historyError" class="text-sm text-red bg-red/[8%] border border-red/20 rounded-lg px-3 py-2 m-0">{{ historyError }}</p>
 
-        <div v-if="entries.length === 0 && !loading && !historyError" class="empty-msg">
+        <div v-if="entries.length === 0 && !loading && !historyError"
+             class="text-sm text-ink-5 text-center py-6">
           저장된 히스토리가 없습니다.
         </div>
 
-        <div v-for="(entry, idx) in entries" :key="entry.id" class="history-item">
-          <div class="item-meta">
-            <span class="item-dot">●</span>
-            <span class="item-date">{{ formatDate(entry.changed_at) }}</span>
-            <span v-if="entry.note" class="item-note">📌 {{ entry.note }}</span>
-            <span v-else class="item-auto">자동</span>
+        <div v-for="(entry, idx) in entries" :key="entry.id"
+             class="border border-line rounded-btn overflow-hidden shrink-0">
+          <div class="flex items-center gap-2 px-3.5 py-2 bg-base border-b border-line">
+            <span class="text-blue text-[10px]">●</span>
+            <span class="text-xs text-blue-2">{{ formatDate(entry.changed_at) }}</span>
+            <span v-if="entry.note" class="text-xs text-amber">📌 {{ entry.note }}</span>
+            <span v-else class="text-[11px] text-ink-5 bg-line px-[7px] py-px rounded-[4px]">자동</span>
           </div>
-          <div class="item-diff">
+          <div class="px-3.5 py-2.5 bg-base">
             <DiffView v-if="viewMode === 'diff'" :before="prevContent(idx)" :after="entry.content" />
-            <span v-else class="plain-content">{{ entry.content }}</span>
+            <span v-else class="text-sm leading-relaxed whitespace-pre-wrap break-all text-ink-2">{{ entry.content }}</span>
           </div>
         </div>
 
-        <div v-if="loading" class="loading-msg">불러오는 중...</div>
+        <div v-if="loading" class="text-sm text-ink-5 text-center py-6">불러오는 중...</div>
 
         <button
-          v-if="hasMore && !loading"
-          class="btn-more"
-          @click="loadHistory(false)"
+            v-if="hasMore && !loading"
+            class="self-center py-[7px] px-5 rounded-lg border border-line bg-transparent text-blue-2 text-sm cursor-pointer mt-1 hover:bg-line"
+            @click="loadHistory(false)"
         >{{ LIMIT }}개 더 불러오기</button>
       </div>
 
     </div>
   </div>
 </template>
-
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal {
-  background: #0d1220;
-  border: 1px solid #1a2035;
-  border-radius: 14px;
-  width: 680px;
-  max-width: 95vw;
-  height: 85vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid #1a2035;
-  flex-shrink: 0;
-}
-
-.modal-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 15px;
-  color: #e2e8f0;
-}
-
-.modal-student { font-weight: 600; }
-.modal-sep { color: #4a5f8a; }
-.modal-activity { color: #8aaaf8; }
-.modal-label { color: #a0bcd8; margin-left: 4px; }
-
-.btn-close {
-  background: none;
-  border: none;
-  color: #6080a0;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-}
-.btn-close:hover { color: #c8ddf0; background: #1a2035; }
-
-/* 수동 저장 영역 */
-.manual-save-area {
-  padding: 12px 24px;
-  border-bottom: 1px solid #1a2035;
-  flex-shrink: 0;
-}
-
-.btn-manual {
-  padding: 7px 16px;
-  border-radius: 8px;
-  border: 1px solid rgba(59, 91, 219, 0.4);
-  background: rgba(59, 91, 219, 0.12);
-  color: #a8c8ff;
-  font-size: 13px;
-  cursor: pointer;
-}
-.btn-manual:hover { background: rgba(59, 91, 219, 0.22); }
-
-.note-form {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.note-input {
-  flex: 1;
-  width: auto;
-  padding: 7px 12px;
-  border-radius: 8px;
-  border-color: #2a3a60;
-  font-size: 13px;
-}
-
-.btn-confirm {
-  padding: 7px 14px;
-  border-radius: 8px;
-  border: none;
-  background: rgba(59, 91, 219, 0.7);
-  color: #e2e8f0;
-  font-size: 13px;
-  cursor: pointer;
-}
-.btn-confirm:disabled { opacity: 0.4; cursor: default; }
-.btn-confirm:not(:disabled):hover { background: rgba(59, 91, 219, 0.9); }
-
-.btn-cancel {
-  padding: 7px 12px;
-  border-radius: 8px;
-  border: 1px solid #1a2035;
-  background: none;
-  color: #a0bcd8;
-  font-size: 13px;
-  cursor: pointer;
-}
-.btn-cancel:hover { background: #1a2035; }
-
-/* 히스토리 목록 */
-.history-list {
-  overflow-y: auto;
-  padding: 16px 24px;
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.empty-msg, .loading-msg {
-  font-size: 14px;
-  color: #6080a0;
-  text-align: center;
-  padding: 24px 0;
-}
-
-.form-error {
-  font-size: 13px;
-  color: #f87171;
-  background-color: rgba(248, 113, 113, 0.08);
-  border: 1px solid rgba(248, 113, 113, 0.2);
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin: 4px 0 0;
-}
-
-.history-item {
-  border: 1px solid #1a2035;
-  border-radius: 10px;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.item-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: #080b14;
-  border-bottom: 1px solid #1a2035;
-}
-
-.item-dot { color: #3b5bdb; font-size: 10px; }
-.item-date { font-size: 12px; color: #8aaaf8; }
-.item-note { font-size: 12px; color: #f0c060; }
-.item-auto { font-size: 11px; color: #4a5f8a; background: #1a2035; padding: 1px 7px; border-radius: 4px; }
-
-.item-diff {
-  padding: 10px 14px;
-  background: #0a0e1a;
-}
-
-.btn-more {
-  align-self: center;
-  padding: 7px 20px;
-  border-radius: 8px;
-  border: 1px solid #1a2035;
-  background: none;
-  color: #8aaaf8;
-  font-size: 13px;
-  cursor: pointer;
-  margin-top: 4px;
-}
-.btn-more:hover { background: #1a2035; }
-
-/* 뷰 모드 토글 */
-.view-mode-bar {
-  display: flex;
-  gap: 6px;
-  padding: 10px 24px;
-  border-bottom: 1px solid #1a2035;
-  flex-shrink: 0;
-}
-
-.btn-mode {
-  padding: 5px 14px;
-  border-radius: 7px;
-  border: 1px solid #1a2035;
-  background: none;
-  color: #6080a0;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-.btn-mode:hover { background: #1a2035; color: #a0bcd8; }
-.btn-mode.active {
-  background: rgba(59, 91, 219, 0.18);
-  border-color: rgba(59, 91, 219, 0.5);
-  color: #a8c8ff;
-}
-
-/* 버전 내용 일반 텍스트 */
-.plain-content {
-  font-size: 14px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-break: break-all;
-  color: #c8ddf0;
-}
-</style>

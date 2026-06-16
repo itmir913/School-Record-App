@@ -315,50 +315,56 @@ async function processFile(file) {
       @close="emit('close')"
   >
     <!-- ── 리스트 뷰 바디 ─────────────────────────────────── -->
-    <div v-if="currentView === 'list'" class="modal-body">
-      <div v-if="excelStatus" class="excel-result">
-        <span class="excel-result-ok">{{ excelStatus.selected }}명 선택됨</span>
-        <span v-if="excelStatus.newlyAdded > 0" class="excel-result-new">
+    <div v-if="currentView === 'list'" class="flex-1 overflow-y-auto py-3">
+      <div v-if="excelStatus"
+           class="flex items-center gap-1.5 mx-5 mb-1 px-3 py-2 bg-green/[8%] border border-green/20 rounded-lg text-sm">
+        <span class="text-green font-semibold">{{ excelStatus.selected }}명 선택됨</span>
+        <span v-if="excelStatus.newlyAdded > 0" class="text-blue-2">
           · {{ excelStatus.newlyAdded }}명 신규 추가됨
         </span>
       </div>
 
-      <p v-if="allStudents.length === 0" class="empty-hint">
+      <p v-if="allStudents.length === 0" class="text-base text-ink-5 leading-[1.7] px-6 py-6 m-0">
         등록된 학생이 없습니다.<br>학생 관리에서 먼저 추가하세요.
       </p>
 
-      <div v-else class="group-list">
-        <div v-for="g in groups" :key="groupKey(g)" class="group">
-          <div class="group-header" @click="toggleGroup(groupKey(g))">
-            <div class="group-header-left">
+      <div v-else class="flex flex-col">
+        <div v-for="g in groups" :key="groupKey(g)" class="border-b border-line last:border-b-0">
+          <div
+              class="flex items-center justify-between px-5 py-3 cursor-pointer transition-colors select-none hover:bg-blue/[5%]"
+              @click="toggleGroup(groupKey(g))"
+          >
+            <div class="flex items-center gap-2.5">
               <input
                   type="checkbox"
-                  class="group-checkbox"
+                  class="w-4 h-4 cursor-pointer accent-blue shrink-0"
                   :checked="isGroupAllSelected(g)"
                   :indeterminate="isGroupPartialSelected(g)"
                   @change.stop="toggleGroupAll(g)"
                   @click.stop
               />
-              <span class="group-name">{{ g.grade }}학년 {{ g.classNum }}반</span>
-              <span class="group-count">{{ g.students.length }}명</span>
-              <span v-if="isGroupPartialSelected(g) || isGroupAllSelected(g)" class="group-selected-count">
+              <span class="text-base font-semibold text-ink-2">{{ g.grade }}학년 {{ g.classNum }}반</span>
+              <span class="text-sm text-ink-4">{{ g.students.length }}명</span>
+              <span v-if="isGroupPartialSelected(g) || isGroupAllSelected(g)"
+                    class="text-sm text-blue-2 bg-blue/[12%] rounded px-1.5 py-px">
                 {{ g.students.filter(s => selectedIds.has(s.id)).length }}명 선택
               </span>
             </div>
-            <ChevronDown v-if="isGroupExpanded(groupKey(g))" :size="16" class="chevron"/>
-            <ChevronRight v-else :size="16" class="chevron"/>
+            <ChevronDown v-if="isGroupExpanded(groupKey(g))" :size="16" class="text-ink-4 shrink-0"/>
+            <ChevronRight v-else :size="16" class="text-ink-4 shrink-0"/>
           </div>
 
-          <div v-if="isGroupExpanded(groupKey(g))" class="student-list">
-            <label v-for="s in g.students" :key="s.id" class="student-item">
+          <div v-if="isGroupExpanded(groupKey(g))" class="flex flex-col py-1 pb-2 pl-5 bg-base/40">
+            <label v-for="s in g.students" :key="s.id"
+                   class="flex items-center gap-2.5 py-2 pr-5 cursor-pointer transition-colors hover:bg-blue/[4%]">
               <input
                   type="checkbox"
-                  class="student-checkbox"
+                  class="w-[15px] h-[15px] cursor-pointer accent-blue shrink-0"
                   :checked="selectedIds.has(s.id)"
                   @change="toggleStudent(s.id)"
               />
-              <span class="student-number">{{ s.number }}번</span>
-              <span class="student-name">{{ s.name }}</span>
+              <span class="text-sm text-ink-4 w-9 shrink-0">{{ s.number }}번</span>
+              <span class="text-base text-ink-2">{{ s.name }}</span>
             </label>
           </div>
         </div>
@@ -366,62 +372,70 @@ async function processFile(file) {
     </div>
 
     <!-- ── 엑셀 뷰 바디 ──────────────────────────────────── -->
-    <div v-else class="modal-body excel-body">
+    <div v-else class="flex-1 overflow-y-auto pt-5 px-6 pb-2 flex flex-col gap-4">
       <input
           ref="fileInputRef"
           type="file"
           accept=".csv,.xlsx"
-          style="display:none"
+          class="hidden"
           @change="onFileChange"
       />
 
-      <div class="excel-guide">
-        <div class="excel-guide-text">
-          <p>학생 명단이 담긴 CSV 또는 엑셀 파일을 업로드해 주세요.</p>
-          <p>파일에 <strong>학년, 반, 번호, 이름</strong> 열이 포함되어야 합니다.</p>
+      <div class="flex items-center justify-between gap-3">
+        <div class="text-base text-ink-5 leading-relaxed">
+          <p class="m-0">학생 명단이 담긴 CSV 또는 엑셀 파일을 업로드해 주세요.</p>
+          <p class="m-0">파일에 <strong class="text-ink-2">학년, 반, 번호, 이름</strong> 열이 포함되어야 합니다.</p>
         </div>
-        <button class="btn-sample" @click="downloadSample">
+        <button
+            class="flex items-center gap-1.5 py-[7px] px-3 rounded-lg border border-blue/30 bg-blue/[8%] text-blue-2 text-sm cursor-pointer whitespace-nowrap shrink-0 transition-colors hover:bg-blue/15"
+            @click="downloadSample"
+        >
           <Download :size="14"/>
           샘플 파일 다운로드
         </button>
       </div>
 
-      <div class="excel-notice">
-        엑셀 파일에 담긴 학생을 <strong>{{ area.name }}</strong> 영역에 일괄 배정합니다.
-        <span style="color: #f59e0b;">엑셀 파일 명단에 없는 학생은 이 영역에서 배정 취소됩니다.</span>
+      <div class="text-sm text-ink-5 bg-blue/[6%] border border-blue/20 rounded-lg px-3.5 py-2.5 leading-[1.7]">
+        엑셀 파일에 담긴 학생을 <strong class="text-ink-2">{{ area.name }}</strong> 영역에 일괄 배정합니다.
+        <span class="text-amber">엑셀 파일 명단에 없는 학생은 이 영역에서 배정 취소됩니다.</span>
       </div>
 
       <div
-          class="drop-zone"
-          :class="[dragging && 'drop-zone--active', parsing && 'drop-zone--parsing']"
+          class="border-2 border-dashed rounded-[14px] py-[52px] px-6 flex flex-col items-center gap-2.5 transition-colors"
+          :class="parsing
+            ? 'cursor-default border-green/30 bg-green/[3%]'
+            : dragging
+              ? 'border-blue/50 bg-blue/[4%] cursor-pointer'
+              : 'border-line cursor-pointer hover:border-blue/50 hover:bg-blue/[4%]'"
           @dragover="onDragOver"
           @dragleave="onDragLeave"
           @drop="onDrop"
           @click="!parsing && fileInputRef.click()"
       >
-        <FileSpreadsheet v-if="!parsing" :size="36" class="drop-icon"/>
-        <Users v-else :size="36" class="drop-icon drop-icon--parsing"/>
-        <p class="drop-text">
+        <FileSpreadsheet v-if="!parsing" :size="36" class="text-ink-5"/>
+        <Users v-else :size="36" class="text-green opacity-70"/>
+        <p class="text-base text-ink-5 m-0">
           <template v-if="parsing">학생 명단을 분석하는 중...</template>
           <template v-else>
-            파일을 여기에 드래그하거나 <span class="drop-link">파일 선택</span>
+            파일을 여기에 드래그하거나 <span class="text-blue-2 underline">파일 선택</span>
           </template>
         </p>
-        <p v-if="!parsing" class="drop-hint">CSV, XLSX 지원</p>
+        <p v-if="!parsing" class="text-sm text-ink-5 m-0">CSV, XLSX 지원</p>
       </div>
 
-      <div v-if="excelError" class="excel-error">
+      <div v-if="excelError"
+           class="text-base text-red/80 bg-red/[8%] border border-red/20 rounded-lg px-3.5 py-2.5 leading-relaxed">
         {{ excelError }}
       </div>
     </div>
 
     <!-- ── 푸터 ──────────────────────────────────────────── -->
     <template #footer>
-      <span class="selected-count">{{ selectedIds.size }}명 선택됨</span>
-      <div class="footer-right">
+      <span class="text-base text-ink-5">{{ selectedIds.size }}명 선택됨</span>
+      <div class="flex gap-2 items-center">
         <template v-if="currentView === 'list'">
-          <p v-if="serverError" class="server-error">{{ serverError }}</p>
-          <button class="btn-secondary btn-bulk" @click="openExcelView">
+          <p v-if="serverError" class="text-sm text-red m-0 mr-3">{{ serverError }}</p>
+          <button class="btn-secondary flex items-center gap-1.5" @click="openExcelView">
             <FileSpreadsheet :size="14"/>
             엑셀로 일괄배정
           </button>
@@ -437,295 +451,3 @@ async function processFile(file) {
     </template>
   </BaseModal>
 </template>
-
-<style scoped>
-.modal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px 0;
-}
-
-/* ── 엑셀 결과 배너 ───────────────────────────────────────── */
-.excel-result {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 20px 4px;
-  padding: 8px 12px;
-  background: rgba(52, 211, 153, 0.08);
-  border: 1px solid rgba(52, 211, 153, 0.2);
-  border-radius: 8px;
-  font-size: 13px;
-}
-
-.excel-result-ok {
-  color: #34d399;
-  font-weight: 600;
-}
-
-.excel-result-new {
-  color: #60a5fa;
-}
-
-/* ── 빈 화면 ─────────────────────────────────────────────── */
-.empty-hint {
-  font-size: 15px;
-  color: #7ba3d4;
-  line-height: 1.7;
-  padding: 24px;
-  margin: 0;
-}
-
-/* ── 그룹 리스트 ─────────────────────────────────────────── */
-.group-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.group {
-  border-bottom: 1px solid #1a2035;
-}
-
-.group:last-child {
-  border-bottom: none;
-}
-
-.group-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  cursor: pointer;
-  transition: background-color 0.12s;
-  user-select: none;
-}
-
-.group-header:hover {
-  background-color: rgba(59, 91, 219, 0.05);
-}
-
-.group-header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.group-checkbox {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: #3b5bdb;
-  flex-shrink: 0;
-}
-
-.group-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: #c8d8f0;
-}
-
-.group-count {
-  font-size: 13px;
-  color: var(--clr-text-subtle);
-}
-
-.group-selected-count {
-  font-size: 13px;
-  color: #7ba8f0;
-  background-color: rgba(59, 91, 219, 0.12);
-  border-radius: 4px;
-  padding: 1px 6px;
-}
-
-.chevron {
-  color: var(--clr-text-subtle);
-  flex-shrink: 0;
-}
-
-.student-list {
-  display: flex;
-  flex-direction: column;
-  padding: 4px 0 8px 20px;
-  background-color: rgba(8, 11, 20, 0.4);
-}
-
-.student-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 20px 8px 0;
-  cursor: pointer;
-  transition: background-color 0.1s;
-}
-
-.student-item:hover {
-  background-color: rgba(59, 91, 219, 0.04);
-}
-
-.student-checkbox {
-  width: 15px;
-  height: 15px;
-  cursor: pointer;
-  accent-color: #3b5bdb;
-  flex-shrink: 0;
-}
-
-.student-number {
-  font-size: 14px;
-  color: var(--clr-text-subtle);
-  width: 36px;
-  flex-shrink: 0;
-}
-
-.student-name {
-  font-size: 15px;
-  color: #c8d8f0;
-}
-
-/* ── 엑셀 뷰 ─────────────────────────────────────────────── */
-.excel-body {
-  padding: 20px 24px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.excel-guide {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.excel-guide-text {
-  font-size: 15px;
-  color: #7ba3d4;
-  line-height: 1.6;
-}
-
-.excel-guide-text p {
-  margin: 0;
-}
-
-.excel-guide-text strong {
-  color: #c8d8f0;
-}
-
-.btn-sample {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(59, 91, 219, 0.3);
-  background: rgba(59, 91, 219, 0.08);
-  color: #7ba8f0;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: background-color 0.15s;
-}
-
-.btn-sample:hover {
-  background: rgba(59, 91, 219, 0.15);
-}
-
-.drop-zone {
-  border: 2px dashed #1a2035;
-  border-radius: 14px;
-  padding: 52px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: border-color 0.15s, background-color 0.15s;
-}
-
-.drop-zone:hover,
-.drop-zone--active {
-  border-color: rgba(59, 91, 219, 0.5);
-  background-color: rgba(59, 91, 219, 0.04);
-}
-
-.drop-zone--parsing {
-  cursor: default;
-  border-color: rgba(52, 211, 153, 0.3);
-  background-color: rgba(52, 211, 153, 0.03);
-}
-
-.drop-icon {
-  color: var(--clr-text-hint);
-}
-
-.drop-icon--parsing {
-  color: #34d399;
-  opacity: 0.7;
-}
-
-.drop-text {
-  font-size: 15px;
-  color: #7ba3d4;
-  margin: 0;
-}
-
-.drop-link {
-  color: #7ba8f0;
-  text-decoration: underline;
-}
-
-.drop-hint {
-  font-size: 13px;
-  color: var(--clr-text-hint);
-  margin: 0;
-}
-
-.excel-notice {
-  font-size: 14px;
-  color: #7ba3d4;
-  background: rgba(59, 91, 219, 0.06);
-  border: 1px solid rgba(59, 91, 219, 0.2);
-  border-radius: 8px;
-  padding: 10px 14px;
-  line-height: 1.7;
-}
-
-.excel-notice strong {
-  color: #c8d8f0;
-}
-
-.excel-error {
-  font-size: 14px;
-  color: #fca5a5;
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 8px;
-  padding: 10px 14px;
-  line-height: 1.6;
-}
-
-/* ── 공통 푸터 ───────────────────────────────────────────── */
-.selected-count {
-  font-size: 15px;
-  color: #7ba3d4;
-}
-
-.footer-right {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.server-error {
-  font-size: 13px;
-  color: #f87171;
-  margin: 0 12px 0 0;
-}
-
-.btn-bulk {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-</style>

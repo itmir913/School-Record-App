@@ -79,33 +79,34 @@ function handleDelete() {
       @close="emit('close')"
   >
     <!-- 2단 바디 -->
-    <div class="modal-body">
+    <div class="flex items-stretch pt-5 pb-1 min-h-[380px]">
 
       <!-- 좌측: 기본 정보 -->
-      <div class="pane pane-left">
-        <p class="pane-title">기본 정보</p>
+      <div class="flex flex-col gap-4 flex-1 px-6 pb-4">
+        <p class="text-sm font-semibold text-ink-5 tracking-[0.06em] uppercase m-0">기본 정보</p>
 
-        <div class="field">
-          <label class="field-label">활동 이름 <span class="required">*</span></label>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-base font-semibold text-ink-3">활동 이름 <span class="text-red">*</span></label>
           <input
               v-model="name"
-              class="ui-input field-input"
+              class="ui-input placeholder:text-ink-5"
               placeholder="예: 학급자치활동"
               @keydown.enter="submit"
           />
-          <p class="field-hint">
+          <p class="text-base text-ink-5 m-0 leading-relaxed">
             영역(Area) 안에 포함될 세부 활동명입니다.
           </p>
         </div>
 
         <!-- 삭제 경고 (편집 + 확인 단계) -->
-        <div v-if="mode === 'edit' && confirmDelete" class="delete-warning">
-          <div class="warning-header">
-            <AlertTriangle :size="16" class="warning-icon"/>
-            <span class="warning-title">정말 삭제하시겠습니까?</span>
+        <div v-if="mode === 'edit' && confirmDelete"
+             class="bg-red/[7%] border border-red/25 rounded-btn px-4 py-3.5 flex flex-col gap-2 mt-auto">
+          <div class="flex items-center gap-2">
+            <AlertTriangle :size="16" class="text-red shrink-0"/>
+            <span class="text-base font-semibold text-red">정말 삭제하시겠습니까?</span>
           </div>
-          <p class="warning-body">
-            이 활동을 삭제하면 이 활동에 속한 <strong>학생의 생기부 문장과 스냅샷 정보가 모두 삭제</strong>되며, 스냅샷으로도 복구할 수 없습니다.
+          <p class="text-base text-red/80 m-0 leading-relaxed">
+            이 활동을 삭제하면 이 활동에 속한 <strong class="text-red font-semibold">학생의 생기부 문장과 스냅샷 정보가 모두 삭제</strong>되며, 스냅샷으로도 복구할 수 없습니다.
           </p>
         </div>
 
@@ -114,36 +115,39 @@ function handleDelete() {
       </div>
 
       <!-- 구분선 -->
-      <div class="pane-divider"/>
+      <div class="w-px bg-line shrink-0 my-1 mb-5"/>
 
       <!-- 우측: 영역 선택 -->
-      <div class="pane pane-right">
-        <div class="pane-title-row">
-          <p class="pane-title">포함할 영역</p>
-          <span v-if="allAreas.length > 0" class="selected-count">
+      <div class="flex flex-col flex-1 px-6 pb-4 gap-4">
+        <div class="flex items-center justify-between">
+          <p class="text-sm font-semibold text-ink-5 tracking-[0.06em] uppercase m-0">포함할 영역</p>
+          <span v-if="allAreas.length > 0" class="text-sm text-ink-5">
             {{ selectedAreaIds.size }}개 선택
           </span>
         </div>
 
-        <p v-if="allAreas.length === 0" class="empty-hint">
+        <p v-if="allAreas.length === 0" class="text-base text-ink-5 leading-[1.7] m-0">
           등록된 영역이 없습니다.<br>영역 관리에서 먼저 추가하세요.
         </p>
-        <div v-else class="chip-scroll">
+        <div v-else class="flex flex-wrap content-start gap-2 flex-1 overflow-y-auto pr-1">
           <button
               v-for="area in sortedAreas"
               :key="area.id"
               type="button"
-              class="area-chip"
-              :class="{'area-chip--on': selectedAreaIds.has(area.id)}"
+              class="px-4 py-[7px] rounded-full text-base font-medium cursor-pointer border transition-colors whitespace-nowrap"
+              :class="selectedAreaIds.has(area.id)
+                ? 'border-blue/45 bg-blue/15 text-blue-2 hover:bg-blue/[22%]'
+                : 'border-line bg-base text-ink-5 hover:border-ink-4 hover:text-blue-2'"
               @click="toggleArea(area.id)"
           >{{ area.name }}
           </button>
         </div>
 
         <!-- 복수 영역 선택 시 안내 -->
-        <div v-if="multiAreaWarning" class="multi-area-notice">
-          <Info :size="15" class="notice-icon"/>
-          <p class="notice-text">
+        <div v-if="multiAreaWarning"
+             class="flex items-start gap-2 bg-amber/[7%] border border-amber/20 rounded-btn px-3.5 py-3 mt-1">
+          <Info :size="15" class="text-amber shrink-0 mt-[1px]"/>
+          <p class="text-base text-amber m-0 leading-relaxed">
             일반적으로 하나의 활동은 하나의 영역에만 포함됩니다. 여러 영역에 중복 배치하는 경우는 드문 편이므로, 의도된 구성인지 확인하세요.
           </p>
         </div>
@@ -152,24 +156,30 @@ function handleDelete() {
 
     <!-- 푸터 -->
     <template #footer>
-      <div class="footer-left">
+      <div class="flex items-center">
         <template v-if="mode === 'edit'">
           <button
               v-if="!confirmDelete"
-              class="btn-danger btn-delete"
+              class="btn-danger flex items-center gap-1.5"
               @click="handleDelete"
           >
             <Trash2 :size="15"/>
             삭제
           </button>
-          <div v-else class="confirm-row">
-            <button class="btn-cancel-sm" @click="confirmDelete = false">취소</button>
-            <button class="btn-delete-confirm" @click="handleDelete">영구 삭제</button>
+          <div v-else class="flex items-center gap-2">
+            <button
+                class="px-3 py-1.5 rounded-lg bg-line border-none text-ink-3 cursor-pointer text-base transition-colors hover:bg-line-2"
+                @click="confirmDelete = false"
+            >취소</button>
+            <button
+                class="px-3.5 py-1.5 rounded-lg bg-red/85 border-none text-white cursor-pointer text-base font-semibold transition-colors hover:bg-red"
+                @click="handleDelete"
+            >영구 삭제</button>
           </div>
         </template>
       </div>
 
-      <div class="footer-right">
+      <div class="flex items-center gap-2">
         <button class="btn-secondary" @click="emit('close')">취소</button>
         <button class="btn-primary" :disabled="submitting" @click="submit">
           {{ mode === 'add' ? '추가' : '저장' }}
@@ -178,250 +188,3 @@ function handleDelete() {
     </template>
   </BaseModal>
 </template>
-
-<style scoped>
-/* 2단 바디 */
-.modal-body {
-  display: flex;
-  align-items: stretch;
-  padding: 20px 0 4px;
-  min-height: 380px;
-}
-
-.pane {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  flex: 1;
-  padding: 0 24px 16px;
-}
-
-.pane-divider {
-  width: 1px;
-  background-color: #1a2035;
-  flex-shrink: 0;
-  margin: 4px 0 20px;
-}
-
-.pane-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #7ba3d4;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin: 0;
-}
-
-.pane-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.selected-count {
-  font-size: 13px;
-  color: #7ba3d4;
-}
-
-/* 필드 */
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.field-label {
-  font-size: 15px;
-  font-weight: 600;
-  color: #93afd4;
-}
-
-.required {
-  color: #f87171;
-}
-
-.field-input::placeholder {
-  color: var(--clr-text-hint);
-}
-
-.field-hint {
-  font-size: 14px;
-  color: #7ba3d4;
-  margin: 0;
-  line-height: 1.6;
-}
-
-/* 삭제 경고 */
-.delete-warning {
-  background-color: rgba(239, 68, 68, 0.07);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  border-radius: 10px;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: auto;
-}
-
-.warning-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.warning-icon {
-  color: #f87171;
-  flex-shrink: 0;
-}
-
-.warning-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #f87171;
-}
-
-.warning-body {
-  font-size: 14px;
-  color: #fca5a5;
-  margin: 0;
-  line-height: 1.6;
-}
-
-.warning-body strong {
-  color: #f87171;
-  font-weight: 600;
-}
-
-/* 우측 패널 */
-.pane-right {
-  display: flex;
-  flex-direction: column;
-}
-
-.empty-hint {
-  font-size: 15px;
-  color: #7ba3d4;
-  line-height: 1.7;
-  margin: 0;
-}
-
-.chip-scroll {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  gap: 8px;
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.area-chip {
-  padding: 7px 16px;
-  border-radius: 20px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid #1a2035;
-  background-color: #0b1020;
-  color: #7ba3d4;
-  transition: border-color 0.15s, background-color 0.15s, color 0.15s;
-  white-space: nowrap;
-}
-
-.area-chip:hover {
-  border-color: var(--clr-text-subtle);
-  color: #93c5fd;
-}
-
-.area-chip--on {
-  border-color: rgba(59, 91, 219, 0.45);
-  background-color: rgba(59, 91, 219, 0.15);
-  color: #93c5fd;
-}
-
-.area-chip--on:hover {
-  background-color: rgba(59, 91, 219, 0.22);
-}
-
-/* 복수 영역 안내 */
-.multi-area-notice {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  background-color: rgba(251, 191, 36, 0.07);
-  border: 1px solid rgba(251, 191, 36, 0.2);
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin-top: 4px;
-}
-
-.notice-icon {
-  color: #fbbf24;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.notice-text {
-  font-size: 14px;
-  color: #fcd34d;
-  margin: 0;
-  line-height: 1.6;
-}
-
-/* 푸터 */
-.footer-left {
-  display: flex;
-  align-items: center;
-}
-
-.footer-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-delete {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border-radius: 10px;
-  font-weight: 500;
-}
-
-.confirm-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-cancel-sm {
-  padding: 6px 12px;
-  border-radius: 8px;
-  background-color: #1a2035;
-  border: none;
-  color: #93afd4;
-  cursor: pointer;
-  font-size: 15px;
-  transition: background-color 0.15s;
-}
-
-.btn-cancel-sm:hover {
-  background-color: #222e48;
-}
-
-.btn-delete-confirm {
-  padding: 6px 14px;
-  border-radius: 8px;
-  background-color: rgba(239, 68, 68, 0.85);
-  border: none;
-  color: white;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 600;
-  transition: background-color 0.15s;
-}
-
-.btn-delete-confirm:hover {
-  background-color: #ef4444;
-}
-</style>
