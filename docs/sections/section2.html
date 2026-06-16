@@ -1,0 +1,148 @@
+<section class="page-break print-keep-bg" style="padding: 40px 0;">
+
+    <h2 class="text-xl font-bold text-slate-800 border-b-2 border-indigo-500 pb-2 mb-8">2. 기본 개념 이해</h2>
+
+    <!-- 2-1 영역-활동 구조 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">2-1. 영역(Area)과 활동(Activity) 구조</h3>
+        <p class="text-lg text-slate-600 leading-relaxed mb-5">
+            이 프로그램은 생기부의 데이터를 <strong class="text-indigo-600">영역(Area)</strong>과 <strong class="text-blue-600">활동(Activity)</strong>의 2단계 구조로 관리합니다.
+        </p>
+
+        <!-- 구조 다이어그램 -->
+        <div class="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-6 mb-6 print-keep-bg">
+            <!-- 영역 -->
+            <div class="flex items-center gap-3 mb-4">
+                <span class="px-3 py-1 bg-indigo-200 text-indigo-800 text-base font-bold rounded-lg print-keep-bg">영역 (Area)</span>
+                <span class="text-slate-600 text-lg">= 생기부 항목 하나 (예: 진로활동, 교과세특 등)</span>
+            </div>
+            <div class="ml-6 mb-4">
+                <div class="border-l-2 border-indigo-300 pl-5 space-y-2">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-base font-bold rounded-lg print-keep-bg">활동 (Activity)</span>
+                        <span class="text-slate-600 text-lg">= 영역 안의 세부 기록 단위 (예: 체험학습, 수행평가1 등)</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-base font-bold rounded-lg print-keep-bg">활동 (Activity)</span>
+                        <span class="text-slate-600 text-lg">활동은 영역 하나에 여러 개 추가할 수 있습니다.</span>
+                    </div>
+                    <div class="flex items-center gap-3 opacity-50">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-base font-bold rounded-lg print-keep-bg">활동 (Activity)</span>
+                        <span class="text-slate-600 text-lg">…</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white border border-indigo-200 rounded-lg p-4 text-slate-700 text-base leading-relaxed print-keep-bg">
+                각 활동별로 학생마다 내용을 입력하면, 프로그램이 모든 활동의 기록을 하나로 합산하여 해당 <strong>영역의 최종 문장</strong>을 완성합니다.
+            </div>
+        </div>
+
+        <!-- 구체적 예시 표 -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-base border-collapse">
+                <thead>
+                    <tr class="bg-slate-100 print-keep-bg">
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">역할</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">영역(Area) 예시</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">활동(Activity) 예시</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600 font-semibold">담임교사</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">1반 자율활동</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">학급자치회, 스포츠데이, 수학여행</td>
+                    </tr>
+                    <tr class="bg-slate-50 print-keep-bg">
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600 font-semibold">담임교사</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">1반 진로활동</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">전공탐색 퀴즈, 진로 상담, 독후감</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600 font-semibold">교과교사</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">프로그래밍 A반</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">수행평가1, 수행평가2, 수업태도</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 2-2 전체 워크플로 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">2-2. 전체 워크플로 한눈에 보기</h3>
+        <div class="space-y-3">
+            <div class="flex items-start gap-4">
+                <div class="shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-base flex items-center justify-center print-keep-bg">0</div>
+                <div>
+                    <p class="font-bold text-slate-800 text-lg">프로젝트 준비</p>
+                    <p class="text-slate-600 text-base leading-relaxed">새 DB 파일을 생성하거나 기존 파일을 열어 작업을 시작합니다.</p>
+                </div>
+            </div>
+            <div class="ml-4 w-px h-4 bg-slate-300"></div>
+            <div class="flex items-start gap-4">
+                <div class="shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-base flex items-center justify-center print-keep-bg">1</div>
+                <div>
+                    <p class="font-bold text-slate-800 text-lg">학생 등록 <span class="text-slate-400 font-normal">→ 학생(Students) 탭</span></p>
+                    <p class="text-slate-600 text-base leading-relaxed">학생 명단을 개별 또는 엑셀 일괄 추가로 등록합니다.</p>
+                </div>
+            </div>
+            <div class="ml-4 w-px h-4 bg-slate-300"></div>
+            <div class="flex items-start gap-4">
+                <div class="shrink-0 w-8 h-8 rounded-full bg-purple-600 text-white font-bold text-base flex items-center justify-center print-keep-bg">2</div>
+                <div>
+                    <p class="font-bold text-slate-800 text-lg">영역 구성 <span class="text-slate-400 font-normal">→ 영역(Area) 탭</span></p>
+                    <p class="text-slate-600 text-base leading-relaxed">생기부 항목(자율활동, 진로활동, 세특 등)을 영역으로 생성하고 학생을 배정합니다.</p>
+                </div>
+            </div>
+            <div class="ml-4 w-px h-4 bg-slate-300"></div>
+            <div class="flex items-start gap-4">
+                <div class="shrink-0 w-8 h-8 rounded-full bg-teal-600 text-white font-bold text-base flex items-center justify-center print-keep-bg">3</div>
+                <div>
+                    <p class="font-bold text-slate-800 text-lg">활동 등록 <span class="text-slate-400 font-normal">→ 활동(Activity) 탭</span></p>
+                    <p class="text-slate-600 text-base leading-relaxed">각 영역 안에 들어갈 세부 활동 항목을 생성하고 영역에 연결합니다.</p>
+                </div>
+            </div>
+            <div class="ml-4 w-px h-4 bg-slate-300"></div>
+            <div class="flex items-start gap-4">
+                <div class="shrink-0 w-8 h-8 rounded-full bg-amber-600 text-white font-bold text-base flex items-center justify-center print-keep-bg">4</div>
+                <div>
+                    <p class="font-bold text-slate-800 text-lg">생기부 작성 <span class="text-slate-400 font-normal">→ 생기부 작성(Write) 탭</span></p>
+                    <p class="text-slate-600 text-base leading-relaxed">격자 화면에서 학생별·활동별로 내용을 입력합니다. 입력 즉시 자동 저장됩니다.</p>
+                </div>
+            </div>
+            <div class="ml-4 w-px h-4 bg-slate-300"></div>
+            <div class="flex items-start gap-4">
+                <div class="shrink-0 w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-base flex items-center justify-center print-keep-bg">5</div>
+                <div>
+                    <p class="font-bold text-slate-800 text-lg">검수 및 내보내기 <span class="text-slate-400 font-normal">→ 점검·내보내기 탭</span></p>
+                    <p class="text-slate-600 text-base leading-relaxed">유의어 점검·치환 등으로 내용을 다듬은 후 NEIS 입력용 엑셀 파일로 내보냅니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2-3 역할별 활용 예시 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">2-3. 역할별 활용 예시</h3>
+        <div class="space-y-5">
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-5 print-keep-bg">
+                <p class="font-bold text-emerald-800 text-lg mb-2">담임교사</p>
+                <p class="text-slate-600 text-base leading-relaxed">
+                    <strong>자율활동 · 동아리활동 · 진로활동</strong> 영역을 생성하고, 각 활동(체육대회, 체험학습 등)을 등록합니다.
+                    지도교사들이 작성한 엑셀 파일을 <strong>가져오기(Import)</strong>로 불러와 병합·검수합니다.
+                    바이트 초과 셀은 붉은색으로 강조되어 분량 조절이 쉽습니다.
+                </p>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 print-keep-bg">
+                <p class="font-bold text-amber-800 text-lg mb-2">교과교사</p>
+                <p class="text-slate-600 text-base leading-relaxed">
+                    담당 과목별로 영역(분반)을 만들고, 수행평가·수업 참여 등을 활동으로 등록합니다.
+                    엑셀과 유사한 격자 화면에서 여러 학급 학생의 세특을 화면 전환 없이 연속으로 입력할 수 있습니다.
+                    완성 후 <strong>내보내기(Export)</strong>로 담임교사에게 전달할 엑셀 파일을 생성합니다.
+                </p>
+            </div>
+        </div>
+    </div>
+
+</section>

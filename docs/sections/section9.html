@@ -1,0 +1,61 @@
+<section class="page-break print-keep-bg" style="padding: 40px 0;">
+
+    <h2 class="text-xl font-bold text-slate-800 border-b-2 border-indigo-500 pb-2 mb-8">9. 유의어 점검 (Inspect)</h2>
+
+    <p class="text-lg text-slate-600 leading-relaxed mb-8">
+        좌측 메뉴에서 <strong>유의어 점검(Inspect)</strong> 탭을 선택합니다.
+        학교생활기록부에 사용이 제한된 어휘를 자동으로 탐지하고, 적절한 대체 표현을 함께 제시합니다.
+        제출 전 최종 검수 단계에서 활용하세요.
+    </p>
+
+    <!-- 유의어 점검 동작 원리 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">동작 원리</h3>
+        <p class="text-lg text-slate-600 leading-relaxed mb-4">
+            이 프로그램은 교육부 및 시·도 교육청 기준의 생기부 유의어 목록을 내장하고 있습니다.
+            DB에 저장된 모든 학생의 기록을 순회하며 유의어가 포함된 셀을 자동으로 탐지합니다.
+        </p>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 print-keep-bg">
+            <ul class="space-y-2 text-slate-600 text-base leading-relaxed">
+                <li><strong>탐지 대상:</strong> 현재 DB에 저장된 모든 영역·학생·활동의 기록</li>
+                <li><strong>제시 정보:</strong> 발견된 유의어, 위치(영역·학생·활동), 권장 대체 표현</li>
+                <li><strong>강조 표시:</strong> 원문에서 유의어가 포함된 위치를 황색(amber)으로 하이라이트</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 사용 방법 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">사용 방법</h3>
+        <ol class="space-y-3 text-lg text-slate-600 leading-relaxed">
+            <li class="flex gap-3">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">1</span>
+                <span>유의어 점검 탭에서 <strong>점검 실행</strong> 버튼을 클릭합니다.</span>
+            </li>
+            <li class="flex gap-3">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">2</span>
+                <span>결과 목록에서 유의어가 발견된 셀마다 원문과 대체 표현이 나란히 표시됩니다. 원문의 유의어 위치는 황색으로 하이라이트됩니다.</span>
+            </li>
+            <li class="flex gap-3">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">3</span>
+                <span>결과를 참고하여 생기부 작성 탭에서 해당 내용을 직접 수정하거나, <strong>텍스트 치환(Replace)</strong> 기능으로 일괄 교체합니다.</span>
+            </li>
+        </ol>
+    </div>
+
+    <!-- 유의어 관리 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">유의어 목록 관리</h3>
+        <p class="text-lg text-slate-600 leading-relaxed mb-4">
+            설정(Settings) 탭 또는 유의어 점검 탭 내의 <strong>유의어 관리</strong> 버튼에서 유의어 목록을 직접 추가·수정·삭제할 수 있습니다.
+            학교·지역별 추가 금지 어휘를 등록해 두면 더욱 정밀한 점검이 가능합니다.
+        </p>
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3 items-start print-keep-bg">
+            <span class="text-lg mt-0.5 shrink-0">💡</span>
+            <p class="text-blue-800 text-base leading-relaxed">
+                동일한 유의어가 여러 학생에게서 발견된다면, 치환(Replace) 기능을 이용해 전체 일괄 교체하는 것이 효율적입니다.
+            </p>
+        </div>
+    </div>
+
+</section>

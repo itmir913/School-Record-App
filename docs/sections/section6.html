@@ -1,0 +1,113 @@
+<section class="page-break print-keep-bg" style="padding: 40px 0;">
+
+    <h2 class="text-xl font-bold text-slate-800 border-b-2 border-indigo-500 pb-2 mb-8">6. 생기부 작성</h2>
+
+    <p class="text-lg text-slate-600 leading-relaxed mb-8">
+        좌측 메뉴에서 <strong>생기부 작성(Write)</strong> 탭을 선택합니다.
+        상단 드롭다운에서 작성할 영역을 선택하면 학생 목록(행)과 활동(열)으로 구성된 격자 화면이 펼쳐집니다.
+    </p>
+
+    <!-- 6-1 격자 화면 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">6-1. 격자 화면 구성 및 내용 입력</h3>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-5 print-keep-bg">
+            <p class="font-semibold text-slate-700 text-base mb-3">화면 구성</p>
+            <ul class="space-y-2 text-slate-600 text-base leading-relaxed">
+                <li><strong>행(Row):</strong> 해당 영역에 배정된 학생 목록 (학년·반·번호·이름 순 정렬)</li>
+                <li><strong>열(Column):</strong> 해당 영역에 속한 활동 목록</li>
+                <li><strong>셀:</strong> 학생 1명 × 활동 1개의 교차점 — 여기에 생기부 내용을 입력합니다.</li>
+                <li><strong>마지막 열 (합산):</strong> 해당 학생의 모든 활동 내용이 합산된 최종 문장과 총 바이트 수를 보여줍니다.</li>
+            </ul>
+        </div>
+
+        <ol class="space-y-3 text-lg text-slate-600 leading-relaxed">
+            <li class="flex gap-3">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">1</span>
+                <span>입력할 셀을 클릭하면 편집 모드가 활성화됩니다.</span>
+            </li>
+            <li class="flex gap-3">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">2</span>
+                <span>내용을 입력합니다. 글자를 입력하는 즉시 데이터베이스에 <strong>자동 저장</strong>됩니다. 별도의 저장 버튼이 없습니다.</span>
+            </li>
+            <li class="flex gap-3">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">3</span>
+                <span><kbd class="bg-slate-200 border border-slate-300 rounded px-2 py-0.5 text-sm font-mono print-keep-bg">Tab</kbd> 키로 다음 셀로, <kbd class="bg-slate-200 border border-slate-300 rounded px-2 py-0.5 text-sm font-mono print-keep-bg">Shift+Tab</kbd>으로 이전 셀로 이동할 수 있습니다.</span>
+            </li>
+        </ol>
+    </div>
+
+    <!-- 6-2 바이트 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">6-2. 바이트 수 실시간 표시 및 초과 경고</h3>
+        <p class="text-lg text-slate-600 leading-relaxed mb-4">
+            각 학생의 <strong>합산 열</strong>에는 현재까지 입력된 총 바이트 수가 실시간으로 표시됩니다.
+            영역에 설정한 최대 바이트를 초과하면 해당 행이 <strong class="text-red-600">붉은색</strong>으로 강조되어 즉시 확인할 수 있습니다.
+        </p>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 print-keep-bg">
+            <ul class="space-y-2 text-slate-600 text-base leading-relaxed">
+                <li><span class="inline-block w-3 h-3 bg-green-400 rounded-full mr-2"></span><strong>정상:</strong> 바이트 제한 이내</li>
+                <li><span class="inline-block w-3 h-3 bg-red-400 rounded-full mr-2"></span><strong>초과:</strong> 바이트 제한 초과 — 해당 학생 행이 붉은색으로 표시</li>
+            </ul>
+        </div>
+        <div class="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3 items-start print-keep-bg">
+            <span class="text-lg mt-0.5 shrink-0">💡</span>
+            <p class="text-blue-800 text-base leading-relaxed">
+                NEIS는 한글 2바이트, 영문·숫자 1바이트로 계산합니다. 이 프로그램도 동일한 방식으로 바이트를 계산합니다.
+            </p>
+        </div>
+    </div>
+
+    <!-- 6-3 히스토리 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">6-3. 셀 히스토리</h3>
+        <p class="text-lg text-slate-600 leading-relaxed mb-4">
+            셀에 입력한 내용은 변경될 때마다 히스토리로 누적 저장됩니다.
+            이전에 작성한 문장으로 돌아가고 싶을 때 활용하세요.
+        </p>
+        <ol class="space-y-3 text-lg text-slate-600 leading-relaxed">
+            <li class="flex gap-3">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">1</span>
+                <span>셀을 클릭한 뒤 <strong>히스토리</strong> 아이콘을 클릭합니다.</span>
+            </li>
+            <li class="flex gap-3">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">2</span>
+                <span>팝업에서 저장된 버전 목록을 확인합니다. 각 버전의 내용과 저장 시각이 표시됩니다.</span>
+            </li>
+            <li class="flex gap-3">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">3</span>
+                <span>원하는 버전의 <strong>복원</strong> 버튼을 클릭하면 해당 내용이 셀에 적용됩니다.</span>
+            </li>
+        </ol>
+    </div>
+
+    <!-- 6-4 스냅샷 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">6-4. 스냅샷 (타임머신 저장)</h3>
+        <p class="text-lg text-slate-600 leading-relaxed mb-4">
+            스냅샷은 현재 DB 전체의 상태를 통째로 저장해두는 기능입니다.
+            대규모 수정 전에 스냅샷을 찍어두면 언제든 해당 시점으로 되돌릴 수 있습니다.
+        </p>
+        <ol class="space-y-3 text-lg text-slate-600 leading-relaxed">
+            <li class="flex gap-3">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">1</span>
+                <span>화면 상단의 <strong>스냅샷</strong> 버튼을 클릭합니다.</span>
+            </li>
+            <li class="flex gap-3">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">2</span>
+                <span>메모를 입력한 뒤 <strong>스냅샷 저장</strong>을 클릭합니다.</span>
+            </li>
+            <li class="flex gap-3">
+                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">3</span>
+                <span>이전 스냅샷 목록에서 원하는 시점을 선택해 <strong>복원</strong>할 수 있습니다. 복원하면 현재 모든 데이터가 해당 시점으로 대체됩니다.</span>
+            </li>
+        </ol>
+        <div class="mt-4 bg-amber-50 border border-amber-300 rounded-xl p-4 flex gap-3 items-start print-keep-bg">
+            <span class="text-lg mt-0.5 shrink-0">⚠️</span>
+            <p class="text-amber-800 text-base leading-relaxed">
+                스냅샷 복원은 복원 시점 이후의 모든 변경사항을 덮어씁니다. 중요한 작업 전에는 반드시 최신 스냅샷을 먼저 저장하세요.
+            </p>
+        </div>
+    </div>
+
+</section>
