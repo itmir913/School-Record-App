@@ -126,7 +126,7 @@ function extractTopic(content) {
   // - m 플래그 추가: $가 각 줄 끝과 매칭
   // - \s*$ : 온점 뒤 공백만 남은 경우도 첫 문장으로 인정
   const sentenceMatch = content.match(
-      /^(.+?[.!?][\u201C\u201D\u2018\u2019\u0022\u0027]?)(?=\s+[A-Z가-힣]|\s*$)/m
+      /^(.+?[.!?][“”‘’"']?)(?=\s+[A-Z가-힣]|\s*$)/m
   )
 
   const firstSentence = sentenceMatch
@@ -134,11 +134,11 @@ function extractTopic(content) {
       : content.split(/\r?\n/)[0].slice(0, 100).trim()
 
   // 2) 따옴표 내용 전부 수집
-  // 열기: “ (U+0022) ‘ (U+0027) “ “ ‘ ‘ 「 『
+  // 열기: " (U+0022) ' (U+0027) " " ' ' 「 『
   // 닫기: 위 + 」(U+300D) 』(U+300F) (「→」, 『→』 대응)
   const matches = [
     ...firstSentence.matchAll(
-        /[\u0022\u0027\u201C\u201D\u2018\u2019\u300C\u300E]([^\u0022\u0027\u201C\u201D\u2018\u2019\u300D\u300F]{1,120})[\u0022\u0027\u201C\u201D\u2018\u2019\u300D\u300F]/g
+        /["'“”‘’「『]([^"'“”‘’」』]{1,120})["'“”‘’」』]/g
     )
   ]
 
@@ -309,13 +309,13 @@ async function doExport() {
 </script>
 
 <template>
-  <div class="section">
+  <div class="flex flex-col h-full overflow-hidden box-border">
 
     <!-- 헤더 -->
-    <div class="toolbar">
-      <div class="section-header">
-        <h2 class="section-title">체크리스트 내보내기(Checklist Export)</h2>
-        <p class="section-desc">학교생활기록부 점검을 위해 활동(Activity)별 키워드 혹은 주제를 추출하여 내보냅니다.</p>
+    <div class="flex items-center justify-between px-10 pt-9 pb-6 border-b border-line flex-shrink-0">
+      <div class="flex flex-col">
+        <h2 class="text-[22px] font-bold text-ink m-0 mb-1.5">체크리스트 내보내기(Checklist Export)</h2>
+        <p class="text-base text-ink-3 m-0">학교생활기록부 점검을 위해 활동(Activity)별 키워드 혹은 주제를 추출하여 내보냅니다.</p>
       </div>
     </div>
 
@@ -328,83 +328,91 @@ async function doExport() {
         @prev="goPrev"
         @next="goNext"
     >
-    <!-- 본문 -->
 
       <!-- Step 1: 영역 선택 -->
-      <div v-if="step === 1" class="step-content">
-        <h3 class="step-title">Step 1. 영역(Area) 선택</h3>
-        <p class="step-desc">체크리스트를 만들 영역을 선택하세요.</p>
+      <div v-if="step === 1">
+        <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 1. 영역(Area) 선택</h3>
+        <p class="text-base text-ink-5 m-0 mb-6">체크리스트를 만들 영역을 선택하세요.</p>
 
-        <p v-if="exportError && areaStore.areas.length === 0" class="error-text">{{ exportError }}</p>
-        <p v-else-if="areaStore.areas.length === 0" class="empty-hint">등록된 영역이 없습니다.</p>
+        <p v-if="exportError && areaStore.areas.length === 0" class="text-sm text-red mt-3 m-0">{{ exportError }}</p>
+        <p v-else-if="areaStore.areas.length === 0" class="text-base text-ink-5 m-0 mb-6">등록된 영역이 없습니다.</p>
 
-        <div v-else class="area-cards">
+        <div v-else class="grid gap-3 mb-6" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr))">
           <div
               v-for="area in areaStore.areas"
               :key="area.id"
-              class="area-card"
-              :class="{ 'area-card--selected': selectedAreaId === area.id }"
+              :class="[
+                'border-2 rounded-btn px-5 py-4 cursor-pointer transition-[border-color,background-color] flex flex-col gap-1.5',
+                selectedAreaId === area.id
+                  ? 'border-blue/70 bg-blue/[0.06]'
+                  : 'border-line hover:border-blue/40 hover:bg-blue/[0.03]'
+              ]"
               @click="selectedAreaId = area.id"
           >
-            <span class="area-card-name">{{ area.name }}</span>
-            <span class="area-card-meta">활동 {{ area.activities.length }}개</span>
+            <span class="text-base font-semibold text-ink">{{ area.name }}</span>
+            <span class="text-sm text-ink-5">활동 {{ area.activities.length }}개</span>
           </div>
         </div>
 
         <!-- 한 줄 미리보기 토글 -->
-        <div class="toggle-row" @click="previewEnabled = !previewEnabled">
-          <div class="toggle-label">
-            <span class="toggle-title">한 줄 미리보기</span>
-            <span class="toggle-desc">O(참여함)인 활동에 한해 생기부 첫 문장의 활동주제를 추출해 C열에 표시합니다.</span>
+        <div
+            class="flex items-center justify-between gap-4 border border-line rounded-btn px-4.5 py-3.5 mb-4 cursor-pointer transition-[border-color,background-color] hover:border-blue/40 hover:bg-blue/[0.03]"
+            @click="previewEnabled = !previewEnabled"
+        >
+          <div class="flex flex-col gap-1">
+            <span class="text-base font-semibold text-ink">한 줄 미리보기</span>
+            <span class="text-sm text-ink-5 leading-relaxed">O(참여함)인 활동에 한해 생기부 첫 문장의 활동주제를 추출해 C열에 표시합니다.</span>
           </div>
-          <div class="toggle-switch" :class="{ 'toggle-switch--on': previewEnabled }">
-            <div class="toggle-knob"/>
+          <div :class="['flex-shrink-0 w-[42px] h-6 rounded-full relative transition-colors border', previewEnabled ? 'bg-blue/60 border-blue/80' : 'bg-line border-line-2']">
+            <div :class="['absolute top-[3px] w-4 h-4 rounded-full transition-all duration-200', previewEnabled ? 'left-[21px] bg-[#93c5fd]' : 'left-[3px] bg-[#4a5568]']"/>
           </div>
         </div>
 
-        <div class="info-box">
-          <p class="info-text">기재 내용이 있으면 <strong>O(참여함)</strong>, 없으면 <strong>X(참여하지 않음)</strong>으로 표시됩니다.</p>
-          <p class="info-text">학생 1명당 1페이지(A4 세로)로 페이지 나누기가 설정됩니다.</p>
+        <!-- 안내 박스 -->
+        <div class="border border-green/20 rounded-btn bg-green/[0.04] px-4.5 py-3.5 flex flex-col gap-1.5">
+          <p class="text-sm text-green/75 m-0 leading-relaxed">기재 내용이 있으면 <strong class="text-green">O(참여함)</strong>, 없으면 <strong class="text-green">X(참여하지 않음)</strong>으로 표시됩니다.</p>
+          <p class="text-sm text-green/75 m-0 leading-relaxed">학생 1명당 1페이지(A4 세로)로 페이지 나누기가 설정됩니다.</p>
         </div>
       </div>
 
       <!-- Step 2: 미리보기 & 편집 -->
-      <div v-else-if="step === 2" class="step-content">
-        <h3 class="step-title">Step 2. 미리보기 & 편집</h3>
-        <p class="step-desc">
+      <div v-else-if="step === 2">
+        <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 2. 미리보기 &amp; 편집</h3>
+        <p class="text-base text-ink-5 m-0 mb-6">
           활동 참여 여부를 확인하고
           <template v-if="previewEnabled">추출된 활동주제를 직접 수정한 뒤</template>
           내보내기 단계로 이동하세요.
         </p>
 
-        <div class="preview-table-wrap">
-          <table class="preview-table">
+        <div class="border border-line rounded-btn overflow-hidden">
+          <table class="w-full border-collapse text-sm">
             <thead>
             <tr>
-              <th>활동명</th>
-              <th>참여여부</th>
-              <th v-if="previewEnabled">활동주제</th>
+              <th class="px-3.5 py-2.5 bg-base text-ink-4 font-semibold text-left border-b border-line sticky top-0 z-[1]">활동명</th>
+              <th class="px-3.5 py-2.5 bg-base text-ink-4 font-semibold text-left border-b border-line sticky top-0 z-[1]">참여여부</th>
+              <th v-if="previewEnabled" class="px-3.5 py-2.5 bg-base text-ink-4 font-semibold text-left border-b border-line sticky top-0 z-[1]">활동주제</th>
             </tr>
             </thead>
             <tbody>
             <template v-for="group in previewGroups" :key="group.studentId">
-              <tr class="group-header-row">
-                <td :colspan="previewEnabled ? 3 : 2" class="group-header-cell">
+              <tr class="bg-blue/[0.07]">
+                <td :colspan="previewEnabled ? 3 : 2" class="px-3.5 py-2 text-sm text-[#7ba8f0] border-t border-blue/20 border-b border-blue/12">
                   {{ group.grade }}학년 {{ group.classNum }}반 {{ group.number }}번 &nbsp;
-                  <strong>{{ group.name }}</strong>
+                  <strong class="font-bold text-[#93c5fd]">{{ group.name }}</strong>
                 </td>
               </tr>
-              <tr v-for="row in group.rows" :key="row.activityId"
-                  :class="{ 'row--x': !row.hasContent }">
-                <td class="cell-activity">{{ row.activityName }}</td>
-                <td class="cell-ox" :class="row.hasContent ? 'cell-ox--o' : 'cell-ox--x'">
+              <tr v-for="row in group.rows" :key="row.activityId">
+                <td :class="['px-3.5 py-[7px] border-b border-line/60 text-ink align-middle min-w-[100px]', !row.hasContent && 'opacity-[0.45]']">
+                  {{ row.activityName }}
+                </td>
+                <td :class="['px-3.5 py-[7px] border-b border-line/60 align-middle text-center font-bold w-[60px]', !row.hasContent && 'opacity-[0.45]', row.hasContent ? 'text-green' : 'text-[#64748b]']">
                   {{ row.hasContent ? 'O' : 'X' }}
                 </td>
-                <td v-if="previewEnabled" class="cell-topic">
+                <td v-if="previewEnabled" :class="['px-3.5 py-[7px] border-b border-line/60 align-middle min-w-[180px]', !row.hasContent && 'opacity-[0.45]']">
                   <textarea
                       v-if="row.hasContent"
                       v-model="row.topic"
-                      class="topic-input"
+                      class="w-full bg-[rgba(15,23,42,0.6)] border border-line-2 rounded-md px-2.5 py-[5px] text-ink text-sm outline-none transition-colors box-border leading-[1.4] min-h-5 resize-y whitespace-pre-wrap focus:border-blue/60 placeholder:text-ink-4"
                       rows="2"
                       placeholder="활동주제 입력…"
                   />
@@ -417,66 +425,79 @@ async function doExport() {
       </div>
 
       <!-- Step 3: 내보내기 실행 -->
-      <div v-else-if="step === 3" class="step-content">
-        <h3 class="step-title">Step 3. 내보내기 실행</h3>
+      <div v-else-if="step === 3">
+        <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 3. 내보내기 실행</h3>
 
         <div v-if="!exportResult">
-          <div class="summary-box">
-            <div class="summary-row">
-              <span class="summary-key">영역</span>
-              <span class="summary-val">{{ selectedArea?.name }}</span>
+          <!-- 요약 박스 -->
+          <div class="border border-line rounded-btn overflow-hidden mb-6">
+            <div class="grid gap-3 px-4 py-[11px] border-b border-line/70 last:border-b-0" style="grid-template-columns: 160px 1fr">
+              <span class="text-sm text-ink-5">영역</span>
+              <span class="text-sm text-ink-2">{{ selectedArea?.name }}</span>
             </div>
-            <div class="summary-row">
-              <span class="summary-key">학생 수</span>
-              <span class="summary-val">{{ gridData?.students.length ?? 0 }}명</span>
+            <div class="grid gap-3 px-4 py-[11px] border-b border-line/70 last:border-b-0" style="grid-template-columns: 160px 1fr">
+              <span class="text-sm text-ink-5">학생 수</span>
+              <span class="text-sm text-ink-2">{{ gridData?.students.length ?? 0 }}명</span>
             </div>
-            <div class="summary-row">
-              <span class="summary-key">활동 수</span>
-              <span class="summary-val">{{ gridData?.activities.length ?? 0 }}개</span>
+            <div class="grid gap-3 px-4 py-[11px] border-b border-line/70 last:border-b-0" style="grid-template-columns: 160px 1fr">
+              <span class="text-sm text-ink-5">활동 수</span>
+              <span class="text-sm text-ink-2">{{ gridData?.activities.length ?? 0 }}개</span>
             </div>
-            <div class="summary-row">
-              <span class="summary-key">예상 페이지 수</span>
-              <span class="summary-val">{{ gridData?.students.length ?? 0 }}페이지 (학생 1명 = 1페이지)</span>
+            <div class="grid gap-3 px-4 py-[11px] border-b border-line/70 last:border-b-0" style="grid-template-columns: 160px 1fr">
+              <span class="text-sm text-ink-5">예상 페이지 수</span>
+              <span class="text-sm text-ink-2">{{ gridData?.students.length ?? 0 }}페이지 (학생 1명 = 1페이지)</span>
             </div>
-            <div class="summary-row">
-              <span class="summary-key">한 줄 미리보기</span>
-              <span class="summary-val">{{ previewEnabled ? '활성화 (활동주제 포함)' : '비활성화' }}</span>
+            <div class="grid gap-3 px-4 py-[11px] border-b border-line/70 last:border-b-0" style="grid-template-columns: 160px 1fr">
+              <span class="text-sm text-ink-5">한 줄 미리보기</span>
+              <span class="text-sm text-ink-2">{{ previewEnabled ? '활성화 (활동주제 포함)' : '비활성화' }}</span>
             </div>
           </div>
 
-          <div class="notice-box">
-            <span class="notice-icon">ℹ</span>
-            <div class="notice-body">
-              <p class="notice-text">
+          <!-- 면책 안내 박스 -->
+          <div class="flex gap-2.5 items-start mt-3.5 mb-6 px-3.5 py-3 border border-amber/30 bg-amber/[0.08] rounded-lg">
+            <span class="text-amber flex-shrink-0 mt-[3px] text-sm inline-flex items-center justify-center w-[22px] h-[22px] border border-amber/30 rounded-full">ℹ</span>
+            <div class="flex flex-col gap-1.5">
+              <p class="m-0 text-base text-ink-2 leading-relaxed">
                 이 파일은 학교생활기록부 작성을 돕기 위한 <strong>참고용 자료</strong>입니다.<br>
                 반드시 <u><strong>담당 선생님께서 내용을 직접 검토</strong></u>하신 후 나이스(NEIS)에 입력해 주시기를
                 부탁드립니다.
               </p>
-              <p class="notice-consent">내보내기를 실행하면 위 안내 사항을 확인하신 것으로 간주합니다.</p>
+              <p class="m-0 text-sm text-ink-4">내보내기를 실행하면 위 안내 사항을 확인하신 것으로 간주합니다.</p>
             </div>
           </div>
 
-          <p v-if="exportError" class="error-text">{{ exportError }}</p>
+          <p v-if="exportError" class="text-sm text-red mt-3 m-0">{{ exportError }}</p>
 
-          <button class="btn-export" :disabled="exporting" @click="doExport">
+          <button
+              class="px-7 py-2.5 bg-blue/15 border border-blue/40 rounded-lg text-[#7ba8f0] text-base font-semibold cursor-pointer transition-[background-color,color] enabled:hover:bg-blue/25 enabled:hover:text-[#93c5fd] disabled:opacity-40 disabled:cursor-not-allowed"
+              :disabled="exporting"
+              @click="doExport"
+          >
             {{ exporting ? '내보내는 중...' : '체크리스트 내보내기' }}
           </button>
         </div>
       </div>
 
-      <div v-else-if="step === 4" class="result-box">
-        <div class="result-check">✓</div>
-        <p class="result-title">내보내기 완료</p>
-        <div class="result-stats">
-          <div class="stat-item">
-            <span class="stat-val">{{ exportResult.pageCount }}</span>
-            <span class="stat-label">페이지</span>
+      <!-- Step 4: 완료 -->
+      <div v-else-if="step === 4" class="flex flex-col items-center gap-4 py-12">
+        <div class="text-[40px] text-green">✓</div>
+        <p class="text-xl font-bold text-ink m-0">내보내기 완료</p>
+        <div class="flex gap-8">
+          <div class="flex flex-col items-center gap-1">
+            <span class="text-[28px] font-bold text-[#7ba8f0]">{{ exportResult.pageCount }}</span>
+            <span class="text-sm text-ink-5">페이지</span>
           </div>
         </div>
-        <p class="result-filename">{{ exportResult.fileName }}</p>
-        <div class="result-actions">
-          <button class="btn-reveal" @click="revealItemInDir(exportResult.filePath)">파일 확인</button>
-          <button class="btn-reset" @click="resetWizard">새로 내보내기</button>
+        <p class="text-sm text-ink-5 m-0">{{ exportResult.fileName }}</p>
+        <div class="flex gap-2.5 mt-2">
+          <button
+              class="px-6 py-[9px] bg-blue/[0.12] border border-blue/35 rounded-lg text-[#7ba8f0] text-base cursor-pointer transition-[background-color,color] hover:bg-blue/[0.22] hover:text-[#93c5fd]"
+              @click="revealItemInDir(exportResult.filePath)"
+          >파일 확인</button>
+          <button
+              class="px-6 py-[9px] bg-transparent border border-line rounded-lg text-ink-5 text-base cursor-pointer transition-[background-color,color] hover:bg-line hover:text-ink-3"
+              @click="resetWizard"
+          >새로 내보내기</button>
         </div>
       </div>
 
@@ -484,486 +505,3 @@ async function doExport() {
 
   </div>
 </template>
-
-<style scoped>
-.section {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 36px 40px 24px;
-  border-bottom: 1px solid #1a2035;
-  flex-shrink: 0;
-}
-
-.section-header {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.section-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0 0 6px;
-}
-
-.section-desc {
-  font-size: 16px;
-  color: #7ba3d4;
-  margin: 0;
-}
-
-.step-content {
-}
-
-.step-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0 0 6px;
-}
-
-.step-desc {
-  font-size: 15px;
-  color: var(--clr-text-subtle);
-  margin: 0 0 24px;
-}
-
-.empty-hint {
-  font-size: 15px;
-  color: var(--clr-text-subtle);
-  margin: 0 0 24px;
-}
-
-.error-text {
-  font-size: 14px;
-  color: #f87171;
-  margin: 12px 0 0;
-}
-
-/* 영역 카드 */
-.area-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.area-card {
-  border: 2px solid #1a2035;
-  border-radius: 10px;
-  padding: 16px 20px;
-  cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.area-card:hover {
-  border-color: rgba(59, 91, 219, 0.4);
-  background-color: rgba(59, 91, 219, 0.03);
-}
-
-.area-card--selected {
-  border-color: rgba(59, 91, 219, 0.7);
-  background-color: rgba(59, 91, 219, 0.06);
-}
-
-.area-card-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: #e2e8f0;
-}
-
-.area-card-meta {
-  font-size: 13px;
-  color: var(--clr-text-subtle);
-}
-
-/* 한 줄 미리보기 토글 */
-.toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  border: 1px solid #1a2035;
-  border-radius: 10px;
-  padding: 14px 18px;
-  margin-bottom: 16px;
-  cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s;
-}
-
-.toggle-row:hover {
-  border-color: rgba(59, 91, 219, 0.4);
-  background-color: rgba(59, 91, 219, 0.03);
-}
-
-.toggle-label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.toggle-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #e2e8f0;
-}
-
-.toggle-desc {
-  font-size: 13px;
-  color: var(--clr-text-subtle);
-  line-height: 1.5;
-}
-
-.toggle-switch {
-  flex-shrink: 0;
-  width: 42px;
-  height: 24px;
-  border-radius: 12px;
-  background: #1a2035;
-  border: 1px solid #263246;
-  position: relative;
-  transition: background-color 0.2s;
-}
-
-.toggle-switch--on {
-  background: rgba(59, 91, 219, 0.6);
-  border-color: rgba(59, 91, 219, 0.8);
-}
-
-.toggle-knob {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #4a5568;
-  transition: left 0.2s, background-color 0.2s;
-}
-
-.toggle-switch--on .toggle-knob {
-  left: 21px;
-  background: #93c5fd;
-}
-
-/* 안내 박스 */
-.info-box {
-  border: 1px solid rgba(52, 211, 153, 0.2);
-  border-radius: 10px;
-  background: rgba(52, 211, 153, 0.04);
-  padding: 14px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.info-text {
-  font-size: 14px;
-  color: #86c9b0;
-  margin: 0;
-  line-height: 1.6;
-}
-
-.info-text strong {
-  color: #34d399;
-}
-
-/* 미리보기 테이블 */
-.preview-table-wrap {
-  border: 1px solid #1a2035;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.preview-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.preview-table thead th {
-  padding: 10px 14px;
-  background: #0a0f1e;
-  color: var(--clr-text-hint);
-  font-weight: 600;
-  text-align: left;
-  border-bottom: 1px solid #1a2035;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-
-.group-header-row {
-  background: rgba(59, 91, 219, 0.07);
-}
-
-.group-header-cell {
-  padding: 8px 14px;
-  font-size: 13px;
-  color: #7ba8f0;
-  border-top: 1px solid rgba(59, 91, 219, 0.2);
-  border-bottom: 1px solid rgba(59, 91, 219, 0.12);
-}
-
-.group-header-cell strong {
-  font-weight: 700;
-  color: #93c5fd;
-}
-
-.preview-table tbody tr:not(.group-header-row) td {
-  padding: 7px 14px;
-  border-bottom: 1px solid rgba(26, 32, 53, 0.6);
-  color: #c8d8f0;
-  vertical-align: middle;
-}
-
-.row--x td {
-  opacity: 0.45;
-}
-
-.cell-activity {
-  color: #e2e8f0;
-  min-width: 100px;
-}
-
-.cell-ox {
-  text-align: center;
-  font-weight: 700;
-  width: 60px;
-}
-
-.cell-ox--o {
-  color: #34d399;
-}
-
-.cell-ox--x {
-  color: #64748b;
-}
-
-.cell-topic {
-  min-width: 180px;
-}
-
-.topic-input {
-  width: 100%;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid #263246;
-  border-radius: 6px;
-  padding: 5px 10px;
-  color: #e2e8f0;
-  font-size: 13px;
-  outline: none;
-  transition: border-color 0.15s;
-  box-sizing: border-box;
-  line-height: 1.4;
-  min-height: 20px;
-  resize: vertical;
-  white-space: pre-wrap;
-}
-
-.topic-input:focus {
-  border-color: rgba(59, 91, 219, 0.6);
-}
-
-.topic-input::placeholder {
-  color: var(--clr-text-hint);
-}
-
-/* 요약 & 결과 */
-.summary-box {
-  border: 1px solid #1a2035;
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 24px;
-}
-
-.summary-row {
-  display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: 12px;
-  padding: 11px 16px;
-  border-bottom: 1px solid rgba(26, 32, 53, 0.7);
-}
-
-.summary-row:last-child {
-  border-bottom: none;
-}
-
-.summary-key {
-  font-size: 14px;
-  color: var(--clr-text-subtle);
-}
-
-.summary-val {
-  font-size: 14px;
-  color: #c8d8f0;
-}
-
-.notice-box {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  margin: 14px 0 24px;
-  padding: 12px 14px;
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  background: rgba(251, 191, 36, 0.08);
-  border-radius: 8px;
-}
-
-.notice-icon {
-  color: #fbbf24;
-  flex-shrink: 0;
-  margin-top: 3px;
-  font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  border-radius: 50%;
-}
-
-.notice-body {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.notice-text {
-  margin: 0;
-  font-size: 16px;
-  line-height: 1.6;
-  color: #c8d8f0;
-}
-
-.notice-consent {
-  margin: 0;
-  font-size: 14px;
-  color: #7a9bbf;
-}
-
-.btn-export {
-  padding: 10px 28px;
-  background: rgba(59, 91, 219, 0.15);
-  border: 1px solid rgba(59, 91, 219, 0.4);
-  border-radius: 8px;
-  color: #7ba8f0;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.btn-export:hover:not(:disabled) {
-  background: rgba(59, 91, 219, 0.25);
-  color: #93c5fd;
-}
-
-.btn-export:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.result-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 48px 0;
-}
-
-.result-check {
-  font-size: 40px;
-  color: #34d399;
-}
-
-.result-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0;
-}
-
-.result-stats {
-  display: flex;
-  gap: 32px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.stat-val {
-  font-size: 28px;
-  font-weight: 700;
-  color: #7ba8f0;
-}
-
-.stat-label {
-  font-size: 13px;
-  color: var(--clr-text-subtle);
-}
-
-.result-filename {
-  font-size: 14px;
-  color: var(--clr-text-subtle);
-  margin: 0;
-}
-
-.result-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.btn-reveal {
-  padding: 9px 24px;
-  background: rgba(59, 91, 219, 0.12);
-  border: 1px solid rgba(59, 91, 219, 0.35);
-  border-radius: 8px;
-  color: #7ba8f0;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.btn-reveal:hover {
-  background: rgba(59, 91, 219, 0.22);
-  color: #93c5fd;
-}
-
-.btn-reset {
-  padding: 9px 24px;
-  background: none;
-  border: 1px solid #1a2035;
-  border-radius: 8px;
-  color: var(--clr-text-subtle);
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.btn-reset:hover {
-  background: #1a2035;
-  color: #93afd4;
-}
-
-</style>

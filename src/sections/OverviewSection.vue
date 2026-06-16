@@ -77,39 +77,43 @@ const subjectActivities = [
 </script>
 
 <template>
-  <div class="section">
-    <div class="section-body">
+  <div class="flex flex-col h-full overflow-hidden box-border">
+    <div class="flex-1 overflow-y-auto px-11 pt-11 pb-[60px] flex flex-col gap-[52px]">
 
       <!-- 히어로 -->
-      <div class="hero">
-        <div class="hero-eyebrow">
-          <span class="eyebrow-badge">생기부</span>
+      <div class="flex flex-col gap-4">
+        <div class="flex items-center gap-2.5 text-base font-medium text-[#93b8d8]">
+          <span class="text-xs font-bold tracking-[0.06em] text-amber bg-amber/[0.12] border border-amber/[0.28] rounded-[5px] px-2.5 py-[3px]">생기부</span>
           학교생활기록부 작성 도우미
         </div>
-        <h1 class="hero-title">5단계로 완성하는<br>체계적인 생기부 작성</h1>
-        <p class="hero-sub">
+        <h1 class="text-[46px] font-extrabold text-[#eef2f8] m-0 leading-[1.25] tracking-[-0.025em]">5단계로 완성하는<br>체계적인 생기부 작성</h1>
+        <p class="text-[17px] text-[#93b8d8] m-0 leading-[1.85]">
           학생 명렬표 등록부터 영역 구성, 활동 생성, 생기부 작성, 내보내기까지<br>
           아래 순서대로 진행하면 학생별 학교생활기록부 문장을 손쉽게 완성할 수 있습니다.
         </p>
       </div>
 
       <!-- 워크플로 스텝 -->
-      <div class="steps grid grid-cols-1 lg:grid-cols-2 gap-3.5">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
         <div
             v-for="step in steps"
             :key="step.num"
-            class="step-card"
-            :class="{ 'lg:col-span-2': step.num === 5 }"
+            :class="['flex flex-col items-stretch gap-3 py-[26px] px-7 bg-[var(--bg)] border border-[var(--bd)] rounded-2xl cursor-pointer transition-[border-color,box-shadow,transform] hover:border-[var(--c)] hover:shadow-[0_4px_24px_color-mix(in_srgb,var(--c)_18%,transparent)] hover:-translate-y-0.5', step.num === 5 && 'lg:col-span-2']"
             :style="{ '--c': step.color, '--bg': step.bg, '--bd': step.border }"
             @click="emit('navigate', step.section)"
         >
-          <div class="step-top">
-            <div class="step-num">{{ step.num }}</div>
-            <component :is="step.icon" :size="28" class="step-icon" />
-            <span class="step-name">{{ step.title }}</span>
+          <div class="flex items-center gap-3">
+            <div class="w-[52px] h-[52px] rounded-full bg-[color-mix(in_srgb,var(--c)_14%,transparent)] border-2 border-[color-mix(in_srgb,var(--c)_35%,transparent)] text-[var(--c)] text-[21px] font-extrabold flex items-center justify-center flex-shrink-0">
+              {{ step.num }}
+            </div>
+            <component :is="step.icon" :size="28" class="text-[var(--c)] opacity-[0.85]"/>
+            <span class="text-xl font-bold text-[#eef2f8] flex-1">{{ step.title }}</span>
           </div>
-          <div class="step-desc">{{ step.desc }}</div>
-          <button class="step-btn" @click.stop="emit('navigate', step.section)">
+          <div class="text-[15px] text-[#8bb2cc] leading-[1.7] flex-1">{{ step.desc }}</div>
+          <button
+              class="flex items-center gap-[5px] px-[18px] py-[9px] rounded-[9px] bg-[color-mix(in_srgb,var(--c)_12%,transparent)] border border-[color-mix(in_srgb,var(--c)_30%,transparent)] text-[var(--c)] text-sm font-semibold cursor-pointer whitespace-nowrap self-start mt-1 transition-[background,border-color] hover:bg-[color-mix(in_srgb,var(--c)_22%,transparent)] hover:border-[var(--c)]"
+              @click.stop="emit('navigate', step.section)"
+          >
             이동하기
             <ChevronRight :size="15"/>
           </button>
@@ -117,155 +121,162 @@ const subjectActivities = [
       </div>
 
       <!-- 구조 설명 -->
-      <div class="structure">
-        <div class="structure-header">
-          <h2 class="structure-title">이 프로그램은 어떻게 작동하나요?</h2>
-          <p class="structure-sub">
-            생기부의 각 항목을 <strong>영역(Area)</strong>이라고 부릅니다.
-            예를 들어 <strong>진로활동</strong>은 하나의 영역입니다.<br>
-            그 안에 학생이 실제로 참여한 개별 활동들, 즉 <strong>활동(Activity)</strong> 여러 개를 담아 하나의 영역을 완성합니다.
+      <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-3">
+          <h2 class="text-[26px] font-bold text-[#eef2f8] m-0">이 프로그램은 어떻게 작동하나요?</h2>
+          <p class="text-base text-[#93b8d8] leading-[1.85] m-0">
+            생기부의 각 항목을 <strong class="text-[#c8d8f0] font-bold">영역(Area)</strong>이라고 부릅니다.
+            예를 들어 <strong class="text-[#c8d8f0] font-bold">진로활동</strong>은 하나의 영역입니다.<br>
+            그 안에 학생이 실제로 참여한 개별 활동들, 즉 <strong class="text-[#c8d8f0] font-bold">활동(Activity)</strong> 여러 개를 담아 하나의 영역을 완성합니다.
           </p>
         </div>
 
         <!-- Area 박스 다이어그램 -->
-        <div class="area-box">
-          <div class="area-box-header">
-            <span class="area-tag">Area</span>
-            <span class="area-box-name">진로활동</span>
-            <span class="area-box-limit">최대 1,500 byte</span>
+        <div class="border-2 border-violet/35 rounded-modal bg-violet/[0.04] px-8 py-7 flex flex-col gap-5">
+          <div class="flex items-center gap-3.5">
+            <span class="text-sm font-bold tracking-[0.06em] text-violet bg-violet/[0.16] border border-violet/35 rounded-md px-3 py-1">Area</span>
+            <span class="text-[26px] font-extrabold text-[#eef2f8]">진로활동</span>
+            <span class="text-sm text-[#718fad] ml-auto border border-[#30395c] rounded-md px-3 py-1">최대 1,500 byte</span>
           </div>
 
-          <div class="area-box-desc">
+          <div class="text-[15px] text-[#6a8aaa] pb-1 border-b border-line">
             아래 Activity들의 기록이 합쳐져 이 영역 하나를 구성합니다.
           </div>
 
-          <div class="activities-grid">
+          <div class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))">
             <div
                 v-for="act in exampleActivities"
                 :key="act.name"
-                class="activity-card"
+                class="flex items-center gap-3.5 px-[18px] py-3.5 bg-[#0d1220] border border-[rgba(129,140,248,0.25)] rounded-xl transition-colors hover:border-[rgba(129,140,248,0.5)]"
             >
-              <div class="activity-dot"></div>
-              <div class="activity-info">
-                <div class="activity-name">{{ act.name }}</div>
-                <div class="activity-sub">{{ act.desc }}</div>
+              <div class="w-2.5 h-2.5 rounded-full bg-[#818cf8] flex-shrink-0 opacity-75"/>
+              <div class="min-w-0">
+                <div class="text-base font-semibold text-[#d0e0f0] whitespace-nowrap overflow-hidden text-ellipsis">{{ act.name }}</div>
+                <div class="text-sm text-[#5a7090] mt-[3px]">{{ act.desc }}</div>
               </div>
             </div>
 
             <!-- 추가 가능 암시 카드 -->
-            <div class="activity-card activity-card--more">
-              <div class="activity-more-icon">＋</div>
-              <div class="activity-info">
-                <div class="activity-name" style="color:#5a7090;">활동 더 추가 가능</div>
-                <div class="activity-sub">원하는 만큼</div>
+            <div class="flex items-center gap-3.5 px-[18px] py-3.5 bg-transparent border border-dashed border-[#1e2a45] rounded-xl">
+              <div class="w-2.5 text-center text-base text-[#3a4a6b] flex-shrink-0">＋</div>
+              <div class="min-w-0">
+                <div class="text-base font-semibold whitespace-nowrap overflow-hidden text-ellipsis" style="color:#5a7090;">활동 더 추가 가능</div>
+                <div class="text-sm text-[#5a7090] mt-[3px]">원하는 만큼</div>
               </div>
             </div>
           </div>
 
-          <div class="area-box-footer">
-            각 Activity마다 학생별로 기록을 작성하면, 합산 문장이 <strong>진로활동</strong> 항목으로 완성됩니다.
+          <div class="text-[15px] text-[#6a8aaa] pt-1 border-t border-line leading-[1.75]">
+            각 Activity마다 학생별로 기록을 작성하면, 합산 문장이 <strong class="text-[#a880f0] font-semibold">진로활동</strong> 항목으로 완성됩니다.
           </div>
         </div>
       </div>
 
       <!-- 담임교사 활용 가이드 -->
-      <div class="usecase">
-        <div class="usecase-header">
-          <span class="role-badge role-badge--homeroom">담임교사</span>
-          <h2 class="usecase-title">담임교사로 활용하기</h2>
+      <div class="flex flex-col gap-5">
+        <div class="flex items-center gap-3.5">
+          <span class="text-sm font-bold tracking-[0.05em] rounded-md px-[13px] py-1 flex-shrink-0 text-green bg-green/[0.12] border border-green/30">담임교사</span>
+          <h2 class="text-[24px] font-bold text-[#eef2f8] m-0">담임교사로 활용하기</h2>
         </div>
-        <p class="usecase-desc">
-          담임교사는 <strong>자율활동 · 동아리활동 · 진로활동</strong> 3개 영역(Area)의 생기부를 작성합니다.
-          각 영역은 학생이 참여한 개별 행사 혹은 프로그램, 즉 <strong>활동(Activity)</strong>의 기록을
+        <p class="text-base text-[#93b8d8] leading-[1.85] m-0">
+          담임교사는 <strong class="text-[#c8d8f0] font-bold">자율활동 · 동아리활동 · 진로활동</strong> 3개 영역(Area)의 생기부를 작성합니다.
+          각 영역은 학생이 참여한 개별 행사 혹은 프로그램, 즉 <strong class="text-[#c8d8f0] font-bold">활동(Activity)</strong>의 기록을
           하나로 합쳐서 완성됩니다. 지도교사들이 엑셀로 제공한 기재 문장을
-          <strong>가져오기(Import)</strong> 탭으로 불러오면, 활동별 문장이 자동으로 채워지고
+          <strong class="text-[#c8d8f0] font-bold">가져오기(Import)</strong> 탭으로 불러오면, 활동별 문장이 자동으로 채워지고
           합산 바이트를 실시간으로 확인하며 영역 제한을 맞출 수 있습니다.
         </p>
 
-        <div class="mapping-bar">
-          <div class="mapping-item">
-            <span class="mapping-key mapping-key--area">영역 (Area)</span>
-            <span class="mapping-arrow">→</span>
-            <span class="mapping-val">자율활동 · 동아리활동 · 진로활동</span>
+        <div class="flex items-center bg-base border border-[#1e2a45] rounded-xl px-6 py-[18px] flex-wrap gap-3">
+          <div class="flex items-center gap-2.5 flex-1 min-w-[200px]">
+            <span class="text-sm font-bold rounded-md px-3 py-[5px] whitespace-nowrap text-violet bg-violet/[0.12] border border-violet/30">영역 (Area)</span>
+            <span class="text-[15px] text-[#3a4a6b] flex-shrink-0">→</span>
+            <span class="text-[15px] text-[#8bb2cc]">자율활동 · 동아리활동 · 진로활동</span>
           </div>
-          <div class="mapping-divider"></div>
-          <div class="mapping-item">
-            <span class="mapping-key mapping-key--act">활동 (Activity)</span>
-            <span class="mapping-arrow">→</span>
-            <span class="mapping-val">체육대회, 현장체험학습, 진로상담 프로그램 …</span>
+          <div class="w-px h-8 bg-[#1e2a45] flex-shrink-0"/>
+          <div class="flex items-center gap-2.5 flex-1 min-w-[200px]">
+            <span class="text-sm font-bold rounded-md px-3 py-[5px] whitespace-nowrap text-[#818cf8] bg-[rgba(129,140,248,0.12)] border border-[rgba(129,140,248,0.3)]">활동 (Activity)</span>
+            <span class="text-[15px] text-[#3a4a6b] flex-shrink-0">→</span>
+            <span class="text-[15px] text-[#8bb2cc]">체육대회, 현장체험학습, 진로상담 프로그램 …</span>
           </div>
         </div>
 
-        <div class="homeroom-grid">
-          <div v-for="area in homeroomAreas" :key="area.name" class="uc-area-box">
-            <div class="uc-area-header">
-              <span class="uc-area-tag">Area</span>
-              <span class="uc-area-name">{{ area.name }}</span>
+        <div class="grid grid-cols-3 gap-3.5">
+          <div v-for="area in homeroomAreas" :key="area.name"
+               class="border-2 border-violet/30 rounded-2xl bg-violet/[0.04] px-6 py-[22px] flex flex-col gap-3.5">
+            <div class="flex items-center gap-2.5">
+              <span class="text-xs font-bold tracking-[0.06em] text-violet bg-violet/[0.16] border border-violet/35 rounded-[5px] px-[9px] py-[3px] flex-shrink-0">Area</span>
+              <span class="text-[17px] font-bold text-[#eef2f8]">{{ area.name }}</span>
             </div>
-            <div class="uc-acts">
-              <div v-for="act in area.activities" :key="act" class="uc-act-row">
-                <span class="uc-act-dot"></span>
-                <span class="uc-act-label">{{ act }}</span>
+            <div class="flex flex-col gap-2">
+              <div v-for="act in area.activities" :key="act" class="flex items-start gap-2.5">
+                <span class="w-2 h-2 rounded-full bg-[#818cf8] flex-shrink-0 mt-[5px] opacity-70"/>
+                <span class="text-[15px] font-medium text-[#c8d8f0] leading-[1.5]">{{ act }}</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="usecase-tip">
-          지도교사에게 기재 문장을 <strong>엑셀 파일</strong>로 받아 <strong>가져오기(Import)</strong> 탭에서
+        <div
+            class="text-[15px] text-[#7aa5c8] bg-green/[0.05] rounded-lg px-[18px] py-3.5 leading-[1.75]"
+            style="border: 1px solid rgba(16,185,129,0.18); border-left: 3px solid #10b981;"
+        >
+          지도교사에게 기재 문장을 <strong class="text-[#a7f0d6] font-semibold">엑셀 파일</strong>로 받아 <strong class="text-[#a7f0d6] font-semibold">가져오기(Import)</strong> 탭에서
           불러오면 활동별 문장이 자동으로 채워집니다. 영역 바이트를 초과하는 항목은 즉시 표시되므로
           빠르게 파악하고 조절할 수 있습니다.
         </div>
       </div>
 
       <!-- 교과교사 활용 가이드 -->
-      <div class="usecase">
-        <div class="usecase-header">
-          <span class="role-badge role-badge--subject">교과교사</span>
-          <h2 class="usecase-title">교과교사로 활용하기</h2>
+      <div class="flex flex-col gap-5">
+        <div class="flex items-center gap-3.5">
+          <span class="text-sm font-bold tracking-[0.05em] rounded-md px-[13px] py-1 flex-shrink-0 text-amber bg-amber/[0.12] border border-amber/30">교과교사</span>
+          <h2 class="text-[24px] font-bold text-[#eef2f8] m-0">교과교사로 활용하기</h2>
         </div>
-        <p class="usecase-desc">
-          교과교사는 담당 과목의 <strong>세부능력 및 특기사항(세특)</strong>을 작성합니다.
-          세특 하나가 <strong>영역(Area)</strong>이 되고, 수행평가 · 수업태도처럼 세특을 구성하는
-          개별 항목이 <strong>활동(Activity)</strong>이 됩니다. 항목마다 문장을 별도로 작성한 뒤
+        <p class="text-base text-[#93b8d8] leading-[1.85] m-0">
+          교과교사는 담당 과목의 <strong class="text-[#c8d8f0] font-bold">세부능력 및 특기사항(세특)</strong>을 작성합니다.
+          세특 하나가 <strong class="text-[#c8d8f0] font-bold">영역(Area)</strong>이 되고, 수행평가 · 수업태도처럼 세특을 구성하는
+          개별 항목이 <strong class="text-[#c8d8f0] font-bold">활동(Activity)</strong>이 됩니다. 항목마다 문장을 별도로 작성한 뒤
           합산 바이트를 확인하며 완성도 높은 세특을 만들 수 있습니다.
         </p>
 
-        <div class="mapping-bar">
-          <div class="mapping-item">
-            <span class="mapping-key mapping-key--area">영역 (Area)</span>
-            <span class="mapping-arrow">→</span>
-            <span class="mapping-val">세부능력 및 특기사항 (과목명)</span>
+        <div class="flex items-center bg-base border border-[#1e2a45] rounded-xl px-6 py-[18px] flex-wrap gap-3">
+          <div class="flex items-center gap-2.5 flex-1 min-w-[200px]">
+            <span class="text-sm font-bold rounded-md px-3 py-[5px] whitespace-nowrap text-violet bg-violet/[0.12] border border-violet/30">영역 (Area)</span>
+            <span class="text-[15px] text-[#3a4a6b] flex-shrink-0">→</span>
+            <span class="text-[15px] text-[#8bb2cc]">세부능력 및 특기사항 (과목명)</span>
           </div>
-          <div class="mapping-divider"></div>
-          <div class="mapping-item">
-            <span class="mapping-key mapping-key--act">활동 (Activity)</span>
-            <span class="mapping-arrow">→</span>
-            <span class="mapping-val">수행평가 1, 수행평가 2, 수업 태도 …</span>
+          <div class="w-px h-8 bg-[#1e2a45] flex-shrink-0"/>
+          <div class="flex items-center gap-2.5 flex-1 min-w-[200px]">
+            <span class="text-sm font-bold rounded-md px-3 py-[5px] whitespace-nowrap text-[#818cf8] bg-[rgba(129,140,248,0.12)] border border-[rgba(129,140,248,0.3)]">활동 (Activity)</span>
+            <span class="text-[15px] text-[#3a4a6b] flex-shrink-0">→</span>
+            <span class="text-[15px] text-[#8bb2cc]">수행평가 1, 수행평가 2, 수업 태도 …</span>
           </div>
         </div>
 
-        <div class="uc-area-box uc-area-box--subject">
-          <div class="uc-area-header">
-            <span class="uc-area-tag uc-area-tag--subject">Area</span>
-            <span class="uc-area-name">수학 세부능력 및 특기사항</span>
-            <span class="uc-area-limit">최대 1,500 byte</span>
+        <div class="border-2 border-amber/30 rounded-2xl bg-amber/[0.03] px-6 py-[22px] flex flex-col gap-3.5">
+          <div class="flex items-center gap-2.5">
+            <span class="text-xs font-bold tracking-[0.06em] text-amber bg-amber/[0.14] border border-amber/35 rounded-[5px] px-[9px] py-[3px] flex-shrink-0">Area</span>
+            <span class="text-[17px] font-bold text-[#eef2f8]">수학 세부능력 및 특기사항</span>
+            <span class="text-sm text-[#718fad] ml-auto border border-[#30395c] rounded-md px-2.5 py-[3px] whitespace-nowrap">최대 1,500 byte</span>
           </div>
-          <div class="uc-acts">
-            <div v-for="act in subjectActivities" :key="act.name" class="uc-act-row">
-              <span class="uc-act-dot uc-act-dot--subject"></span>
+          <div class="flex flex-col gap-2">
+            <div v-for="act in subjectActivities" :key="act.name" class="flex items-start gap-2.5">
+              <span class="w-2 h-2 rounded-full bg-amber flex-shrink-0 mt-[5px] opacity-70"/>
               <div>
-                <div class="uc-act-label">{{ act.name }}</div>
-                <div class="uc-act-sub">{{ act.desc }}</div>
+                <div class="text-[15px] font-medium text-[#c8d8f0] leading-[1.5]">{{ act.name }}</div>
+                <div class="text-sm text-[#5a7090] mt-[2px]">{{ act.desc }}</div>
               </div>
             </div>
           </div>
-          <div class="uc-area-footer">
-            세 활동의 문장을 합치면 <strong>수학 세특 영역</strong>이 완성됩니다.
+          <div class="text-sm text-[#6a8aaa] pt-3 border-t border-line leading-[1.75]">
+            세 활동의 문장을 합치면 <strong class="text-amber font-semibold">수학 세특 영역</strong>이 완성됩니다.
           </div>
         </div>
 
-        <div class="usecase-tip usecase-tip--subject">
+        <div
+            class="text-[15px] text-[#7aa5c8] bg-amber/[0.05] rounded-lg px-[18px] py-3.5 leading-[1.75]"
+            style="border: 1px solid rgba(245,158,11,0.18); border-left: 3px solid #f59e0b;"
+        >
           과목별로 프로젝트를 따로 만들거나, 한 프로젝트 안에 여러 과목을 영역으로 묶어 관리할 수 있습니다.
           학생 수가 많을수록 격자형 입력 화면이 큰 도움이 됩니다.
         </div>
@@ -274,565 +285,3 @@ const subjectActivities = [
     </div>
   </div>
 </template>
-
-<style scoped>
-.section {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.section-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 44px 44px 60px;
-  display: flex;
-  flex-direction: column;
-  gap: 52px;
-}
-
-/* ── 히어로 ─────────────────────────────────────────────────── */
-.hero {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.hero-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-  font-weight: 500;
-  color: #93b8d8;
-}
-
-.eyebrow-badge {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.12);
-  border: 1px solid rgba(251, 191, 36, 0.28);
-  border-radius: 5px;
-  padding: 3px 10px;
-}
-
-.hero-title {
-  font-size: 46px;
-  font-weight: 800;
-  color: #eef2f8;
-  margin: 0;
-  line-height: 1.25;
-  letter-spacing: -0.025em;
-}
-
-.hero-sub {
-  font-size: 17px;
-  color: #93b8d8;
-  margin: 0;
-  line-height: 1.85;
-}
-
-/* ── 워크플로 스텝 ───────────────────────────────────────────── */
-.step-card {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 12px;
-  padding: 26px 28px;
-  background: var(--bg);
-  border: 1px solid var(--bd);
-  border-radius: 16px;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
-}
-
-.step-card:hover {
-  border-color: var(--c);
-  box-shadow: 0 4px 24px color-mix(in srgb, var(--c) 18%, transparent);
-  transform: translateY(-2px);
-}
-
-.step-top {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.step-num {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--c) 14%, transparent);
-  border: 2px solid color-mix(in srgb, var(--c) 35%, transparent);
-  color: var(--c);
-  font-size: 21px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.step-icon {
-  color: var(--c);
-  opacity: 0.85;
-}
-
-.step-name {
-  font-size: 20px;
-  font-weight: 700;
-  color: #eef2f8;
-  flex: 1;
-}
-
-.step-desc {
-  font-size: 15px;
-  color: #8bb2cc;
-  line-height: 1.7;
-  flex: 1;
-}
-
-.step-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 9px 18px;
-  border-radius: 9px;
-  background: color-mix(in srgb, var(--c) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
-  color: var(--c);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  align-self: flex-start;
-  margin-top: 4px;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.step-btn:hover {
-  background: color-mix(in srgb, var(--c) 22%, transparent);
-  border-color: var(--c);
-}
-
-/* ── 구조 설명 ───────────────────────────────────────────────── */
-.structure {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.structure-header {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.structure-title {
-  font-size: 26px;
-  font-weight: 700;
-  color: #eef2f8;
-  margin: 0;
-}
-
-.structure-sub {
-  font-size: 16px;
-  color: #93b8d8;
-  line-height: 1.85;
-  margin: 0;
-}
-
-.structure-sub strong {
-  color: #c8d8f0;
-  font-weight: 700;
-}
-
-.structure-sub em {
-  font-style: normal;
-  color: #c8d8f0;
-}
-
-/* ── Area 박스 다이어그램 ────────────────────────────────────── */
-.area-box {
-  border: 2px solid rgba(168, 85, 247, 0.35);
-  border-radius: 20px;
-  background: rgba(168, 85, 247, 0.04);
-  padding: 28px 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.area-box-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.area-tag {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: #a855f7;
-  background: rgba(168, 85, 247, 0.16);
-  border: 1px solid rgba(168, 85, 247, 0.35);
-  border-radius: 6px;
-  padding: 4px 12px;
-}
-
-.area-box-name {
-  font-size: 26px;
-  font-weight: 800;
-  color: #eef2f8;
-}
-
-.area-box-limit {
-  font-size: 14px;
-  color: #718fad;
-  margin-left: auto;
-  border: 1px solid #30395c;
-  border-radius: 6px;
-  padding: 4px 12px;
-}
-
-.area-box-desc {
-  font-size: 15px;
-  color: #6a8aaa;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #1a2035;
-}
-
-.activities-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-}
-
-.activity-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  background: #0d1220;
-  border: 1px solid rgba(129, 140, 248, 0.25);
-  border-radius: 12px;
-  transition: border-color 0.15s;
-}
-
-.activity-card:hover {
-  border-color: rgba(129, 140, 248, 0.5);
-}
-
-.activity-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #818cf8;
-  flex-shrink: 0;
-  opacity: 0.75;
-}
-
-.activity-card--more {
-  border-style: dashed;
-  border-color: #1e2a45;
-  background: transparent;
-}
-
-.activity-more-icon {
-  width: 10px;
-  text-align: center;
-  font-size: 16px;
-  color: #3a4a6b;
-  flex-shrink: 0;
-}
-
-.activity-info {
-  min-width: 0;
-}
-
-.activity-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: #d0e0f0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.activity-sub {
-  font-size: 13px;
-  color: #5a7090;
-  margin-top: 3px;
-}
-
-.area-box-footer {
-  font-size: 15px;
-  color: #6a8aaa;
-  padding-top: 4px;
-  border-top: 1px solid #1a2035;
-  line-height: 1.75;
-}
-
-.area-box-footer strong {
-  color: #a880f0;
-  font-weight: 600;
-}
-
-/* ── 활용 가이드 (담임교사 / 교과교사) ──────────────────────── */
-.usecase {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.usecase-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.role-badge {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  border-radius: 6px;
-  padding: 4px 13px;
-  flex-shrink: 0;
-}
-
-.role-badge--homeroom {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.role-badge--subject {
-  color: #f59e0b;
-  background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-}
-
-.usecase-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #eef2f8;
-  margin: 0;
-}
-
-.usecase-desc {
-  font-size: 16px;
-  color: #93b8d8;
-  line-height: 1.85;
-  margin: 0;
-}
-
-.usecase-desc strong {
-  color: #c8d8f0;
-  font-weight: 700;
-}
-
-/* 매핑 바 */
-.mapping-bar {
-  display: flex;
-  align-items: center;
-  background: #0a0f1e;
-  border: 1px solid #1e2a45;
-  border-radius: 12px;
-  padding: 18px 24px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.mapping-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 200px;
-}
-
-.mapping-divider {
-  width: 1px;
-  height: 32px;
-  background: #1e2a45;
-  flex-shrink: 0;
-}
-
-.mapping-key {
-  font-size: 13px;
-  font-weight: 700;
-  border-radius: 6px;
-  padding: 5px 12px;
-  white-space: nowrap;
-}
-
-.mapping-key--area {
-  color: #a855f7;
-  background: rgba(168, 85, 247, 0.12);
-  border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
-.mapping-key--act {
-  color: #818cf8;
-  background: rgba(129, 140, 248, 0.12);
-  border: 1px solid rgba(129, 140, 248, 0.3);
-}
-
-.mapping-arrow {
-  font-size: 15px;
-  color: #3a4a6b;
-  flex-shrink: 0;
-}
-
-.mapping-val {
-  font-size: 15px;
-  color: #8bb2cc;
-}
-
-/* 담임교사 3단 그리드 */
-.homeroom-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
-
-/* 공통 uc-area 박스 */
-.uc-area-box {
-  border: 2px solid rgba(168, 85, 247, 0.3);
-  border-radius: 16px;
-  background: rgba(168, 85, 247, 0.04);
-  padding: 22px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.uc-area-box--subject {
-  border-color: rgba(245, 158, 11, 0.3);
-  background: rgba(245, 158, 11, 0.03);
-}
-
-.uc-area-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.uc-area-tag {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: #a855f7;
-  background: rgba(168, 85, 247, 0.16);
-  border: 1px solid rgba(168, 85, 247, 0.35);
-  border-radius: 5px;
-  padding: 3px 9px;
-  flex-shrink: 0;
-}
-
-.uc-area-tag--subject {
-  color: #f59e0b;
-  background: rgba(245, 158, 11, 0.14);
-  border-color: rgba(245, 158, 11, 0.35);
-}
-
-.uc-area-name {
-  font-size: 17px;
-  font-weight: 700;
-  color: #eef2f8;
-}
-
-.uc-area-limit {
-  font-size: 13px;
-  color: #718fad;
-  margin-left: auto;
-  border: 1px solid #30395c;
-  border-radius: 6px;
-  padding: 3px 10px;
-  white-space: nowrap;
-}
-
-.uc-acts {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.uc-act-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.uc-act-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #818cf8;
-  flex-shrink: 0;
-  margin-top: 5px;
-  opacity: 0.7;
-}
-
-.uc-act-dot--subject {
-  background: #f59e0b;
-}
-
-.uc-act-label {
-  font-size: 15px;
-  font-weight: 500;
-  color: #c8d8f0;
-  line-height: 1.5;
-}
-
-.uc-act-sub {
-  font-size: 13px;
-  color: #5a7090;
-  margin-top: 2px;
-}
-
-.uc-area-footer {
-  font-size: 14px;
-  color: #6a8aaa;
-  padding-top: 12px;
-  border-top: 1px solid #1a2035;
-  line-height: 1.75;
-}
-
-.uc-area-footer strong {
-  color: #f59e0b;
-  font-weight: 600;
-}
-
-/* 팁 박스 */
-.usecase-tip {
-  font-size: 15px;
-  color: #7aa5c8;
-  background: rgba(16, 185, 129, 0.05);
-  border: 1px solid rgba(16, 185, 129, 0.18);
-  border-left: 3px solid #10b981;
-  border-radius: 8px;
-  padding: 14px 18px;
-  line-height: 1.75;
-}
-
-.usecase-tip strong {
-  color: #a7f0d6;
-  font-weight: 600;
-}
-
-.usecase-tip--subject {
-  background: rgba(245, 158, 11, 0.05);
-  border-color: rgba(245, 158, 11, 0.18);
-  border-left-color: #f59e0b;
-}
-
-.usecase-tip--subject strong {
-  color: #fcd37a;
-}
-
-</style>

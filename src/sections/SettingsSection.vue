@@ -67,35 +67,53 @@ async function handlePasswordSubmit(payload) {
 </script>
 
 <template>
-  <div class="section">
-    <div class="section-header">
+  <div class="flex flex-col h-full overflow-hidden box-border">
+
+    <!-- 섹션 헤더 -->
+    <div class="flex items-start justify-between px-10 py-9 border-b border-line flex-shrink-0 gap-4">
       <div>
-        <h2 class="section-title">설정(Settings)</h2>
-        <p class="section-desc">프로그램의 기본 설정을 관리합니다.</p>
+        <h2 class="text-[22px] font-bold text-ink m-0 mb-1.5">설정(Settings)</h2>
+        <p class="text-base text-ink-3 m-0">프로그램의 기본 설정을 관리합니다.</p>
       </div>
     </div>
 
-    <div class="section-body">
+    <div class="flex-1 overflow-y-auto px-10 py-8 pb-12">
 
       <!-- 암호화 설정 카드 -->
-      <div class="settings-card">
-        <div class="card-header">
-          <div class="card-icon" :class="config.encryptionEnabled ? 'icon-enabled' : 'icon-disabled'">
+      <div class="bg-surface border border-line rounded-2xl p-6">
+
+        <!-- 카드 헤더 -->
+        <div class="flex items-center gap-4 mb-4">
+          <div
+              :class="[
+                'flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0',
+                config.encryptionEnabled
+                  ? 'bg-green/[0.12] border border-green/30 text-green'
+                  : 'bg-[rgba(100,116,139,0.12)] border border-[rgba(100,116,139,0.3)] text-[#64748b]'
+              ]"
+          >
             <Shield v-if="config.encryptionEnabled" :size="20"/>
             <ShieldOff v-else :size="20"/>
           </div>
           <div>
-            <h3 class="card-title">데이터 암호화</h3>
-            <p class="card-desc">학생 개인정보와 학교생활기록부 내용을 암호화하여 보호합니다.</p>
+            <h3 class="text-lg font-semibold text-ink m-0">데이터 암호화</h3>
+            <p class="text-base text-ink-4 m-0">학생 개인정보와 학교생활기록부 내용을 암호화하여 보호합니다.</p>
           </div>
-          <div class="card-badge" :class="config.encryptionEnabled ? 'badge-on' : 'badge-off'">
+          <div
+              :class="[
+                'ml-auto px-3 py-1 rounded-[20px] text-sm font-semibold flex-shrink-0',
+                config.encryptionEnabled
+                  ? 'bg-green/[0.12] border border-green/30 text-green'
+                  : 'bg-[rgba(100,116,139,0.10)] border border-[rgba(100,116,139,0.25)] text-[#64748b]'
+              ]"
+          >
             {{ config.encryptionEnabled ? '활성화됨' : '비활성화됨' }}
           </div>
         </div>
 
         <!-- 경고 문구 -->
-        <div class="warning-box">
-          <AlertTriangle :size="16" class="warning-icon"/>
+        <div class="flex items-center gap-2 px-3.5 py-2.5 rounded-btn bg-amber/[0.07] border border-amber/20 text-base text-amber leading-relaxed mb-[18px]">
+          <AlertTriangle :size="16" class="flex-shrink-0 mt-px"/>
           <span>
             비밀번호 분실 시
             <strong><span style="text-decoration: underline;">어떠한 방법으로도</span></strong>
@@ -105,31 +123,51 @@ async function handlePasswordSubmit(payload) {
         </div>
 
         <!-- 버튼 -->
-        <div class="card-actions">
-          <button v-if="!config.encryptionEnabled" class="btn-enable" @click="openSetup">
+        <div class="flex gap-2.5 flex-wrap">
+          <button
+              v-if="!config.encryptionEnabled"
+              class="flex items-center gap-2 px-[18px] py-[9px] rounded-btn text-base font-medium cursor-pointer transition-[background-color,transform] border bg-green/15 border-green/35 text-green enabled:hover:bg-green/25 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+              @click="openSetup"
+          >
             <Shield :size="16"/>
             암호화 활성화
           </button>
           <template v-else>
-            <button class="btn-change" :disabled="disableEncryptLoading" @click="openChange">
+            <button
+                class="flex items-center gap-2 px-[18px] py-[9px] rounded-btn text-base font-medium cursor-pointer transition-[background-color,transform] border bg-blue/15 border-blue/35 text-[#6ea8fe] enabled:hover:bg-blue/25 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                :disabled="disableEncryptLoading"
+                @click="openChange"
+            >
               <KeyRound :size="16"/>
               비밀번호 변경
             </button>
-            <button v-if="!confirmEncryptDisable" class="btn-disable" :disabled="disableEncryptLoading"
-                    @click="handleDisable">
+            <button
+                v-if="!confirmEncryptDisable"
+                class="flex items-center gap-2 px-[18px] py-[9px] rounded-btn text-base font-medium cursor-pointer transition-[background-color,transform] border bg-red/10 border-red/30 text-[#fca5a5] enabled:hover:bg-red/[0.18] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                :disabled="disableEncryptLoading"
+                @click="handleDisable"
+            >
               <ShieldOff :size="16"/>
               암호화 비활성화
             </button>
-            <div v-else class="disable-confirm-row">
-              <div class="disable-warning">
-                <AlertTriangle :size="14" class="disable-warning-icon"/>
-                <span class="disable-warning-title">암호화를 정말 비활성화하시겠습니까?</span>
+            <div v-else class="flex flex-row items-center gap-2.5">
+              <div class="flex items-center gap-2 bg-red/[0.07] border border-red/25 rounded-btn px-[18px] py-[9px]">
+                <AlertTriangle :size="14" class="text-red flex-shrink-0"/>
+                <span class="text-base font-semibold text-red">암호화를 정말 비활성화하시겠습니까?</span>
               </div>
-              <div class="disable-confirm-btns">
-                <button class="btn-cancel-sm" :disabled="disableEncryptLoading" @click="confirmEncryptDisable = false">
+              <div class="flex items-center gap-2">
+                <button
+                    class="px-[18px] py-[9px] rounded-lg border border-[rgba(100,116,139,0.4)] bg-transparent text-[#94a3b8] text-base cursor-pointer box-border enabled:hover:bg-[rgba(100,116,139,0.12)] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                    :disabled="disableEncryptLoading"
+                    @click="confirmEncryptDisable = false"
+                >
                   취소
                 </button>
-                <button class="btn-disable-confirm" :disabled="disableEncryptLoading" @click="handleDisable">
+                <button
+                    class="px-[18px] py-[9px] rounded-lg border border-transparent bg-[#ef4444] text-white text-base font-semibold cursor-pointer transition-colors box-border enabled:hover:bg-[#dc2626] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                    :disabled="disableEncryptLoading"
+                    @click="handleDisable"
+                >
                   {{ disableEncryptLoading ? '처리 중…' : '비활성화' }}
                 </button>
               </div>
@@ -138,9 +176,16 @@ async function handlePasswordSubmit(payload) {
         </div>
 
         <!-- 상태 메시지 -->
-        <transition name="fade">
-          <p v-if="statusEncryptMessage" class="status-msg"
-             :class="statusEncryptMessage.startsWith('오류') ? 'status-error' : 'status-ok'">
+        <transition
+            enter-from-class="opacity-0"
+            leave-to-class="opacity-0"
+            enter-active-class="transition-opacity duration-300"
+            leave-active-class="transition-opacity duration-300"
+        >
+          <p
+              v-if="statusEncryptMessage"
+              :class="['mt-3.5 text-base font-medium m-0', statusEncryptMessage.startsWith('오류') ? 'text-[#fca5a5]' : 'text-green']"
+          >
             {{ statusEncryptMessage }}
           </p>
         </transition>
@@ -158,286 +203,3 @@ async function handlePasswordSubmit(payload) {
     />
   </div>
 </template>
-
-<style scoped>
-.section {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.section-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 32px 40px 48px;
-}
-
-.section-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 36px 40px;
-  border-bottom: 1px solid #1a2035;
-  flex-shrink: 0;
-  gap: 16px;
-}
-
-.section-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0 0 6px;
-}
-
-.section-desc {
-  font-size: 16px;
-  color: #7ba3d4;
-  margin: 0;
-}
-
-.settings-card {
-  background-color: #0e1524;
-  border: 1px solid #1e2d45;
-  border-radius: 16px;
-  padding: 24px;
-}
-
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.card-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  flex-shrink: 0;
-}
-
-.icon-enabled {
-  background-color: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
-}
-
-.icon-disabled {
-  background-color: rgba(100, 116, 139, 0.12);
-  border: 1px solid rgba(100, 116, 139, 0.3);
-  color: #64748b;
-}
-
-.card-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #e2e8f0;
-  margin: 0;
-}
-
-.card-desc {
-  font-size: 16px;
-  color: var(--clr-text-hint);
-  margin: 0;
-}
-
-.card-badge {
-  margin-left: auto;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.badge-on {
-  background-color: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
-}
-
-.badge-off {
-  background-color: rgba(100, 116, 139, 0.1);
-  border: 1px solid rgba(100, 116, 139, 0.25);
-  color: #64748b;
-}
-
-.warning-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  background-color: rgba(245, 158, 11, 0.07);
-  border: 1px solid rgba(245, 158, 11, 0.2);
-  font-size: 16px;
-  color: #fbbf24;
-  line-height: 1.5;
-  margin-bottom: 18px;
-}
-
-.warning-icon {
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.card-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.btn-enable,
-.btn-change,
-.btn-disable {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 18px;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.15s, transform 0.1s;
-  border: 1px solid transparent;
-}
-
-.btn-enable:active:not(:disabled),
-.btn-change:active:not(:disabled),
-.btn-disable:active:not(:disabled) {
-  transform: scale(0.97);
-}
-
-.btn-enable {
-  background-color: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.35);
-  color: #34d399;
-}
-
-.btn-enable:hover {
-  background-color: rgba(16, 185, 129, 0.25);
-}
-
-.btn-change {
-  background-color: rgba(59, 91, 219, 0.15);
-  border-color: rgba(59, 91, 219, 0.35);
-  color: #6ea8fe;
-}
-
-.btn-change:hover {
-  background-color: rgba(59, 91, 219, 0.25);
-}
-
-.btn-disable {
-  background-color: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
-}
-
-.btn-disable:hover {
-  background-color: rgba(239, 68, 68, 0.18);
-}
-
-.status-msg {
-  margin: 14px 0 0;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.status-ok {
-  color: #34d399;
-}
-
-.status-error {
-  color: #fca5a5;
-}
-
-.disable-confirm-row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-}
-
-.disable-warning {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background-color: rgba(239, 68, 68, 0.07);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  border-radius: 10px;
-  padding: 9px 18px;
-}
-
-.disable-warning-icon {
-  color: #f87171;
-  flex-shrink: 0;
-}
-
-.disable-warning-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #f87171;
-}
-
-.disable-confirm-btns {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-cancel-sm {
-  padding: 9px 18px;
-  border-radius: 8px;
-  border: 1px solid rgba(100, 116, 139, 0.4);
-  background: transparent;
-  color: #94a3b8;
-  font-size: 16px;
-  cursor: pointer;
-  box-sizing: border-box;
-}
-
-.btn-cancel-sm:hover {
-  background-color: rgba(100, 116, 139, 0.12);
-}
-
-.btn-disable-confirm {
-  padding: 9px 18px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background-color: #ef4444;
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.15s;
-  box-sizing: border-box;
-}
-
-.btn-disable-confirm:hover {
-  background-color: #dc2626;
-}
-
-.btn-enable:disabled,
-.btn-change:disabled,
-.btn-disable:disabled,
-.btn-cancel-sm:disabled,
-.btn-disable-confirm:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
-
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s;
-}
-</style>

@@ -79,83 +79,97 @@ async function handleDeleted() {
 </script>
 
 <template>
-  <div class="activity-section-wrapper">
-    <div class="section">
+  <div>
+    <div class="flex flex-col h-full overflow-hidden box-border">
 
       <!-- 섹션 헤더 -->
-      <div class="section-header">
+      <div class="flex items-start justify-between px-10 py-9 border-b border-line flex-shrink-0 gap-4">
         <div>
-          <h2 class="section-title">학생(Students) 관리</h2>
-          <div class="section-desc">
+          <h2 class="text-[22px] font-bold text-ink m-0 mb-1.5">학생(Students) 관리</h2>
+          <div class="text-base text-ink-3">
             <p>학교생활기록부 작성을 위한 학생 명단을 설정합니다.</p>
             <p>학생 정보를 등록하신 후, '영역(Area)' 탭에서 각 학생을 배정해 주세요.</p>
           </div>
         </div>
-        <div class="header-actions">
-          <button class="btn-bulk" @click="bulkModalVisible = true">
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button
+              class="flex items-center gap-[7px] px-[18px] py-2.5 rounded-xl bg-blue/10 border border-blue/30 text-[#7ba8f0] text-base font-semibold cursor-pointer whitespace-nowrap transition-colors enabled:hover:bg-blue/[0.18]"
+              @click="bulkModalVisible = true"
+          >
             <TableProperties :size="16"/>
             일괄 추가
           </button>
-          <button class="btn-add" @click="openAddModal">
+          <button
+              class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue border-0 text-white text-base font-semibold cursor-pointer whitespace-nowrap flex-shrink-0 transition-colors shadow-[0_4px_16px_color-mix(in_srgb,var(--c-blue)_20%,transparent)] hover:bg-blue-2"
+              @click="openAddModal"
+          >
             <Plus :size="18"/>
             학생 추가
           </button>
         </div>
       </div>
 
-      <div class="section-body">
+      <div class="flex-1 overflow-y-auto px-10 py-8 pb-12">
+
         <!-- 로딩 -->
-        <div v-if="studentStore.loading" class="state-box">
-          <p class="state-text">불러오는 중...</p>
+        <div v-if="studentStore.loading">
+          <p class="text-base text-ink-3 m-0">불러오는 중...</p>
         </div>
 
         <!-- 에러 -->
-        <div v-else-if="studentStore.error" class="state-box state-box--error">
-          <p class="state-text">{{ studentStore.error }}</p>
+        <div v-else-if="studentStore.error">
+          <p class="text-base text-red m-0">{{ studentStore.error }}</p>
         </div>
 
         <!-- 빈 상태 -->
-        <div v-else-if="studentStore.students.length === 0" class="empty-state">
-          <Users :size="40" color="#6b8ab5"/>
-          <p class="empty-title">등록된 학생이 없습니다</p>
-          <p class="empty-desc">학생을 추가한 후 영역에 배정하세요.</p>
-          <button class="btn-add" @click="openAddModal">
+        <div v-else-if="studentStore.students.length === 0"
+             class="flex flex-col items-center justify-center gap-3 px-10 py-20 border border-dashed border-line rounded-[20px]">
+          <Users :size="40" class="text-ink-5"/>
+          <p class="text-lg font-semibold text-ink-3 m-0">등록된 학생이 없습니다</p>
+          <p class="text-base text-ink-5 m-0 mb-2">학생을 추가한 후 영역에 배정하세요.</p>
+          <button
+              class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue border-0 text-white text-base font-semibold cursor-pointer whitespace-nowrap flex-shrink-0 transition-colors shadow-[0_4px_16px_color-mix(in_srgb,var(--c-blue)_20%,transparent)] hover:bg-blue-2"
+              @click="openAddModal"
+          >
             <Plus :size="18"/>
             첫 학생 추가하기
           </button>
         </div>
 
         <!-- 학생 테이블 -->
-        <div v-else class="table-wrap">
-          <table class="student-table">
+        <div v-else class="border border-line rounded-2xl overflow-hidden">
+          <table class="w-full border-collapse student-table">
             <thead>
             <tr>
-              <th>학년</th>
-              <th>반</th>
-              <th>번호</th>
-              <th>이름</th>
-              <th></th>
+              <th class="text-sm font-semibold text-ink-5 text-left px-4 py-3 bg-base border-b border-line tracking-[0.04em] uppercase">학년</th>
+              <th class="text-sm font-semibold text-ink-5 text-left px-4 py-3 bg-base border-b border-line tracking-[0.04em] uppercase">반</th>
+              <th class="text-sm font-semibold text-ink-5 text-left px-4 py-3 bg-base border-b border-line tracking-[0.04em] uppercase">번호</th>
+              <th class="text-sm font-semibold text-ink-5 text-left px-4 py-3 bg-base border-b border-line tracking-[0.04em] uppercase">이름</th>
+              <th class="text-sm font-semibold text-ink-5 text-left px-4 py-3 bg-base border-b border-line tracking-[0.04em] uppercase"></th>
             </tr>
             </thead>
             <tbody>
             <template v-for="group in groupedStudents" :key="`${group.grade}-${group.classNum}`">
-              <tr class="group-header-row">
-                <td colspan="5">
+              <tr>
+                <td colspan="5" class="text-sm font-semibold text-[#7ba3d4] px-4 py-2.5 bg-blue/[0.05] border-t border-line border-b border-line">
                   {{ group.grade }}학년 {{ group.classNum }}반
-                  <span class="group-count">{{ group.students.length }}명</span>
+                  <span class="text-sm font-normal text-ink-5 ml-2">{{ group.students.length }}명</span>
                 </td>
               </tr>
               <tr
                   v-for="student in group.students"
                   :key="student.id"
-                  class="student-row"
+                  class="group student-row"
               >
-                <td>{{ student.grade }}</td>
-                <td>{{ student.class_num }}</td>
-                <td>{{ student.number }}</td>
-                <td>{{ student.name }}</td>
-                <td class="action-cell">
-                  <button class="btn-edit" @click="openEditModal(student)">
+                <td class="text-base text-ink-2 px-4 py-[11px] border-b border-line/60 group-hover:bg-blue/[0.04]">{{ student.grade }}</td>
+                <td class="text-base text-ink-2 px-4 py-[11px] border-b border-line/60 group-hover:bg-blue/[0.04]">{{ student.class_num }}</td>
+                <td class="text-base text-ink-2 px-4 py-[11px] border-b border-line/60 group-hover:bg-blue/[0.04]">{{ student.number }}</td>
+                <td class="text-base text-ink-2 px-4 py-[11px] border-b border-line/60 group-hover:bg-blue/[0.04]">{{ student.name }}</td>
+                <td class="text-right w-12 px-4 py-[11px] border-b border-line/60 group-hover:bg-blue/[0.04]">
+                  <button
+                      class="inline-flex items-center justify-center w-[30px] h-[30px] rounded-md border-0 bg-transparent text-ink-5 cursor-pointer transition-[background-color,color] hover:bg-line hover:text-ink-3"
+                      @click="openEditModal(student)"
+                  >
                     <Pencil :size="14"/>
                   </button>
                 </td>
@@ -168,7 +182,12 @@ async function handleDeleted() {
     </div>
 
     <!-- 일괄 추가 모달 -->
-    <transition name="modal">
+    <transition
+        enter-from-class="opacity-0"
+        leave-to-class="opacity-0"
+        enter-active-class="transition-opacity duration-200"
+        leave-active-class="transition-opacity duration-200"
+    >
       <StudentBulkImportModal
           v-if="bulkModalVisible"
           @close="bulkModalVisible = false"
@@ -177,7 +196,12 @@ async function handleDeleted() {
     </transition>
 
     <!-- 학생 추가/수정 모달 -->
-    <transition name="modal">
+    <transition
+        enter-from-class="opacity-0"
+        leave-to-class="opacity-0"
+        enter-active-class="transition-opacity duration-200"
+        leave-active-class="transition-opacity duration-200"
+    >
       <StudentModal
           ref="studentModalRef"
           v-if="modalVisible"
@@ -193,208 +217,7 @@ async function handleDeleted() {
 </template>
 
 <style scoped>
-.section {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.section-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 36px 40px;
-  border-bottom: 1px solid #1a2035;
-  flex-shrink: 0;
-  gap: 16px;
-}
-
-.section-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 32px 40px 48px;
-}
-
-.section-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0 0 6px;
-}
-
-.section-desc {
-  font-size: 16px;
-  color: #7ba3d4;
-  margin: 0;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.btn-bulk {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 10px 18px;
-  border-radius: 12px;
-  background: rgba(59, 91, 219, 0.1);
-  border: 1px solid rgba(59, 91, 219, 0.3);
-  color: #7ba8f0;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.15s;
-}
-
-.btn-bulk:hover {
-  background: rgba(59, 91, 219, 0.18);
-}
-
-.btn-add {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: 12px;
-  background-color: #3b5bdb;
-  border: none;
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: background-color 0.15s;
-  box-shadow: 0 4px 16px rgba(59, 91, 219, 0.2);
-}
-
-.btn-add:hover {
-  background-color: #4c6ef5;
-}
-
-.state-text {
-  font-size: 16px;
-  color: #7ba3d4;
-  margin: 0;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 80px 40px;
-  border: 1px dashed #1a2035;
-  border-radius: 20px;
-}
-
-.empty-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #7ba3d4;
-  margin: 0;
-}
-
-.empty-desc {
-  font-size: 16px;
-  color: var(--clr-text-subtle);
-  margin: 0 0 8px;
-}
-
-/* 테이블 */
-.table-wrap {
-  border: 1px solid #1a2035;
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-.student-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.student-table th {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--clr-text-subtle);
-  text-align: left;
-  padding: 12px 16px;
-  background-color: #080b14;
-  border-bottom: 1px solid #1a2035;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.group-header-row td {
-  font-size: 14px;
-  font-weight: 600;
-  color: #7ba3d4;
-  padding: 10px 16px;
-  background-color: rgba(59, 91, 219, 0.05);
-  border-top: 1px solid #1a2035;
-  border-bottom: 1px solid #1a2035;
-}
-
-.group-count {
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--clr-text-subtle);
-  margin-left: 8px;
-}
-
-.student-row td {
-  font-size: 15px;
-  color: #c8d8f0;
-  padding: 11px 16px;
-  border-bottom: 1px solid rgba(26, 32, 53, 0.6);
-}
-
 .student-row:last-child td {
   border-bottom: none;
-}
-
-.student-row:hover td {
-  background-color: rgba(59, 91, 219, 0.04);
-}
-
-.action-cell {
-  text-align: right;
-  width: 48px;
-}
-
-.btn-edit {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
-  border: none;
-  background: none;
-  color: var(--clr-text-subtle);
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.btn-edit:hover {
-  background-color: #1a2035;
-  color: #93afd4;
-}
-
-/* 모달 트랜지션 */
-.modal-enter-from, .modal-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-active, .modal-leave-active {
-  transition: opacity 0.2s;
 }
 </style>
