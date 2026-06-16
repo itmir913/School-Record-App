@@ -10,6 +10,14 @@
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.14',
+    date: '2026-06-16',
+    improvements: [
+      '학생 일괄 선택기능 추가',
+      '오프라인 사용 매뉴얼 탑재',
+    ],
+  },
+  {
     version: '0.2.13',
     date: '2026-05-08',
     breaking: [
