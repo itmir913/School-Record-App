@@ -13,7 +13,7 @@
 
         <div class="ui-callout print-keep-bg">
             <p class="ui-callout-label">실제 화면 — 생기부 작성(Write)</p>
-            <div class="ui-mock print-keep-bg">
+            <div class="ui-mock print-keep-bg p-5">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
                     <span style="font-size:12px;color:#64748b;font-weight:600;">영역</span>
                     <select class="um-select" style="min-width:160px;">
@@ -21,48 +21,51 @@
                         <option>1반 진로활동</option>
                         <option>프로그래밍 A반</option>
                     </select>
-                    <span style="font-size:12px;color:#64748b;font-weight:600;">활동</span>
-                    <select class="um-select" style="min-width:140px;">
-                        <option selected>학급자치회</option>
-                        <option>스포츠데이</option>
-                        <option>수학여행</option>
-                    </select>
                     <span style="flex:1;"></span>
-                    <span style="font-size:11px;color:#475569;">바이트 한도: <strong style="color:#92400e;">1000B</strong></span>
                 </div>
                 <table class="um-grid-table print-keep-bg">
                     <thead>
                         <tr>
-                            <th style="width:80px;">학년/반/번호</th>
+                            <th style="width:40px;">학년</th>
+                            <th style="width:30px;">반</th>
+                            <th style="width:40px;">번호</th>
                             <th style="width:80px;">이름</th>
-                            <th>내용</th>
-                            <th style="width:80px;text-align:center;">바이트</th>
+                            <th style="width:80px;text-align:center;">합계</th>
+                            <th>학급자치회</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>1-1-1</td>
-                            <td>홍길동</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>학생A</td>
+                            <td style="text-align:center;">82 Bytes</td>
                             <td><div class="um-cell-content">학급 회의에서 적극적으로 의견을 제시하였으며 친구들의 이야기를 경청하고 조율하는 리더십을 발휘함.</div></td>
-                            <td style="text-align:center;"><span class="um-byte-ok">82B</span></td>
                         </tr>
                         <tr>
-                            <td>1-1-2</td>
-                            <td>이순신</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>학생B</td>
+                            <td style="text-align:center;">118 Bytes</td>
                             <td><div class="um-cell-content">학급 대표로 다양한 활동을 기획하고 주도하여 학급의 단결력 향상에 기여하였으며, 조용하지만 신뢰를 주는 리더십을 보여줌.</div></td>
-                            <td style="text-align:center;"><span class="um-byte-ok">118B</span></td>
                         </tr>
                         <tr>
-                            <td>1-1-3</td>
-                            <td>강감찬</td>
+                            <td><span class="um-byte-over">1</span></td>
+                            <td><span class="um-byte-over">1</span></td>
+                            <td><span class="um-byte-over">3</span></td>
+                            <td><span class="um-byte-over">학생C</span></td>
+                            <td style="text-align:center;"><span class="um-byte-over">1040 Bytes</span></td>
                             <td><div class="um-cell-content um-cell-over">전략적 사고와 뛰어난 통솔력으로 학급 활동 전반을 이끌었으며, 갈등 상황에서도 냉정하고 합리적인 판단으로 구성원 모두의 신뢰를 받음. 향후 더욱 성장할 것으로 기대되며 다양한 역량을 발휘할 리더임이 분명함. 앞으로도 꾸준히 성장하길 바람.</div></td>
-                            <td style="text-align:center;"><span class="um-byte-over">1040B</span></td>
                         </tr>
                         <tr>
-                            <td>1-2-1</td>
-                            <td>유관순</td>
-                            <td><div class="um-cell-content" style="color:#334155;font-style:italic;">— 미작성 —</div></td>
-                            <td style="text-align:center;"><span class="um-byte-ok">0B</span></td>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>2</td>
+                            <td>학생E</td>
+                            <td style="text-align:center;">0 Bytes</td>
+                            <td><div class="um-cell-content" style="color:#334155;font-style:italic;"></div></td>
                         </tr>
                     </tbody>
                 </table>
@@ -79,27 +82,82 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">영역 선택기</td>
-                        <td class="border border-slate-300 px-4 py-2 text-slate-600">상단 드롭다운에서 영역을 전환. 바이트 한도가 함께 변경됨</td>
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">영역 선택</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">상단 드롭다운에서 영역을 선택하면 생기부 작성 화면이 나타남</td>
                     </tr>
                     <tr class="bg-slate-50 print-keep-bg">
-                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">활동 선택기</td>
-                        <td class="border border-slate-300 px-4 py-2 text-slate-600">활동을 전환하면 해당 활동의 내용으로 그리드가 바뀜</td>
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">글자크기 변경</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">에디터의 글자 크기를 조절할 수 있습니다.</td>
                     </tr>
                     <tr>
-                        <td class="border border-slate-300 px-4 py-2">
-                            <span class="um-byte-ok" style="display:inline-block;">82B</span>
-                        </td>
-                        <td class="border border-slate-300 px-4 py-2 text-slate-600"><strong class="text-green-600">초록색</strong>: 한도 이내</td>
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">틀고정 ON</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">스크롤 시 상단 헤더 행을 고정하거나 해제합니다.</td>
                     </tr>
                     <tr class="bg-slate-50 print-keep-bg">
-                        <td class="border border-slate-300 px-4 py-2">
-                            <span class="um-byte-over" style="display:inline-block;">1040B</span>
-                        </td>
-                        <td class="border border-slate-300 px-4 py-2 text-slate-600"><strong class="text-red-600">빨간색</strong>: 한도 초과. 해당 셀 배경도 붉게 표시됨</td>
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">스마트스크롤 ON</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">학생 이름 영역에서 스크롤하면 상하 스크롤, 셀에서 스크롤하면 좌우 스크롤로 동작합니다.</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">셀높이 고정</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">모든 셀을 동일한 고정 높이로 표시할지, 내용에 따라 가변 높이로 표시할지 선택합니다.</td>
+                    </tr>
+                    <tr class="bg-slate-50 print-keep-bg">
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">빈 학생 ON</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">아무 내용도 작성되지 않은 학생을 <strong class="text-amber-600">노란색</strong>으로 강조 표시합니다.</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">바이트수 초과 학생</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">영역의 바이트 한도를 초과한 학생은 <strong class="text-red-600">붉은색</strong>으로 강조 표시됩니다.</td>
+                    </tr>
+                    <tr class="bg-slate-50 print-keep-bg">
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">History</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">해당 활동의 과거 생기부 기록을 누적 저장하여 버전을 관리합니다.</td>
                     </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- 6-1-b 합산 예시 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">6-1-1. 활동 합산 → 최종 문장 완성</h3>
+        <p class="text-lg text-slate-600 leading-relaxed mb-5">
+            같은 영역에 속한 활동들의 내용은 이어 붙여져 <strong>해당 영역의 최종 문장</strong>이 됩니다.
+            내보내기(Export) 시 자동으로 합산되므로, 각 활동별로 독립적으로 내용을 작성하면 됩니다.
+        </p>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 print-keep-bg">
+            <p class="font-semibold text-slate-700 text-base mb-4">예시 — 영역 "1반 자율활동" / 학생A</p>
+            <div class="space-y-3 mb-4">
+                <div class="flex gap-3 items-start">
+                    <span class="shrink-0 px-2 py-0.5 bg-blue-100 text-blue-700 text-base font-bold rounded print-keep-bg">활동①<br>학급자치회</span>
+                    <div class="flex-1 bg-white border border-slate-200 rounded-lg p-3 text-base text-slate-600 leading-relaxed print-keep-bg">
+                        학급 회의에서 적극적으로 의견을 제시하였으며 친구들의 이야기를 경청하고 조율하는 리더십을 발휘함.
+                    </div>
+                </div>
+                <div class="flex gap-3 items-start">
+                    <span class="shrink-0 px-2 py-0.5 bg-blue-100 text-blue-700 text-base font-bold rounded print-keep-bg">활동②<br>스포츠데이</span>
+                    <div class="flex-1 bg-white border border-slate-200 rounded-lg p-3 text-base text-slate-600 leading-relaxed print-keep-bg">
+                        팀 경기에서 구성원들의 사기를 북돋우며 협동심을 발휘하였고, 경기 후 반성 시간에 자신의 역할을 돌아보는 성숙한 태도를 보임.
+                    </div>
+                </div>
+                <div class="flex gap-3 items-start">
+                    <span class="shrink-0 px-2 py-0.5 bg-blue-100 text-blue-700 text-base font-bold rounded print-keep-bg">활동③<br>수학여행</span>
+                    <div class="flex-1 bg-white border border-slate-200 rounded-lg p-3 text-base text-slate-600 leading-relaxed print-keep-bg">
+                        역사 유적지 탐방에서 사전 조사한 내용을 친구들에게 설명하며 학습 내용을 공유하는 주도적 모습을 보임.
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 mb-3">
+                <div class="flex-1 h-px bg-slate-300"></div>
+                <span class="text-slate-400 text-base font-semibold">내보내기 시 자동 합산</span>
+                <div class="flex-1 h-px bg-slate-300"></div>
+            </div>
+            <div class="flex gap-3 items-start">
+                <span class="shrink-0 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-base font-bold rounded print-keep-bg">최종<br>문장</span>
+                <div class="flex-1 bg-indigo-50 border border-indigo-200 rounded-lg p-3 text-base text-slate-700 leading-relaxed print-keep-bg">
+                    학급 회의에서 적극적으로 의견을 제시하였으며 친구들의 이야기를 경청하고 조율하는 리더십을 발휘함. 팀 경기에서 구성원들의 사기를 북돋우며 협동심을 발휘하였고, 경기 후 반성 시간에 자신의 역할을 돌아보는 성숙한 태도를 보임. 역사 유적지 탐방에서 사전 조사한 내용을 친구들에게 설명하며 학습 내용을 공유하는 주도적 모습을 보임.
+                </div>
+            </div>
         </div>
     </div>
 
@@ -109,8 +167,6 @@
         <ul class="space-y-3 text-lg text-slate-600 leading-relaxed">
             <li>• 그리드의 셀을 클릭하면 입력 모드가 됩니다. 바로 타이핑을 시작할 수 있습니다.</li>
             <li>• 입력이 멈추면 <strong>자동으로 저장</strong>됩니다. 별도 저장 버튼은 없습니다.</li>
-            <li>• <kbd class="bg-slate-200 border border-slate-300 rounded px-1.5 py-0.5 font-mono text-sm text-slate-700 print-keep-bg">Tab</kbd> 키로 다음 학생, <kbd class="bg-slate-200 border border-slate-300 rounded px-1.5 py-0.5 font-mono text-sm text-slate-700 print-keep-bg">Shift+Tab</kbd>으로 이전 학생으로 이동합니다.</li>
-            <li>• <kbd class="bg-slate-200 border border-slate-300 rounded px-1.5 py-0.5 font-mono text-sm text-slate-700 print-keep-bg">Enter</kbd>는 셀 안에서 줄바꿈입니다. (줄바꿈은 내보내기 시 NEIS 형식에 맞게 정리됩니다)</li>
         </ul>
     </div>
 
@@ -118,7 +174,7 @@
     <div class="mb-10">
         <h3 class="text-lg font-bold text-slate-700 mb-3">6-3. 셀 히스토리</h3>
         <p class="text-lg text-slate-600 leading-relaxed mb-4">
-            각 셀은 변경 이력이 누적 저장됩니다. 셀 내 히스토리 버튼(시계 아이콘)을 클릭하면 이전 버전을 확인하고 복원할 수 있습니다.
+            각 셀은 변경 이력이 누적 저장됩니다. 셀 하단 <strong>History</strong>를 클릭하면 이전 버전을 확인하거나 현재 문장을 저장할 수 있습니다.
         </p>
         <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3 items-start print-keep-bg">
             <span class="text-xl shrink-0 mt-0.5">💡</span>

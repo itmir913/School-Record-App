@@ -34,14 +34,6 @@
                     <strong class="text-slate-700">암호화 설정:</strong>
                     DB 파일 암호화를 활성화하거나 비밀번호를 변경합니다. 변경 시 즉시 적용됩니다.
                 </li>
-                <li>
-                    <strong class="text-slate-700">유의어 목록 관리:</strong>
-                    기본 제공 유의어 외에 추가 어휘를 등록하거나 기존 항목을 수정·삭제합니다.
-                </li>
-                <li>
-                    <strong class="text-slate-700">치환 규칙 관리:</strong>
-                    사용자 정의 치환 규칙을 설정 탭에서도 관리할 수 있습니다.
-                </li>
             </ul>
         </div>
     </div>
@@ -79,12 +71,15 @@
         </div>
 
         <!-- 이중 백업 -->
-        <div class="bg-slate-800 rounded-xl p-5 mb-5 print-keep-bg">
-            <p class="font-bold text-white text-lg mb-2">자동 이중 백업</p>
-            <p class="text-slate-300 text-base leading-relaxed">
-                프로그램을 열 때마다 DB 파일의 복사본을 자동으로 생성합니다.
-                DB 파일과 동일한 위치에 <code class="bg-slate-700 px-1.5 py-0.5 rounded text-slate-200 font-mono text-sm print-keep-bg">.db.backup</code> 파일이 생성됩니다.
-            </p>
+        <div class="flex gap-4 items-start bg-amber-50 border border-amber-200 rounded-xl p-5 mb-5 print-keep-bg">
+            <span class="text-2xl shrink-0">🔄</span>
+            <div>
+                <p class="font-bold text-slate-700 text-lg mb-1">자동 이중 백업</p>
+                <p class="text-slate-600 text-base leading-relaxed">
+                    프로그램을 열 때마다 DB 파일의 복사본을 자동으로 생성합니다.
+                    DB 파일과 동일한 위치에 <code class="bg-white border border-amber-200 px-1.5 py-0.5 rounded font-mono text-amber-800 text-base print-keep-bg">.db.backup</code> 파일이 생성됩니다.
+                </p>
+            </div>
         </div>
 
         <!-- DB 복구 방법 -->
@@ -107,7 +102,7 @@
             <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 print-keep-bg">
                 <p class="font-bold text-slate-700 text-base mb-2">Q. 프로그램을 다른 PC로 이동하려면 어떻게 하나요?</p>
                 <p class="text-slate-600 text-base leading-relaxed">
-                    <code class="bg-white border border-slate-200 px-1.5 py-0.5 rounded font-mono text-sm print-keep-bg">.db</code> 파일만 복사하면 됩니다.
+                    <code class="bg-white border border-slate-200 px-1.5 py-0.5 rounded font-mono text-base print-keep-bg">.db</code> 파일만 복사하면 됩니다.
                     새 PC에 프로그램을 설치한 뒤 해당 파일을 열면 모든 데이터가 그대로 이어집니다.
                 </p>
             </div>
@@ -116,7 +111,7 @@
                 <p class="font-bold text-slate-700 text-base mb-2">Q. 학생 데이터가 외부로 전송되지 않나요?</p>
                 <p class="text-slate-600 text-base leading-relaxed">
                     이 프로그램은 완전 오프라인으로 동작합니다. 모든 데이터는 선생님의 PC에 있는
-                    <code class="bg-white border border-slate-200 px-1.5 py-0.5 rounded font-mono text-sm print-keep-bg">.db</code> 파일에만 저장되며,
+                    <code class="bg-white border border-slate-200 px-1.5 py-0.5 rounded font-mono text-base print-keep-bg">.db</code> 파일에만 저장되며,
                     어떠한 서버로도 전송되지 않습니다.
                 </p>
             </div>
@@ -133,7 +128,7 @@
                 <p class="font-bold text-slate-700 text-base mb-2">Q. 암호화 비밀번호를 잊어버렸습니다.</p>
                 <p class="text-slate-600 text-base leading-relaxed">
                     암호화된 DB 파일은 비밀번호 없이는 복구할 수 없습니다.
-                    <code class="bg-white border border-slate-200 px-1.5 py-0.5 rounded font-mono text-sm print-keep-bg">.db.backup</code> 파일이 있다면 해당 파일의 암호화 설정을 확인하세요.
+                    <code class="bg-white border border-slate-200 px-1.5 py-0.5 rounded font-mono text-base print-keep-bg">.db.backup</code> 파일이 있다면 해당 파일의 암호화 설정을 확인하세요.
                     암호화를 사용하는 경우 비밀번호는 반드시 안전한 곳에 별도 보관하시기 바랍니다.
                 </p>
             </div>
@@ -152,7 +147,7 @@
     <div class="border-t border-slate-200 pt-8 text-center">
         <p class="text-base text-slate-400 mb-1">© 2026 luminousky</p>
         <p class="text-base text-slate-400">본 프로젝트는 PolyForm Noncommercial 1.0.0 라이선스를 따릅니다.</p>
-        <p class="text-sm text-slate-300 mt-2">문의 및 버그 제보: github.com/itmir913/School-Record-App</p>
+        <p class="text-base text-slate-300 mt-2">문의 및 버그 제보: github.com/itmir913/School-Record-App</p>
     </div>
 
 </section>

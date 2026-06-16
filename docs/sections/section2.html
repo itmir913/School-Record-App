@@ -6,13 +6,13 @@
     <div class="mb-10">
         <h3 class="text-lg font-bold text-slate-700 mb-3">2-1. 영역(Area)과 활동(Activity) 구조</h3>
         <p class="text-lg text-slate-600 leading-relaxed mb-5">
-            이 프로그램은 생기부의 데이터를 <strong class="text-indigo-600">영역(Area)</strong>과 <strong class="text-blue-600">활동(Activity)</strong>의 2단계 구조로 관리합니다.
+            이 프로그램은 학교생활기록부를 <strong class="text-indigo-600">영역(Area)</strong>과 <strong class="text-blue-600">활동(Activity)</strong>의 2단계 구조로 관리합니다.
         </p>
 
         <div class="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-6 mb-6 print-keep-bg">
             <div class="flex items-center gap-3 mb-4">
                 <span class="px-3 py-1 bg-indigo-200 text-indigo-800 text-base font-bold rounded-lg print-keep-bg">영역 (Area)</span>
-                <span class="text-slate-600 text-lg">= 생기부 항목 하나 (예: 진로활동, 교과세특 등)</span>
+                <span class="text-slate-600 text-lg">= 생기부 항목 하나 (예: 진로활동, 자율활동, 교과세특 등)</span>
             </div>
             <div class="ml-6 mb-4">
                 <div class="border-l-2 border-indigo-300 pl-5 space-y-2">
@@ -22,7 +22,7 @@
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="px-3 py-1 bg-blue-100 text-blue-800 text-base font-bold rounded-lg print-keep-bg">활동 (Activity)</span>
-                        <span class="text-slate-600 text-lg">활동은 영역 하나에 여러 개 추가할 수 있습니다.</span>
+                        <span class="text-slate-600 text-lg">= 활동은 영역 하나에 여러 개 추가할 수 있습니다.</span>
                     </div>
                     <div class="flex items-center gap-3 opacity-50">
                         <span class="px-3 py-1 bg-blue-100 text-blue-800 text-base font-bold rounded-lg print-keep-bg">활동 (Activity)</span>
@@ -35,7 +35,7 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto mb-6">
             <table class="w-full text-base border-collapse">
                 <thead>
                     <tr class="bg-slate-100 print-keep-bg">
@@ -53,11 +53,26 @@
                     <tr class="bg-slate-50 print-keep-bg">
                         <td class="border border-slate-300 px-4 py-2 text-slate-600 font-semibold">담임교사</td>
                         <td class="border border-slate-300 px-4 py-2 text-slate-600">1반 진로활동</td>
-                        <td class="border border-slate-300 px-4 py-2 text-slate-600">전공탐색 퀴즈, 진로 상담, 독후감</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">전공탐색 퀴즈, 진로 상담, 진로 독후감</td>
+                    </tr>
+                    <tr class="bg-slate-50 print-keep-bg">
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600 font-semibold">동아리교사</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">컴퓨터 동아리</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">동아리 실험, 동아리 프로젝트, 동아리 발표회</td>
                     </tr>
                     <tr>
                         <td class="border border-slate-300 px-4 py-2 text-slate-600 font-semibold">교과교사</td>
                         <td class="border border-slate-300 px-4 py-2 text-slate-600">프로그래밍 A반</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">수행평가1, 수행평가2, 수업태도</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600 font-semibold">교과교사</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">프로그래밍 B반</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">수행평가1, 수행평가2, 수업태도</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600 font-semibold">교과교사</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">프로그래밍 C반</td>
                         <td class="border border-slate-300 px-4 py-2 text-slate-600">수행평가1, 수행평가2, 수업태도</td>
                     </tr>
                 </tbody>
@@ -69,45 +84,95 @@
     <div class="mb-10">
         <h3 class="text-lg font-bold text-slate-700 mb-3">2-2. 전체 워크플로 한눈에 보기</h3>
         <p class="text-lg text-slate-600 leading-relaxed mb-5">
-            프로그램 왼쪽의 사이드바 메뉴가 작업 순서를 안내합니다. 위에서 아래 순서로 진행하세요.
+            프로그램 왼쪽의 사이드바 메뉴 순서가 곧 작업 순서입니다. 사이드바는 <strong>&lt;</strong> 화살표를 클릭하여 숨길 수 있습니다.
         </p>
 
-        <!-- 사이드바 목업 -->
-        <div class="ui-callout print-keep-bg">
-            <p class="ui-callout-label">실제 화면 — 좌측 사이드바</p>
-            <div class="ui-mock print-keep-bg" style="display:flex;flex-direction:row;width:auto;max-width:210px;">
-                <!-- 사이드바 -->
-                <div class="um-sidebar" style="min-width:210px;">
-                    <div class="um-sidebar-header">
-                        <span class="um-title-badge">에디터</span>
-                        <span class="um-title-text">학교생활기록부</span>
-                    </div>
-                    <div class="um-nav">
-                        <div class="um-nav-item"><i class="fa-solid fa-gauge-high"></i> 개요</div>
-                        <div class="um-nav-divider"></div>
-                        <div class="um-nav-item"><i class="fa-solid fa-users"></i> 학생(Students)</div>
-                        <div class="um-nav-item"><i class="fa-solid fa-layer-group"></i> 영역(Area)</div>
-                        <div class="um-nav-item"><i class="fa-solid fa-book-open"></i> 활동(Activity)</div>
-                        <div class="um-nav-divider"></div>
-                        <div class="um-nav-item um-active"><i class="fa-solid fa-pen-nib"></i> 생기부 작성(Write)</div>
-                        <div class="um-nav-divider"></div>
-                        <div class="um-nav-item"><i class="fa-solid fa-right-left"></i> 텍스트 치환(Replace)</div>
-                        <div class="um-nav-item"><i class="fa-solid fa-magnifying-glass"></i> 유의어 점검(Inspect)</div>
-                        <div class="um-nav-divider"></div>
-                        <div class="um-nav-item"><i class="fa-solid fa-file-import"></i> 가져오기(Import)</div>
-                        <div class="um-nav-item"><i class="fa-solid fa-file-export"></i> 내보내기(Export)</div>
-                        <div class="um-nav-item"><i class="fa-solid fa-clipboard-list"></i> 체크리스트(Checklist)</div>
-                    </div>
-                    <div class="um-footer-divider"></div>
-                    <div style="padding:0 8px 8px;">
-                        <div class="um-footer-item"><i class="fa-solid fa-folder-open"></i> school_record.db</div>
-                        <div class="um-footer-item"><i class="fa-solid fa-code-branch"></i> 스냅샷(Snapshot)</div>
-                        <div class="um-footer-item"><i class="fa-solid fa-gear"></i> 설정(Settings)</div>
+        <!-- 사이드바 목업 + 단계 설명 가로 배치 -->
+        <div style="display:flex;flex-direction:row;align-items:center;gap:32px;">
+
+            <!-- 사이드바 목업 -->
+            <div class="ui-callout print-keep-bg" style="flex-shrink:0;">
+                <p class="ui-callout-label">실제 화면 — 좌측 사이드바</p>
+                <div class="ui-mock print-keep-bg" style="display:flex;flex-direction:row;width:auto;max-width:210px;">
+                    <!-- 사이드바 -->
+                    <div class="um-sidebar" style="min-width:210px;">
+                        <div class="um-sidebar-header">
+                            <span class="um-title-badge">에디터</span>
+                            <span class="um-title-text">학교생활기록부</span>
+                        </div>
+                        <div class="um-nav">
+                            <div class="um-nav-item"><i class="fa-solid fa-table-cells-large"></i> 개요</div>
+                            <div class="um-nav-divider"></div>
+                            <div class="um-nav-item"><i class="fa-solid fa-users"></i> 학생(Students)</div>
+                            <div class="um-nav-item"><i class="fa-solid fa-layer-group"></i> 영역(Area)</div>
+                            <div class="um-nav-item"><i class="fa-solid fa-book-open"></i> 활동(Activity)</div>
+                            <div class="um-nav-divider"></div>
+                            <div class="um-nav-item um-active"><i class="fa-solid fa-pen"></i> 생기부 작성(Write)</div>
+                            <div class="um-nav-divider"></div>
+                            <div class="um-nav-item"><i class="fa-solid fa-right-left"></i> 텍스트 치환(Replace)</div>
+                            <div class="um-nav-item"><i class="fa-solid fa-magnifying-glass"></i> 유의어 점검(Inspect)</div>
+                            <div class="um-nav-divider"></div>
+                            <div class="um-nav-item"><i class="fa-solid fa-download"></i> 가져오기(Import)</div>
+                            <div class="um-nav-item"><i class="fa-solid fa-upload"></i> 내보내기(Export)</div>
+                            <div class="um-nav-item"><i class="fa-solid fa-clipboard-list"></i> 체크리스트(Checklist)</div>
+                        </div>
+                        <div class="um-footer-divider"></div>
+                        <div style="padding:0 8px 8px;">
+                            <div class="um-footer-item"><i class="fa-solid fa-folder-open"></i> school_record.db</div>
+                            <div class="um-footer-item"><i class="fa-solid fa-code-branch"></i> 스냅샷(Snapshot)</div>
+                            <div class="um-footer-item"><i class="fa-solid fa-gear"></i> 설정(Settings)</div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+
+            <!-- 전체 워크플로우 단계 설명 -->
+            <div class="space-y-3" style="flex:1;min-width:0;">
+            <div class="flex items-start gap-4">
+                <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-base flex items-center justify-center print-keep-bg">1</span>
+                <div>
+                    <p class="font-bold text-slate-700 text-base mb-0.5">학생 등록 <span class="text-base font-normal text-slate-400 ml-1">→ 학생(Students)</span></p>
+                    <p class="text-slate-600 text-base leading-relaxed">담당 학생의 학년·반·번호·이름을 등록합니다. 출석부 엑셀 파일로 일괄 추가하면 빠릅니다.</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-4">
+                <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-base flex items-center justify-center print-keep-bg">2</span>
+                <div>
+                    <p class="font-bold text-slate-700 text-base mb-0.5">영역 구성 <span class="text-base font-normal text-slate-400 ml-1">→ 영역(Area)</span></p>
+                    <p class="text-slate-600 text-base leading-relaxed">NEIS에 입력할 생기부 항목(자율활동, 진로활동, 교과세특 등)마다 영역을 만들고, 바이트 한도와 배정 학생을 설정합니다.</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-4">
+                <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-base flex items-center justify-center print-keep-bg">3</span>
+                <div>
+                    <p class="font-bold text-slate-700 text-base mb-0.5">활동 등록 <span class="text-base font-normal text-slate-400 ml-1">→ 활동(Activity)</span></p>
+                    <p class="text-slate-600 text-base leading-relaxed">각 영역 안에 세부 활동(체험학습, 수행평가1, 독후감 등)을 추가합니다. 활동을 여러 개 만들수록 나중에 세밀하게 내용을 나눠 입력할 수 있습니다.</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-4">
+                <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-500 text-white font-bold text-base flex items-center justify-center print-keep-bg">4</span>
+                <div>
+                    <p class="font-bold text-slate-700 text-base mb-0.5">내용 작성 <span class="text-base font-normal text-slate-400 ml-1">→ 생기부 작성(Write) / 가져오기(Import)</span></p>
+                    <p class="text-slate-600 text-base leading-relaxed">활동별로 각 학생의 내용을 직접 입력하거나, 다른 교사가 작성한 엑셀 파일을 불러와 병합합니다.</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-4">
+                <span class="shrink-0 w-8 h-8 rounded-full bg-slate-400 text-white font-bold text-base flex items-center justify-center print-keep-bg">5</span>
+                <div>
+                    <p class="font-bold text-slate-700 text-base mb-0.5">검수 <span class="text-base font-normal text-slate-400 ml-1">→ 텍스트 치환(Replace) / 유의어 점검(Inspect)</span></p>
+                    <p class="text-slate-600 text-base leading-relaxed">반복 표현을 일괄 교체하고, NEIS에서 사용이 제한된 어휘를 자동 탐지합니다.</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-4">
+                <span class="shrink-0 w-8 h-8 rounded-full bg-slate-400 text-white font-bold text-base flex items-center justify-center print-keep-bg">6</span>
+                <div>
+                    <p class="font-bold text-slate-700 text-base mb-0.5">내보내기 <span class="text-base font-normal text-slate-400 ml-1">→ 내보내기(Export)</span></p>
+                    <p class="text-slate-600 text-base leading-relaxed">모든 활동의 내용을 합산하여 NEIS 업로드용 엑셀 파일로 저장합니다.</p>
+                </div>
+            </div>
+            </div><!-- /space-y-3 -->
+        </div><!-- /flex container -->
+    </div><!-- /mb-10 -->
 
     <!-- 2-3 역할별 활용 예시 -->
     <div class="mb-10">

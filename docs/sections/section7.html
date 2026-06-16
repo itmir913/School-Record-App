@@ -10,51 +10,157 @@
     <!-- 7-1 지원 형식 -->
     <div class="mb-10">
         <h3 class="text-lg font-bold text-slate-700 mb-3">7-1. 지원하는 엑셀 형식</h3>
-        <p class="text-lg text-slate-600 leading-relaxed mb-5">
-            가져오기는 두 가지 레이아웃을 모두 지원합니다.
+        <p class="text-lg text-slate-600 leading-relaxed mb-4">
+            가져오기는 두 가지 종류의 엑셀 파일 양식을 모두 지원합니다.
         </p>
 
-        <div class="grid grid-cols-2 gap-5 mb-6" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <!-- 행/열 용어 안내 -->
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6 flex gap-3 items-start print-keep-bg">
+            <span class="shrink-0 mt-0.5 text-lg">📌</span>
+            <div class="text-base text-slate-700 leading-relaxed">
+                <strong>행(가로줄)</strong>과 <strong>열(세로줄)</strong>이 헷갈린다면 이렇게 기억하세요.<br>
+                엑셀에서 <strong>가로로 이어지는 한 줄 = 행</strong>, <strong>세로로 이어지는 한 줄 = 열</strong>입니다.<br><br>
+                두 양식의 핵심 차이는 <strong>한 학생의 이름이 파일에 몇 번 등장하는가</strong>입니다.<br><br>
+                <span class="text-indigo-700 font-semibold">A형</span>은 <strong>행 하나 = 활동 하나</strong>입니다. 학생 한 명의 활동이 여러 개라면 같은 이름이 여러 행에 걸쳐 반복 등장합니다.
+                홍길동이 현장체험학습·학급자치회·체육대회에 참여했다면, 이름 열에 '홍길동'이 세 번 나타납니다.<br><br>
+                <span class="text-amber-700 font-semibold">B형</span>은 <strong>행 하나 = 학생 한 명</strong>입니다. 모든 활동이 그 학생의 행 안에 열(헤더)로 나뉘어 기록됩니다.
+                학생 이름은 파일 전체에서 딱 한 번만 나타나고, 어떤 활동인지는 <em>열 제목(헤더)</em>이 구분해 줍니다.
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-5 mb-4" style="display:grid;gap:20px;">
             <!-- A형 -->
             <div class="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-5 print-keep-bg">
-                <p class="font-bold text-indigo-800 text-lg mb-1">A형 — 행 기반</p>
-                <p class="text-slate-600 text-base mb-3">학생 한 명이 한 행을 차지하고, 열에 활동·항목이 나열되는 형식</p>
+                <p class="font-bold text-indigo-800 text-lg mb-1">A형 — 행 단위 활동 형식</p>
+                <p class="text-slate-700 text-base mb-1">한 행에 학생 1명의 활동 1개를 기재합니다.</p>
+                <p class="text-slate-500 text-base mb-3">학생 1명의 활동은 <strong>여러 행에 걸쳐</strong> 기록됩니다(학생 1명 = 여러 행). 이름 열에 같은 학생이 반복 등장하는 것이 정상입니다.</p>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-xs border-collapse">
+                    <table class="w-full text-base border-collapse">
                         <thead>
                             <tr class="bg-indigo-200 print-keep-bg">
+                                <th class="border border-indigo-300 px-2 py-1 text-left">학년</th>
+                                <th class="border border-indigo-300 px-2 py-1 text-left">반</th>
+                                <th class="border border-indigo-300 px-2 py-1 text-left">번호</th>
                                 <th class="border border-indigo-300 px-2 py-1 text-left">이름</th>
-                                <th class="border border-indigo-300 px-2 py-1 text-left">학급자치회</th>
-                                <th class="border border-indigo-300 px-2 py-1 text-left">스포츠데이</th>
+                                <th class="border border-indigo-300 px-2 py-1 text-left">활동명</th>
+                                <th class="border border-indigo-300 px-2 py-1 text-left">활동내용</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td class="border border-indigo-200 px-2 py-1">홍길동</td><td class="border border-indigo-200 px-2 py-1 text-slate-500">내용…</td><td class="border border-indigo-200 px-2 py-1 text-slate-500">내용…</td></tr>
-                            <tr class="bg-indigo-50 print-keep-bg"><td class="border border-indigo-200 px-2 py-1">이순신</td><td class="border border-indigo-200 px-2 py-1 text-slate-500">내용…</td><td class="border border-indigo-200 px-2 py-1 text-slate-500">내용…</td></tr>
+                            <tr class="bg-white print-keep-bg">
+                                <td class="border border-indigo-200 px-2 py-1">3</td>
+                                <td class="border border-indigo-200 px-2 py-1">1</td>
+                                <td class="border border-indigo-200 px-2 py-1">1</td>
+                                <td class="border border-indigo-200 px-2 py-1 font-semibold text-indigo-700">학생001</td>
+                                <td class="border border-indigo-200 px-2 py-1">독서토론</td>
+                                <td class="border border-indigo-200 px-2 py-1 text-slate-500">선정 도서를 꼼꼼히 읽고 핵심 논지를 분석하여 토론에서 자신의 주장을 논리적으로 발표함.</td>
+                            </tr>
+                            <tr class="bg-indigo-50 print-keep-bg">
+                                <td class="border border-indigo-200 px-2 py-1">3</td>
+                                <td class="border border-indigo-200 px-2 py-1">1</td>
+                                <td class="border border-indigo-200 px-2 py-1">1</td>
+                                <td class="border border-indigo-200 px-2 py-1 font-semibold text-indigo-700">학생001</td>
+                                <td class="border border-indigo-200 px-2 py-1">진로탐색활동</td>
+                                <td class="border border-indigo-200 px-2 py-1 text-slate-500">미래 사회 변화 트렌드를 조사하고 4차 산업혁명 시대의 유망 직업군을 분석하여 발표 자료를 완성함.</td>
+                            </tr>
+                            <tr class="bg-white print-keep-bg">
+                                <td class="border border-indigo-200 px-2 py-1">3</td>
+                                <td class="border border-indigo-200 px-2 py-1">1</td>
+                                <td class="border border-indigo-200 px-2 py-1">1</td>
+                                <td class="border border-indigo-200 px-2 py-1 font-semibold text-indigo-700">학생001</td>
+                                <td class="border border-indigo-200 px-2 py-1">체육대회</td>
+                                <td class="border border-indigo-200 px-2 py-1 text-slate-500">반 대표 릴레이 선수로 출전하여 팀원들과 유기적으로 협력하여 우수한 성과를 거둠.</td>
+                            </tr>
+                            <tr class="bg-indigo-50 print-keep-bg">
+                                <td class="border border-indigo-200 px-2 py-1">3</td>
+                                <td class="border border-indigo-200 px-2 py-1">1</td>
+                                <td class="border border-indigo-200 px-2 py-1">2</td>
+                                <td class="border border-indigo-200 px-2 py-1 font-semibold">학생002</td>
+                                <td class="border border-indigo-200 px-2 py-1">재난 대비 훈련</td>
+                                <td class="border border-indigo-200 px-2 py-1 text-slate-500">화재 대피 훈련에서 신속하게 대피하는 방법을 정확히 실천하며 소화기 사용법을 스스로 시연함.</td>
+                            </tr>
+                            <tr class="bg-white print-keep-bg">
+                                <td class="border border-indigo-200 px-2 py-1">3</td>
+                                <td class="border border-indigo-200 px-2 py-1">1</td>
+                                <td class="border border-indigo-200 px-2 py-1">2</td>
+                                <td class="border border-indigo-200 px-2 py-1 font-semibold">학생002</td>
+                                <td class="border border-indigo-200 px-2 py-1">전교학생회</td>
+                                <td class="border border-indigo-200 px-2 py-1 text-slate-500">전교학생회 임원으로 선출되어 학교 축제 기획 전반에 참여하고 행사를 내실 있게 준비함.</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
+                <p class="text-indigo-700 text-base mt-2">↑ <strong>학생001이 3행에 걸쳐 반복 등장</strong> — 활동이 3개이기 때문. 학생002도 동일하게 2행 반복.</p>
             </div>
             <!-- B형 -->
             <div class="bg-amber-50 border-2 border-amber-200 rounded-xl p-5 print-keep-bg">
-                <p class="font-bold text-amber-800 text-lg mb-1">B형 — 열 기반</p>
-                <p class="text-slate-600 text-base mb-3">활동·항목이 행에, 학생이 열에 나열되는 전치(transpose) 형식</p>
+                <p class="font-bold text-amber-800 text-lg mb-1">B형 — 열 단위 활동 형식</p>
+                <p class="text-slate-700 text-base mb-1">활동이 열(헤더)로 구분된 형식입니다.</p>
+                <p class="text-slate-500 text-base mb-3">학생 1명의 모든 활동이 <strong>한 행에</strong> 기록됩니다(학생 1명 = 1행). 활동 종류는 열 제목(헤더)으로 구분되며, 해당 활동이 없으면 칸을 비워 둡니다.</p>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-xs border-collapse">
+                    <table class="w-full text-base border-collapse">
                         <thead>
                             <tr class="bg-amber-200 print-keep-bg">
-                                <th class="border border-amber-300 px-2 py-1 text-left">항목</th>
-                                <th class="border border-amber-300 px-2 py-1 text-left">홍길동</th>
-                                <th class="border border-amber-300 px-2 py-1 text-left">이순신</th>
+                                <th class="border border-amber-300 px-2 py-1 text-left">학년</th>
+                                <th class="border border-amber-300 px-2 py-1 text-left">반</th>
+                                <th class="border border-amber-300 px-2 py-1 text-left">번호</th>
+                                <th class="border border-amber-300 px-2 py-1 text-left">이름</th>
+                                <th class="border border-amber-300 px-2 py-1 text-left">독서토론</th>
+                                <th class="border border-amber-300 px-2 py-1 text-left">대학입시설명회</th>
+                                <th class="border border-amber-300 px-2 py-1 text-left">생명존중교육</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td class="border border-amber-200 px-2 py-1">학급자치회</td><td class="border border-amber-200 px-2 py-1 text-slate-500">내용…</td><td class="border border-amber-200 px-2 py-1 text-slate-500">내용…</td></tr>
-                            <tr class="bg-amber-50 print-keep-bg"><td class="border border-amber-200 px-2 py-1">스포츠데이</td><td class="border border-amber-200 px-2 py-1 text-slate-500">내용…</td><td class="border border-amber-200 px-2 py-1 text-slate-500">내용…</td></tr>
+                            <tr class="bg-white print-keep-bg">
+                                <td class="border border-amber-200 px-2 py-1">3</td>
+                                <td class="border border-amber-200 px-2 py-1">1</td>
+                                <td class="border border-amber-200 px-2 py-1">1</td>
+                                <td class="border border-amber-200 px-2 py-1 font-semibold">학생001</td>
+                                <td class="border border-amber-200 px-2 py-1 text-slate-500">선정 도서를 꼼꼼히 읽고 핵심 논지를 분석하여 자신의 주장을 논리적으로 발표함.</td>
+                                <td class="border border-amber-200 px-2 py-1"></td>
+                                <td class="border border-amber-200 px-2 py-1"></td>
+                            </tr>
+                            <tr class="bg-amber-50 print-keep-bg">
+                                <td class="border border-amber-200 px-2 py-1">3</td>
+                                <td class="border border-amber-200 px-2 py-1">1</td>
+                                <td class="border border-amber-200 px-2 py-1">2</td>
+                                <td class="border border-amber-200 px-2 py-1 font-semibold">학생002</td>
+                                <td class="border border-amber-200 px-2 py-1"></td>
+                                <td class="border border-amber-200 px-2 py-1"></td>
+                                <td class="border border-amber-200 px-2 py-1"></td>
+                            </tr>
+                            <tr class="bg-white print-keep-bg">
+                                <td class="border border-amber-200 px-2 py-1">3</td>
+                                <td class="border border-amber-200 px-2 py-1">1</td>
+                                <td class="border border-amber-200 px-2 py-1">4</td>
+                                <td class="border border-amber-200 px-2 py-1 font-semibold">학생004</td>
+                                <td class="border border-amber-200 px-2 py-1"></td>
+                                <td class="border border-amber-200 px-2 py-1"></td>
+                                <td class="border border-amber-200 px-2 py-1 text-slate-500">생명존중교육에 진지하게 참여하며 자살 예방의 중요성을 인식하고 도울 수 있는 방법을 탐구함.</td>
+                            </tr>
+                            <tr class="bg-amber-50 print-keep-bg">
+                                <td class="border border-amber-200 px-2 py-1">3</td>
+                                <td class="border border-amber-200 px-2 py-1">1</td>
+                                <td class="border border-amber-200 px-2 py-1">5</td>
+                                <td class="border border-amber-200 px-2 py-1 font-semibold">학생005</td>
+                                <td class="border border-amber-200 px-2 py-1 text-slate-500">토론에서 사회자 역할을 맡아 발언 기회를 균등히 배분하고 원활한 토의 흐름을 이끌어냄.</td>
+                                <td class="border border-amber-200 px-2 py-1 text-slate-500">전공별 입시 설명회에 참석하여 수시·정시 전략의 차이점을 체계적으로 정리하여 활용함.</td>
+                                <td class="border border-amber-200 px-2 py-1"></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
+                <p class="text-amber-700 text-base mt-2">↑ <strong>각 학생이 정확히 1행</strong> — 해당 활동이 없으면 칸이 비어 있음(학생002처럼 모두 공백도 정상)</p>
             </div>
+        </div>
+
+        <!-- 구분 팁 -->
+        <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-2 flex gap-3 items-start print-keep-bg">
+            <span class="shrink-0 mt-0.5 text-lg">✅</span>
+            <p class="text-green-800 text-base leading-relaxed">
+                <strong>어떤 형식인지 모르겠다면?</strong> 엑셀 파일을 열어 <strong>이름 열을 세로로 훑어보세요.</strong>
+                같은 학생 이름이 여러 행에 <em>반복</em>되면 <strong>A형</strong>, 학생마다 딱 한 줄씩이고 활동 이름이 맨 위 헤더에 나열되어 있으면 <strong>B형</strong>입니다. 소위 <u>영역 조합형 바이트 계산기 엑셀 파일은 B타입</u>인 것입니다.
+            </p>
         </div>
     </div>
 
@@ -70,11 +176,6 @@
                         <p class="um-section-title">가져오기 (Import)</p>
                         <p class="um-section-desc">외부 엑셀 파일의 기록을 불러와 영역·활동에 병합합니다.</p>
                     </div>
-                    <div class="um-header-actions">
-                        <span class="um-btn-secondary">
-                            <i class="fa-solid fa-file-arrow-up" style="font-size:12px;"></i> 파일 선택
-                        </span>
-                    </div>
                 </div>
                 <!-- 드래그 영역 -->
                 <div style="border:2px dashed #93c5fd;border-radius:12px;padding:28px;text-align:center;color:#3b5bdb;margin:10px 16px 16px;">
@@ -88,7 +189,7 @@
         <div class="mt-5 space-y-3 text-lg text-slate-600 leading-relaxed">
             <div class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">1</span>
-                <span>엑셀 파일을 점선 영역에 <strong>끌어다 놓거나</strong>, 파일 선택 버튼으로 업로드합니다.</span>
+                <span>엑셀 파일을 점선 영역에 <strong>끌어다 놓거나</strong>, 점선 영역을 클릭하여 엑셀 파일을 선택합니다.</span>
             </div>
             <div class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">2</span>
@@ -103,20 +204,9 @@
                 <span>미리보기에서 데이터를 확인한 후 <strong>가져오기 실행</strong>을 클릭합니다. 기존 기록이 있으면 덮어쓸지 병합할지 선택할 수 있습니다.</span>
             </div>
         </div>
-    </div>
-
-    <!-- 7-3 주의사항 -->
-    <div class="mb-10">
-        <h3 class="text-lg font-bold text-slate-700 mb-3">7-3. 주의사항</h3>
-        <div class="space-y-3">
-            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 items-start print-keep-bg">
-                <span class="shrink-0 mt-0.5">⚠️</span>
-                <p class="text-amber-800 text-base leading-relaxed">엑셀 파일의 학생 이름이 DB의 학생 이름과 정확히 일치해야 매핑됩니다. 오탈자가 있으면 해당 학생 데이터는 건너뜁니다.</p>
-            </div>
-            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3 items-start print-keep-bg">
-                <span class="shrink-0 mt-0.5">💡</span>
-                <p class="text-blue-800 text-base leading-relaxed">가져오기 전에 스냅샷을 생성해두면 실수로 데이터를 덮어쓴 경우에도 안전하게 복원할 수 있습니다.</p>
-            </div>
+        <div class="mt-5 bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3 items-start print-keep-bg">
+            <span class="shrink-0 mt-0.5">💡</span>
+            <p class="text-blue-800 text-base leading-relaxed">가져오기 전에 스냅샷을 생성해두면 실수로 데이터를 덮어쓴 경우에도 안전하게 복원할 수 있습니다.</p>
         </div>
     </div>
 

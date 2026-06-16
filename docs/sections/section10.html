@@ -4,7 +4,7 @@
 
     <p class="text-lg text-slate-600 leading-relaxed mb-6">
         좌측 메뉴에서 <strong>내보내기(Export)</strong> 탭을 선택합니다.
-        작성이 완료된 생기부를 NEIS 업로드 형식의 엑셀 파일로 저장합니다.
+        완성된 학교생활기록부를 다양한 형식의 엑셀 파일(.xlsx)로 저장합니다.
     </p>
 
     <!-- 10-1 내보내기 절차 -->
@@ -16,43 +16,34 @@
             <div class="ui-mock print-keep-bg">
                 <div class="um-section-header" style="margin-bottom:16px;">
                     <div>
-                        <p class="um-section-title">내보내기 (Export)</p>
-                        <p class="um-section-desc">완성된 생기부를 NEIS 형식 엑셀 파일로 저장합니다.</p>
+                        <p class="um-section-title">데이터 내보내기(Export)</p>
+                        <p class="um-section-desc">완성된 학교생활기록부를 다양한 형식으로 내보냅니다.</p>
                     </div>
                 </div>
-                <!-- 5단계 위저드 -->
+                <!-- 3단계 위저드 -->
                 <div class="um-wizard">
+                    <div class="um-step um-step-done">
+                        <div class="um-step-num">✓</div>
+                        <div class="um-step-label">형식 선택</div>
+                    </div>
+                    <div class="um-step-line um-line-done"></div>
                     <div class="um-step um-step-done">
                         <div class="um-step-num">✓</div>
                         <div class="um-step-label">영역 선택</div>
                     </div>
                     <div class="um-step-line um-line-done"></div>
-                    <div class="um-step um-step-done">
-                        <div class="um-step-num">✓</div>
-                        <div class="um-step-label">학생 선택</div>
-                    </div>
-                    <div class="um-step-line um-line-done"></div>
                     <div class="um-step um-step-active">
                         <div class="um-step-num">3</div>
-                        <div class="um-step-label">검토</div>
-                    </div>
-                    <div class="um-step-line"></div>
-                    <div class="um-step um-step-idle">
-                        <div class="um-step-num">4</div>
-                        <div class="um-step-label">옵션</div>
-                    </div>
-                    <div class="um-step-line"></div>
-                    <div class="um-step um-step-idle">
-                        <div class="um-step-num">5</div>
-                        <div class="um-step-label">저장</div>
+                        <div class="um-step-label">내보내기 실행</div>
                     </div>
                 </div>
                 <!-- 면책 안내 (Step 3) -->
-                <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 16px;margin:14px 16px 16px;">
-                    <p style="font-size:12px;font-weight:700;color:#1d4ed8;margin-bottom:6px;"><i class="fa-solid fa-circle-info" style="margin-right:6px;"></i>검토 단계 안내</p>
-                    <p style="font-size:12px;color:#1e40af;line-height:1.7;">
-                        이 파일은 생기부 작성을 보조하기 위해 생성되었습니다. 최종 제출 전 반드시 담당 교사가 내용을 검토하시기 바랍니다.
-                        바이트 초과 항목은 <span style="color:#dc2626;font-weight:700;">빨간색</span>으로 표시됩니다.
+                <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px 16px;margin:14px 16px 16px;">
+                    <p style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px;">ℹ 내보내기 안내</p>
+                    <p style="font-size:12px;color:#78350f;line-height:1.7;">
+                        이 파일은 학교생활기록부 작성을 돕기 위한 <strong>참고용 자료</strong>입니다.<br>
+                        반드시 <u><strong>담당 선생님께서 내용을 직접 검토</strong></u>하신 후 나이스(NEIS)에 입력해 주시기를 부탁드립니다.<br>
+                        내보내기를 실행하면 위 안내 사항을 확인하신 것으로 간주합니다.
                     </p>
                 </div>
             </div>
@@ -63,36 +54,29 @@
             <div class="flex gap-4 items-start">
                 <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-base flex items-center justify-center print-keep-bg">1</span>
                 <div>
-                    <p class="font-bold text-slate-700 text-lg">영역 선택</p>
-                    <p class="text-slate-600 text-base leading-relaxed">내보낼 영역을 하나 이상 선택합니다. 담임용(자율·동아리·진로활동) 또는 교과용(교과세특)으로 분리하여 내보낼 수 있습니다.</p>
+                    <p class="font-bold text-slate-700 text-lg">내보내기 형식 선택</p>
+                    <p class="text-slate-600 text-base leading-relaxed">A·B·C 세 가지 엑셀 형식 중 하나를 선택합니다. 각 형식의 열 구성은 <strong>10-2</strong>를 참고하세요.</p>
                 </div>
             </div>
             <div class="flex gap-4 items-start">
                 <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-base flex items-center justify-center print-keep-bg">2</span>
                 <div>
-                    <p class="font-bold text-slate-700 text-lg">학생 선택</p>
-                    <p class="text-slate-600 text-base leading-relaxed">출력할 학생을 필터링합니다. 전체 또는 반 단위로 선택할 수 있습니다.</p>
+                    <p class="font-bold text-slate-700 text-lg">영역 선택</p>
+                    <p class="text-slate-600 text-base leading-relaxed">내보낼 영역을 하나 선택합니다. 선택한 영역에 등록된 모든 학생과 활동이 파일에 포함됩니다.</p>
                 </div>
             </div>
             <div class="flex gap-4 items-start">
                 <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-500 text-white font-bold text-base flex items-center justify-center print-keep-bg">3</span>
                 <div>
-                    <p class="font-bold text-slate-700 text-lg">검토</p>
-                    <p class="text-slate-600 text-base leading-relaxed">바이트 초과 셀이 빨간색으로 강조 표시됩니다. 저장 전 최종 점검을 합니다. 면책 안내문을 확인합니다.</p>
+                    <p class="font-bold text-slate-700 text-lg">내보내기 실행</p>
+                    <p class="text-slate-600 text-base leading-relaxed">유형·영역·학생 수·활동 수·예상 행 수를 확인한 뒤 <strong>내보내기 실행</strong> 버튼을 클릭합니다. 저장 경로 대화상자가 열리면 파일 이름과 위치를 지정하면 <code>.xlsx</code> 파일이 생성됩니다.</p>
                 </div>
             </div>
             <div class="flex gap-4 items-start">
-                <span class="shrink-0 w-8 h-8 rounded-full bg-slate-400 text-white font-bold text-base flex items-center justify-center print-keep-bg">4</span>
+                <span class="shrink-0 w-8 h-8 rounded-full bg-emerald-500 text-white font-bold text-base flex items-center justify-center print-keep-bg">✓</span>
                 <div>
-                    <p class="font-bold text-slate-700 text-lg">옵션</p>
-                    <p class="text-slate-600 text-base leading-relaxed">파일 형식(A형/B형), 시트 분할 방식(영역별 / 반별) 등을 선택합니다.</p>
-                </div>
-            </div>
-            <div class="flex gap-4 items-start">
-                <span class="shrink-0 w-8 h-8 rounded-full bg-slate-400 text-white font-bold text-base flex items-center justify-center print-keep-bg">5</span>
-                <div>
-                    <p class="font-bold text-slate-700 text-lg">저장</p>
-                    <p class="text-slate-600 text-base leading-relaxed">저장 경로를 지정하면 <code class="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-sm text-slate-700 print-keep-bg">.xlsx</code> 파일이 생성됩니다.</p>
+                    <p class="font-bold text-slate-700 text-lg">내보내기 완료</p>
+                    <p class="text-slate-600 text-base leading-relaxed">저장된 행 수와 파일 이름이 표시됩니다. <strong>파일 확인</strong> 버튼으로 탐색기에서 파일을 바로 열거나, <strong>새로 내보내기</strong>로 처음부터 다시 시작할 수 있습니다.</p>
                 </div>
             </div>
         </div>
@@ -100,54 +84,70 @@
 
     <!-- 10-2 출력 파일 구조 -->
     <div class="mb-10">
-        <h3 class="text-lg font-bold text-slate-700 mb-3">10-2. 출력 파일 구조</h3>
-        <div class="overflow-x-auto">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">10-2. 출력 파일 형식</h3>
+
+        <!-- A 타입 -->
+        <p class="font-semibold text-slate-700 mb-2">A 타입 — 행 단위 활동 형식</p>
+        <p class="text-slate-500 text-base mb-3">학생 1명의 활동 1개가 한 행에 기록됩니다. 학생 1명 = 여러 행.</p>
+        <div class="overflow-x-auto mb-6">
             <table class="w-full text-base border-collapse">
                 <thead>
                     <tr class="bg-slate-100 print-keep-bg">
                         <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">열</th>
                         <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">내용</th>
-                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">비고</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">A</td><td class="border border-slate-300 px-4 py-2 text-slate-600">학년</td><td class="border border-slate-300 px-4 py-2 text-slate-500">—</td></tr>
-                    <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">B</td><td class="border border-slate-300 px-4 py-2 text-slate-600">반</td><td class="border border-slate-300 px-4 py-2 text-slate-500">—</td></tr>
-                    <tr><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">C</td><td class="border border-slate-300 px-4 py-2 text-slate-600">번호</td><td class="border border-slate-300 px-4 py-2 text-slate-500">—</td></tr>
-                    <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">D</td><td class="border border-slate-300 px-4 py-2 text-slate-600">이름</td><td class="border border-slate-300 px-4 py-2 text-slate-500">—</td></tr>
-                    <tr><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">E…</td><td class="border border-slate-300 px-4 py-2 text-slate-600">영역별 최종 합산 내용</td><td class="border border-slate-300 px-4 py-2 text-slate-500">활동 순서대로 연결된 전체 문장</td></tr>
+                    <tr><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">A</td><td class="border border-slate-300 px-4 py-2 text-slate-600">학년</td></tr>
+                    <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">B</td><td class="border border-slate-300 px-4 py-2 text-slate-600">반</td></tr>
+                    <tr><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">C</td><td class="border border-slate-300 px-4 py-2 text-slate-600">번호</td></tr>
+                    <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">D</td><td class="border border-slate-300 px-4 py-2 text-slate-600">이름</td></tr>
+                    <tr><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">E</td><td class="border border-slate-300 px-4 py-2 text-slate-600">활동명</td></tr>
+                    <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">F</td><td class="border border-slate-300 px-4 py-2 text-slate-600">활동내용</td></tr>
                 </tbody>
             </table>
         </div>
-    </div>
 
-    <!-- 10-3 교과→담임 전달 흐름 -->
-    <div class="mb-10">
-        <h3 class="text-lg font-bold text-slate-700 mb-3">10-3. 교과교사 → 담임교사 전달 흐름</h3>
-        <div class="flex items-center gap-3 flex-wrap">
-            <div class="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 text-center print-keep-bg" style="min-width:130px;">
-                <p class="text-2xl mb-1">👩‍🏫</p>
-                <p class="font-bold text-amber-800 text-base">교과교사</p>
-                <p class="text-slate-500 text-sm">내보내기 → .xlsx</p>
-            </div>
-            <div style="font-size:24px;color:#94a3b8;">→</div>
-            <div class="bg-blue-50 border border-blue-200 rounded-xl px-5 py-4 text-center print-keep-bg" style="min-width:130px;">
-                <p class="text-2xl mb-1">📁</p>
-                <p class="font-bold text-blue-800 text-base">파일 전달</p>
-                <p class="text-slate-500 text-sm">이메일·공유폴더</p>
-            </div>
-            <div style="font-size:24px;color:#94a3b8;">→</div>
-            <div class="bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-4 text-center print-keep-bg" style="min-width:130px;">
-                <p class="text-2xl mb-1">👨‍🏫</p>
-                <p class="font-bold text-emerald-800 text-base">담임교사</p>
-                <p class="text-slate-500 text-sm">가져오기(Import)로 병합</p>
-            </div>
-            <div style="font-size:24px;color:#94a3b8;">→</div>
-            <div class="bg-indigo-50 border border-indigo-200 rounded-xl px-5 py-4 text-center print-keep-bg" style="min-width:130px;">
-                <p class="text-2xl mb-1">📝</p>
-                <p class="font-bold text-indigo-800 text-base">NEIS 업로드</p>
-                <p class="text-slate-500 text-sm">최종 내보내기</p>
-            </div>
+        <!-- B 타입 -->
+        <p class="font-semibold text-slate-700 mb-2">B 타입 — 열 단위 활동 형식</p>
+        <p class="text-slate-500 text-base mb-3">활동이 열(헤더)로 구분됩니다. 학생 1명의 모든 활동이 한 행에 기록됩니다. 학생 1명 = 1행.</p>
+        <div class="overflow-x-auto mb-6">
+            <table class="w-full text-base border-collapse">
+                <thead>
+                    <tr class="bg-slate-100 print-keep-bg">
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">열</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">내용</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">A</td><td class="border border-slate-300 px-4 py-2 text-slate-600">학년</td></tr>
+                    <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">B</td><td class="border border-slate-300 px-4 py-2 text-slate-600">반</td></tr>
+                    <tr><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">C</td><td class="border border-slate-300 px-4 py-2 text-slate-600">번호</td></tr>
+                    <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">D</td><td class="border border-slate-300 px-4 py-2 text-slate-600">이름</td></tr>
+                    <tr><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">E…</td><td class="border border-slate-300 px-4 py-2 text-slate-600">활동명 1, 활동명 2, … (활동별 열)</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- C 타입 -->
+        <p class="font-semibold text-slate-700 mb-2">C 타입 — 최종 나이스(NEIS) 문장 형식 <span class="text-indigo-600 text-base font-normal">(추천)</span></p>
+        <p class="text-slate-500 text-base mb-3">모든 활동 내용을 공백으로 연결한 최종 문장 1개가 한 열에 들어갑니다. NEIS 직접 입력용 최종 문장 생성에 적합합니다.</p>
+        <div class="overflow-x-auto mb-2">
+            <table class="w-full text-base border-collapse">
+                <thead>
+                    <tr class="bg-slate-100 print-keep-bg">
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">열</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">내용</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">A</td><td class="border border-slate-300 px-4 py-2 text-slate-600">학년</td></tr>
+                    <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">B</td><td class="border border-slate-300 px-4 py-2 text-slate-600">반</td></tr>
+                    <tr><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">C</td><td class="border border-slate-300 px-4 py-2 text-slate-600">번호</td></tr>
+                    <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">D</td><td class="border border-slate-300 px-4 py-2 text-slate-600">이름</td></tr>
+                    <tr><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">E</td><td class="border border-slate-300 px-4 py-2 text-slate-600">영역명 — 활동 순서대로 연결된 최종 문장</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 

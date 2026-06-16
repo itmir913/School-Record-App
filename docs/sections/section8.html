@@ -11,7 +11,7 @@
     <div class="mb-10">
         <h3 class="text-lg font-bold text-slate-700 mb-3">8-1. 기본 제공 치환 규칙</h3>
         <p class="text-lg text-slate-600 leading-relaxed mb-5">
-            프로그램에는 두 가지 기본 치환 규칙이 내장되어 있습니다.
+            프로그램에는 몇 가지 기본 치환 규칙이 내장되어 있습니다.
         </p>
 
         <div class="ui-callout print-keep-bg">
@@ -92,6 +92,58 @@
                         <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">&nbsp;&nbsp;(공백 2개 이상)</td>
                         <td class="border border-slate-300 px-4 py-2 text-slate-600">공백 1개</td>
                         <td class="border border-slate-300 px-4 py-2 text-slate-600">연속 공백 단일화</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 8-1-b 치환 예시 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">8-1-1. 사용자 정의 규칙 예시</h3>
+        <p class="text-lg text-slate-600 leading-relaxed mb-5">
+            생기부에서 자주 발생하는 어색한 표현을 교정하는 규칙 예시입니다.
+            아래 표현들을 규칙으로 등록해두면 <strong>전체 적용</strong> 한 번으로 전 학생 기록을 일괄 정리할 수 있습니다.
+        </p>
+        <div class="overflow-x-auto">
+            <table class="w-full text-base border-collapse">
+                <thead>
+                    <tr class="bg-slate-100 print-keep-bg">
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">찾을 내용</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">바꿀 내용</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">보여줌</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-emerald-700">보임</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">구어체 → 서술형 교정</td>
+                    </tr>
+                    <tr class="bg-slate-50 print-keep-bg">
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">하였음</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-emerald-700">함</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">간결한 서술형으로 통일</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">~이다</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-emerald-700">~임</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">생기부 어미 형식 통일</td>
+                    </tr>
+                    <tr class="bg-slate-50 print-keep-bg">
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">기여하였다</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-emerald-700">기여함</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">어미 통일</td>
+                    </tr>
+                    <tr>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">있었음</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-emerald-700">있음</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">과거 시제 중복 제거</td>
+                    </tr>
+                    <tr class="bg-slate-50 print-keep-bg">
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">OO 학생</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-emerald-700">(해당 이름)</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">가져오기한 파일에 "OO 학생" 표기가 일괄 포함된 경우</td>
                     </tr>
                 </tbody>
             </table>

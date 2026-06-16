@@ -17,7 +17,7 @@
                 <div class="um-section-header">
                     <div>
                         <p class="um-section-title">영역(Area) 관리</p>
-                        <p class="um-section-desc">생활기록부 항목별 영역을 구성합니다.</p>
+                        <p class="um-section-desc">자율활동, 진로활동, 동아리활동, 세부능력특기사항 등 생기부 대분류 영역을 설정합니다.</p>
                     </div>
                     <div class="um-header-actions">
                         <span class="um-btn-primary">
@@ -40,7 +40,7 @@
             </div>
             <div class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">2</span>
-                <span>팝업 창에서 <strong>영역 이름</strong>과 <strong>바이트 한도</strong>를 입력하고 저장합니다.</span>
+                <span>팝업 창에서 <strong>영역 이름</strong>과 <strong>바이트 수 제한</strong>을 입력하고 저장합니다.</span>
             </div>
         </div>
     </div>
@@ -54,36 +54,37 @@
 
         <div class="ui-callout print-keep-bg">
             <p class="ui-callout-label">실제 화면 — 영역 카드</p>
-            <div class="ui-mock print-keep-bg">
-                <div style="display:flex;gap:16px;flex-wrap:wrap;">
-                    <div class="um-card" style="min-width:220px;">
-                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;">
+            <div class="ui-mock print-keep-bg" style="padding-top:20px;padding-bottom:20px;">
+                <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
+                    <div class="um-card" style="min-width:160px;">
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:5px;">
                             <div>
                                 <p class="text-slate-600" style="font-size:15px;font-weight:700;margin:0 0 4px;">1반 자율활동</p>
-                                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                <div style="display:flex;margin-top:5px;gap:6px;flex-wrap:wrap;">
                                     <span class="um-chip">학급자치회</span>
                                     <span class="um-chip">수련활동</span>
                                     <span class="um-chip">스포츠데이</span>
                                 </div>
                             </div>
-                            <span class="um-byte-badge">500B</span>
+                            <span class="um-byte-badge">최대 1,500 Bytes</span>
                         </div>
-                        <div style="margin-top:auto;padding-top:10px;border-top:1px solid #1a2035;display:flex;justify-content:flex-end;">
+                        <div style="margin-top:auto;padding-top:5px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-start;">
                             <span class="um-btn-purple"><i class="fa-solid fa-user-plus" style="font-size:11px;"></i> 학생 배정</span>
                         </div>
                     </div>
-                    <div class="um-card" style="min-width:220px;">
-                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;">
+                    <div class="um-card" style="min-width:160px;">
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:5px;">
                             <div>
                                 <p class="text-slate-600" style="font-size:15px;font-weight:700;=margin:0 0 4px;">프로그래밍 A반</p>
-                                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                <div style="display:flex;margin-top:5px;gap:6px;flex-wrap:wrap;">
                                     <span class="um-chip">수행평가1</span>
                                     <span class="um-chip">수행평가2</span>
+                                    <span class="um-chip">수업태도</span>
                                 </div>
                             </div>
-                            <span class="um-byte-badge">1500B</span>
+                            <span class="um-byte-badge">최대 1,500 Bytes</span>
                         </div>
-                        <div style="margin-top:auto;padding-top:10px;border-top:1px solid #1a2035;display:flex;justify-content:flex-end;">
+                        <div style="margin-top:auto;padding-top:5px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-start;">
                             <span class="um-btn-purple"><i class="fa-solid fa-user-plus" style="font-size:11px;"></i> 학생 배정</span>
                         </div>
                     </div>
@@ -101,20 +102,26 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">영역 이름</td>
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">영역(Area) 이름</td>
                         <td class="border border-slate-300 px-4 py-2 text-slate-600">카드 좌측 상단에 굵게 표시</td>
                     </tr>
                     <tr class="bg-slate-50 print-keep-bg">
-                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">바이트 한도 <span class="um-byte-badge" style="font-size:11px;padding:2px 7px;">500B</span></td>
-                        <td class="border border-slate-300 px-4 py-2 text-slate-600">노란색 뱃지로 우측 상단 표시. NEIS의 해당 항목 글자 수 기준 (예: 500자 = 1000B)</td>
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">바이트 수<br>
+                            <span class="um-byte-badge" style="font-size:11px;padding:2px 7px;">최대 1,500 Bytes</span>
+                        </td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">노란색 뱃지로 우측 상단 표시. NEIS의 해당 항목 글자 수 기준</td>
                     </tr>
                     <tr>
-                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">학생 칩 <span class="um-chip" style="font-size:11px;">홍길동</span></td>
-                        <td class="border border-slate-300 px-4 py-2 text-slate-600">이 영역에 배정된 학생 목록. 파란색 칩으로 나열</td>
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">연결된 활동(Activity)<br>
+                            <span class="um-chip" style="font-size:11px;">학급자치회</span>
+                        </td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">이 영역에 연결된 활동 목록. 파란색 칩으로 나열된 이 활동들이 하나의 문장으로 합쳐집니다.</td>
                     </tr>
                     <tr class="bg-slate-50 print-keep-bg">
-                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700"><span class="um-btn-purple" style="font-size:11px;padding:3px 9px;">학생 배정</span></td>
-                        <td class="border border-slate-300 px-4 py-2 text-slate-600">이 영역에 기록을 남길 학생을 지정. 클릭 시 배정 모달 열림</td>
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">
+                            <span class="um-btn-purple"><i class="fa-solid fa-user-plus" style="font-size:11px;"></i> 학생 배정</span>
+                        </td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">이 영역에 소속된 학생 지정. 클릭 시 학생 선택 창 열림</td>
                     </tr>
                 </tbody>
             </table>
@@ -123,9 +130,9 @@
 
     <!-- 4-3 바이트 한도 안내 -->
     <div class="mb-10">
-        <h3 class="text-lg font-bold text-slate-700 mb-3">4-3. 바이트 한도 설정 기준</h3>
+        <h3 class="text-lg font-bold text-slate-700 mb-3">4-3. 최대 바이트 수 설정</h3>
         <p class="text-lg text-slate-600 leading-relaxed mb-4">
-            바이트 한도는 <strong>한글 1자 = 2바이트</strong>를 기준으로 NEIS의 글자 수 제한에 맞춰 입력합니다.
+            최대 바이트 수를 입력하면 어떤 학생이 바이트가 초과되었는지 쉽게 확인할 수 있습니다.
         </p>
         <div class="overflow-x-auto">
             <table class="w-full text-base border-collapse">
@@ -137,15 +144,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td class="border border-slate-300 px-4 py-2 text-slate-600">자율활동 (일반)</td><td class="border border-slate-300 px-4 py-2 text-center text-slate-600">500자</td><td class="border border-slate-300 px-4 py-2 text-center font-mono text-indigo-700">1000</td></tr>
-                    <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-4 py-2 text-slate-600">동아리활동</td><td class="border border-slate-300 px-4 py-2 text-center text-slate-600">500자</td><td class="border border-slate-300 px-4 py-2 text-center font-mono text-indigo-700">1000</td></tr>
-                    <tr><td class="border border-slate-300 px-4 py-2 text-slate-600">진로활동</td><td class="border border-slate-300 px-4 py-2 text-center text-slate-600">700자</td><td class="border border-slate-300 px-4 py-2 text-center font-mono text-indigo-700">1400</td></tr>
-                    <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-4 py-2 text-slate-600">교과세특 (과목당)</td><td class="border border-slate-300 px-4 py-2 text-center text-slate-600">500자</td><td class="border border-slate-300 px-4 py-2 text-center font-mono text-indigo-700">1000</td></tr>
-                    <tr><td class="border border-slate-300 px-4 py-2 text-slate-600">행동특성 및 종합의견</td><td class="border border-slate-300 px-4 py-2 text-center text-slate-600">1000자</td><td class="border border-slate-300 px-4 py-2 text-center font-mono text-indigo-700">2000</td></tr>
+                    <tr><td class="border border-slate-300 px-4 py-2 text-slate-600">자율활동</td><td class="border border-slate-300 px-4 py-2 text-center text-slate-600">500자</td><td class="border border-slate-300 px-4 py-2 text-center font-mono text-indigo-700">1500</td></tr>
+                    <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-4 py-2 text-slate-600">동아리활동</td><td class="border border-slate-300 px-4 py-2 text-center text-slate-600">500자</td><td class="border border-slate-300 px-4 py-2 text-center font-mono text-indigo-700">1500</td></tr>
+                    <tr><td class="border border-slate-300 px-4 py-2 text-slate-600">진로활동</td><td class="border border-slate-300 px-4 py-2 text-center text-slate-600">700자</td><td class="border border-slate-300 px-4 py-2 text-center font-mono text-indigo-700">2100</td></tr>
+                    <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-4 py-2 text-slate-600">교과세특 (과목당)</td><td class="border border-slate-300 px-4 py-2 text-center text-slate-600">500자</td><td class="border border-slate-300 px-4 py-2 text-center font-mono text-indigo-700">1500</td></tr>
+                    <tr><td class="border border-slate-300 px-4 py-2 text-slate-600">행동특성 및 종합의견</td><td class="border border-slate-300 px-4 py-2 text-center text-slate-600">500자</td><td class="border border-slate-300 px-4 py-2 text-center font-mono text-indigo-700">1500</td></tr>
                 </tbody>
             </table>
         </div>
-        <p class="text-sm text-slate-400 mt-2">※ 실제 기준은 교육부 고시 및 학교 정책에 따라 달라질 수 있습니다. NEIS 시스템에서 반드시 확인하세요.</p>
+        <p class="text-base text-slate-400 mt-2">※ 실제 기준은 교육부 고시 및 학교 정책에 따라 달라질 수 있습니다. NEIS 시스템에서 반드시 확인하세요.</p>
     </div>
 
     <!-- 4-4 학생 배정 -->
@@ -156,13 +163,45 @@
             <span class="um-btn-purple" style="font-size:13px;padding:4px 11px;border-radius:8px;display:inline-flex;align-items:center;gap:4px;vertical-align:middle;">
                 <i class="fa-solid fa-user-plus" style="font-size:11px;"></i> 학생 배정
             </span>
-            버튼을 클릭하면 배정 모달이 열립니다.
+            버튼을 클릭하면 학생을 선택할 수 있는 창이 열립니다.
         </p>
-        <ul class="space-y-2 text-lg text-slate-600 leading-relaxed">
+        <ul class="space-y-2 text-lg text-slate-600 leading-relaxed mb-5">
             <li>• 반 단위로 전체 선택하거나 개별 학생을 체크박스로 선택합니다.</li>
-            <li>• 엑셀 파일로 학생을 일괄 업로드하여 자동 배정할 수도 있습니다.</li>
-            <li>• 배정된 학생만 생기부 작성 탭의 그리드에 표시됩니다.</li>
+            <li>• <strong>엑셀로 일괄 배정</strong> 버튼을 누르면, 학생 명단을 불러와서 자동 배정할 수도 있습니다.</li>
+            <li>• 해당 영역에 배정된 학생만 생기부 작성 탭의 그리드에 표시됩니다.</li>
         </ul>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 print-keep-bg">
+            <p class="font-semibold text-slate-700 text-base mb-3">배정 예시</p>
+            <div class="overflow-x-auto">
+                <table class="w-full text-base border-collapse">
+                    <thead>
+                        <tr class="bg-slate-200 print-keep-bg">
+                            <th class="border border-slate-300 px-3 py-2 text-left font-bold text-slate-700">영역</th>
+                            <th class="border border-slate-300 px-3 py-2 text-left font-bold text-slate-700">배정할 학생</th>
+                            <th class="border border-slate-300 px-3 py-2 text-left font-bold text-slate-700">이유</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="border border-slate-300 px-3 py-2 font-semibold text-slate-700">1반 자율활동</td>
+                            <td class="border border-slate-300 px-3 py-2 text-slate-600">1학년 1반 전체 (30명)</td>
+                            <td class="border border-slate-300 px-3 py-2 text-slate-600">담임이 반 전체의 자율활동 기록</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-slate-300 px-3 py-2 font-semibold text-slate-700">1반 진로활동</td>
+                            <td class="border border-slate-300 px-3 py-2 text-slate-600">1학년 1반 전체 (30명)</td>
+                            <td class="border border-slate-300 px-3 py-2 text-slate-600">담임이 반 전체의 진로활동 기록</td>
+                        </tr>
+                        <tr class="bg-slate-50 print-keep-bg">
+                            <td class="border border-slate-300 px-3 py-2 font-semibold text-slate-700">프로그래밍 A반</td>
+                            <td class="border border-slate-300 px-3 py-2 text-slate-600">해당 과목 수강생만 (예: 15명)</td>
+                            <td class="border border-slate-300 px-3 py-2 text-slate-600">교과교사가 수강생만 선택하여 세특 작성</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
 </section>
