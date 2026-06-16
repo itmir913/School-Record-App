@@ -2,125 +2,122 @@
 
     <h2 class="text-xl font-bold text-slate-800 border-b-2 border-indigo-500 pb-2 mb-8">7. 가져오기 (Import)</h2>
 
-    <p class="text-lg text-slate-600 leading-relaxed mb-8">
+    <p class="text-lg text-slate-600 leading-relaxed mb-6">
         좌측 메뉴에서 <strong>가져오기(Import)</strong> 탭을 선택합니다.
-        이미 엑셀로 작성된 생기부 기록을 이 프로그램으로 불러오는 기능입니다.
-        <strong>A타입</strong>과 <strong>B타입</strong> 두 가지 엑셀 형식을 지원합니다.
+        교과 담당 교사 등 다른 선생님이 작성한 엑셀 파일을 불러와 해당 영역·활동의 기록에 병합합니다.
     </p>
 
-    <!-- 7-1 형식 설명 -->
+    <!-- 7-1 지원 형식 -->
     <div class="mb-10">
-        <h3 class="text-lg font-bold text-slate-700 mb-3">7-1. A타입 / B타입 엑셀 형식</h3>
+        <h3 class="text-lg font-bold text-slate-700 mb-3">7-1. 지원하는 엑셀 형식</h3>
+        <p class="text-lg text-slate-600 leading-relaxed mb-5">
+            가져오기는 두 가지 레이아웃을 모두 지원합니다.
+        </p>
 
-        <div class="space-y-5 mb-6">
-            <!-- A타입 -->
-            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 print-keep-bg">
-                <p class="font-bold text-slate-700 text-lg mb-2">A타입 — 행 기반 (활동명 포함)</p>
-                <p class="text-slate-600 text-base leading-relaxed mb-3">
-                    한 행에 <strong>학생 정보 + 활동명 + 활동 내용</strong>을 모두 담는 형식입니다.
-                    학생 한 명이 여러 활동을 가진 경우 여러 행이 됩니다.
-                </p>
+        <div class="grid grid-cols-2 gap-5 mb-6" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <!-- A형 -->
+            <div class="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-5 print-keep-bg">
+                <p class="font-bold text-indigo-800 text-lg mb-1">A형 — 행 기반</p>
+                <p class="text-slate-600 text-base mb-3">학생 한 명이 한 행을 차지하고, 열에 활동·항목이 나열되는 형식</p>
                 <div class="overflow-x-auto">
-                    <table class="text-sm border-collapse w-full">
+                    <table class="w-full text-xs border-collapse">
                         <thead>
-                            <tr class="bg-slate-200 print-keep-bg">
-                                <th class="border border-slate-300 px-3 py-1.5 text-slate-700">학년</th>
-                                <th class="border border-slate-300 px-3 py-1.5 text-slate-700">반</th>
-                                <th class="border border-slate-300 px-3 py-1.5 text-slate-700">번호</th>
-                                <th class="border border-slate-300 px-3 py-1.5 text-slate-700">이름</th>
-                                <th class="border border-slate-300 px-3 py-1.5 text-slate-700">활동명</th>
-                                <th class="border border-slate-300 px-3 py-1.5 text-slate-700">활동내용</th>
+                            <tr class="bg-indigo-200 print-keep-bg">
+                                <th class="border border-indigo-300 px-2 py-1 text-left">이름</th>
+                                <th class="border border-indigo-300 px-2 py-1 text-left">학급자치회</th>
+                                <th class="border border-indigo-300 px-2 py-1 text-left">스포츠데이</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600">1</td>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600">1</td>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600">1</td>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600">홍길동</td>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600">수행평가1</td>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600 max-w-xs truncate">알고리즘 설계 과제에서…</td>
-                            </tr>
-                            <tr class="bg-slate-50 print-keep-bg">
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600">1</td>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600">1</td>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600">1</td>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600">홍길동</td>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600">수행평가2</td>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600 max-w-xs truncate">프로젝트 발표에서…</td>
-                            </tr>
+                            <tr><td class="border border-indigo-200 px-2 py-1">홍길동</td><td class="border border-indigo-200 px-2 py-1 text-slate-500">내용…</td><td class="border border-indigo-200 px-2 py-1 text-slate-500">내용…</td></tr>
+                            <tr class="bg-indigo-50 print-keep-bg"><td class="border border-indigo-200 px-2 py-1">이순신</td><td class="border border-indigo-200 px-2 py-1 text-slate-500">내용…</td><td class="border border-indigo-200 px-2 py-1 text-slate-500">내용…</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-
-            <!-- B타입 -->
-            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 print-keep-bg">
-                <p class="font-bold text-slate-700 text-lg mb-2">B타입 — 열 기반 (활동명이 열 머리글)</p>
-                <p class="text-slate-600 text-base leading-relaxed mb-3">
-                    학생 한 명이 한 행이며, 각 활동이 별도의 열로 구성됩니다.
-                </p>
+            <!-- B형 -->
+            <div class="bg-amber-50 border-2 border-amber-200 rounded-xl p-5 print-keep-bg">
+                <p class="font-bold text-amber-800 text-lg mb-1">B형 — 열 기반</p>
+                <p class="text-slate-600 text-base mb-3">활동·항목이 행에, 학생이 열에 나열되는 전치(transpose) 형식</p>
                 <div class="overflow-x-auto">
-                    <table class="text-sm border-collapse w-full">
+                    <table class="w-full text-xs border-collapse">
                         <thead>
-                            <tr class="bg-slate-200 print-keep-bg">
-                                <th class="border border-slate-300 px-3 py-1.5 text-slate-700">학년</th>
-                                <th class="border border-slate-300 px-3 py-1.5 text-slate-700">반</th>
-                                <th class="border border-slate-300 px-3 py-1.5 text-slate-700">번호</th>
-                                <th class="border border-slate-300 px-3 py-1.5 text-slate-700">이름</th>
-                                <th class="border border-slate-300 px-3 py-1.5 text-slate-700">수행평가1</th>
-                                <th class="border border-slate-300 px-3 py-1.5 text-slate-700">수행평가2</th>
+                            <tr class="bg-amber-200 print-keep-bg">
+                                <th class="border border-amber-300 px-2 py-1 text-left">항목</th>
+                                <th class="border border-amber-300 px-2 py-1 text-left">홍길동</th>
+                                <th class="border border-amber-300 px-2 py-1 text-left">이순신</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600">1</td>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600">1</td>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600">1</td>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600">홍길동</td>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600 max-w-xs truncate">알고리즘 설계에서…</td>
-                                <td class="border border-slate-300 px-3 py-1.5 text-slate-600 max-w-xs truncate">발표에서…</td>
-                            </tr>
+                            <tr><td class="border border-amber-200 px-2 py-1">학급자치회</td><td class="border border-amber-200 px-2 py-1 text-slate-500">내용…</td><td class="border border-amber-200 px-2 py-1 text-slate-500">내용…</td></tr>
+                            <tr class="bg-amber-50 print-keep-bg"><td class="border border-amber-200 px-2 py-1">스포츠데이</td><td class="border border-amber-200 px-2 py-1 text-slate-500">내용…</td><td class="border border-amber-200 px-2 py-1 text-slate-500">내용…</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div>
-
-        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3 items-start print-keep-bg">
-            <span class="text-lg mt-0.5 shrink-0">💡</span>
-            <p class="text-blue-800 text-base leading-relaxed">
-                가져오기 화면에서 <strong>예시 다운로드</strong> 버튼을 클릭하면 각 타입의 샘플 엑셀 파일을 받을 수 있습니다.
-                처음 사용 시 예시 파일을 참고하여 형식을 맞추세요.
-            </p>
         </div>
     </div>
 
     <!-- 7-2 가져오기 절차 -->
     <div class="mb-10">
-        <h3 class="text-lg font-bold text-slate-700 mb-3">7-2. 열 매핑 및 미리보기·Diff 확인</h3>
-        <ol class="space-y-3 text-lg text-slate-600 leading-relaxed">
-            <li class="flex gap-3">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">7-2. 가져오기 절차</h3>
+
+        <div class="ui-callout print-keep-bg">
+            <p class="ui-callout-label">실제 화면 — 가져오기(Import) 상단</p>
+            <div class="ui-mock print-keep-bg">
+                <div class="um-section-header">
+                    <div>
+                        <p class="um-section-title">가져오기 (Import)</p>
+                        <p class="um-section-desc">외부 엑셀 파일의 기록을 불러와 영역·활동에 병합합니다.</p>
+                    </div>
+                    <div class="um-header-actions">
+                        <span class="um-btn-secondary">
+                            <i class="fa-solid fa-file-arrow-up" style="font-size:12px;"></i> 파일 선택
+                        </span>
+                    </div>
+                </div>
+                <!-- 드래그 영역 -->
+                <div style="border:2px dashed #93c5fd;border-radius:12px;padding:28px;text-align:center;color:#3b5bdb;margin:10px 16px 16px;">
+                    <i class="fa-solid fa-file-excel" style="font-size:28px;margin-bottom:8px;display:block;color:#3b5bdb;"></i>
+                    <p style="font-size:14px;font-weight:600;margin-bottom:4px;color:#1e293b;">.xlsx 또는 .csv 파일을 이 곳에 끌어다 놓으세요</p>
+                    <p style="font-size:12px;color:#64748b;">또는 위의 파일 선택 버튼을 클릭하세요</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5 space-y-3 text-lg text-slate-600 leading-relaxed">
+            <div class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">1</span>
-                <span>파일 형식(A타입 / B타입)을 선택하고 엑셀 파일을 업로드합니다.</span>
-            </li>
-            <li class="flex gap-3">
+                <span>엑셀 파일을 점선 영역에 <strong>끌어다 놓거나</strong>, 파일 선택 버튼으로 업로드합니다.</span>
+            </div>
+            <div class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">2</span>
-                <span>열 매핑 화면에서 파일의 각 열이 어느 항목에 해당하는지 확인하고 필요 시 수정합니다. 표준 열 이름은 자동으로 인식됩니다.</span>
-            </li>
-            <li class="flex gap-3">
+                <span>파일 형식(A형/B형)과 연결할 <strong>영역</strong> 및 <strong>활동</strong>을 선택합니다.</span>
+            </div>
+            <div class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">3</span>
-                <span>활동 매핑 단계에서 파일의 활동명이 DB의 어느 활동에 해당하는지 연결합니다.</span>
-            </li>
-            <li class="flex gap-3">
+                <span>열 매핑을 확인합니다. 학생 이름·번호 열이 자동 감지되지 않으면 드롭다운으로 직접 지정합니다.</span>
+            </div>
+            <div class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">4</span>
-                <span><strong>미리보기(Diff)</strong> 화면에서 기존 내용과 가져올 내용의 차이를 확인합니다. 가져올 항목을 개별 체크하거나 전체 선택할 수 있습니다.</span>
-            </li>
-            <li class="flex gap-3">
-                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">5</span>
-                <span><strong>가져오기 실행</strong>을 클릭하면 선택한 내용이 DB에 반영됩니다.</span>
-            </li>
-        </ol>
+                <span>미리보기에서 데이터를 확인한 후 <strong>가져오기 실행</strong>을 클릭합니다. 기존 기록이 있으면 덮어쓸지 병합할지 선택할 수 있습니다.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7-3 주의사항 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">7-3. 주의사항</h3>
+        <div class="space-y-3">
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 items-start print-keep-bg">
+                <span class="shrink-0 mt-0.5">⚠️</span>
+                <p class="text-amber-800 text-base leading-relaxed">엑셀 파일의 학생 이름이 DB의 학생 이름과 정확히 일치해야 매핑됩니다. 오탈자가 있으면 해당 학생 데이터는 건너뜁니다.</p>
+            </div>
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex gap-3 items-start print-keep-bg">
+                <span class="shrink-0 mt-0.5">💡</span>
+                <p class="text-blue-800 text-base leading-relaxed">가져오기 전에 스냅샷을 생성해두면 실수로 데이터를 덮어쓴 경우에도 안전하게 복원할 수 있습니다.</p>
+            </div>
+        </div>
     </div>
 
 </section>

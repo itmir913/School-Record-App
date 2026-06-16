@@ -18,13 +18,21 @@
     <div class="mb-10">
         <h3 class="text-lg font-bold text-slate-700 mb-3">1-2. 설치 및 첫 실행</h3>
 
-        <!-- Windows 설치형 -->
-        <div class="mb-6">
+        <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex gap-3 items-start mb-5 print-keep-bg">
+            <span class="text-lg mt-0.5 shrink-0">🌐</span>
+            <p class="text-indigo-800 text-lg leading-relaxed">
+                윈도우 설치버전·무설치버전·macOS 버전 모두
+                <strong>공식 페이지</strong>에서 다운로드할 수 있습니다.<br>
+                <a href="https://luminousky.com/teacher-utility-kit/neis-editor/" class="underline font-mono break-all">https://luminousky.com/teacher-utility-kit/neis-editor/</a>
+            </p>
+        </div>
+
+        <div class="mb-5">
             <p class="text-base font-semibold text-slate-600 mb-3">Windows — 설치형 (.exe)</p>
             <ol class="space-y-3 text-lg text-slate-600 leading-relaxed">
                 <li class="flex gap-3">
                     <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">1</span>
-                    <span>공식 GitHub 릴리즈 페이지에서 <code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 print-keep-bg">windows-x64-setup.zip</code> 파일을 다운로드합니다.</span>
+                    <span>공식 페이지에서 <code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 print-keep-bg">windows-x64-setup.zip</code> 파일을 다운로드합니다.</span>
                 </li>
                 <li class="flex gap-3">
                     <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">2</span>
@@ -37,8 +45,7 @@
             </ol>
         </div>
 
-        <!-- Windows 무설치형 -->
-        <div class="mb-6">
+        <div class="mb-5">
             <p class="text-base font-semibold text-slate-600 mb-3">Windows — 무설치형 (Portable)</p>
             <ol class="space-y-3 text-lg text-slate-600 leading-relaxed">
                 <li class="flex gap-3">
@@ -52,27 +59,12 @@
             </ol>
         </div>
 
-        <!-- macOS -->
-        <div class="mb-6">
-            <p class="text-base font-semibold text-slate-600 mb-3">macOS — 설치형 (.dmg)</p>
-            <ol class="space-y-3 text-lg text-slate-600 leading-relaxed">
-                <li class="flex gap-3">
-                    <span class="shrink-0 w-7 h-7 rounded-full bg-slate-200 text-slate-600 font-bold text-base flex items-center justify-center print-keep-bg">1</span>
-                    <span><code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 print-keep-bg">macos-setup.dmg</code>를 다운로드하여 열고, 앱을 <strong>Applications</strong> 폴더로 드래그합니다.</span>
-                </li>
-                <li class="flex gap-3">
-                    <span class="shrink-0 w-7 h-7 rounded-full bg-slate-200 text-slate-600 font-bold text-base flex items-center justify-center print-keep-bg">2</span>
-                    <span>처음 실행 시 macOS Gatekeeper 경고가 나타날 수 있습니다. <strong>시스템 설정 → 개인 정보 보호 및 보안</strong>에서 "그래도 열기"를 클릭하세요.</span>
-                </li>
-            </ol>
-        </div>
-
         <div class="bg-amber-50 border border-amber-300 rounded-xl p-4 flex gap-3 items-start print-keep-bg">
             <span class="text-lg mt-0.5 shrink-0">⚠️</span>
             <p class="text-amber-800 text-lg leading-relaxed">
                 Windows에서 <strong>"Windows의 PC 보호"</strong> 경고가 나타날 수 있습니다.
                 <strong>추가 정보 → 실행</strong>을 클릭하면 정상적으로 실행됩니다.
-                이 프로그램은 어떤 데이터도 외부로 전송하지 않습니다.
+                이 프로그램은 어떠한 데이터도 외부로 전송하지 않습니다.
             </p>
         </div>
     </div>
@@ -81,22 +73,59 @@
     <div class="mb-10">
         <h3 class="text-lg font-bold text-slate-700 mb-3">1-3. DB 파일 생성 및 열기</h3>
         <p class="text-lg text-slate-600 leading-relaxed mb-5">
-            이 프로그램은 모든 데이터를 하나의 <code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 print-keep-bg">.db</code> 파일에 저장합니다.
-            프로그램을 실행하면 홈 화면이 나타나며, 아래 두 가지 방법으로 작업을 시작할 수 있습니다.
+            프로그램을 실행하면 홈 화면이 나타납니다. 아래 두 버튼으로 작업을 시작합니다.
         </p>
-        <div class="space-y-4">
+
+        <!-- HomeView 목업 -->
+        <div class="ui-callout print-keep-bg">
+            <p class="ui-callout-label">실제 화면 — 홈</p>
+            <div class="ui-mock print-keep-bg">
+                <div class="um-home-wrap">
+                    <div class="um-home-card">
+                        <div class="um-home-logo">
+                            <div class="um-logo-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="um-home-title">All-in-One 학교생활기록부 에디터</p>
+                                <p class="um-home-sub">학생부를 체계적으로 작성하기 위한 교육용 프로그램</p>
+                            </div>
+                        </div>
+                        <div class="um-home-sep"></div>
+                        <div class="um-home-btn-a">
+                            <span style="display:flex;align-items:center;gap:6px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16m8-8H4"/></svg>
+                                새 학생부 만들기
+                            </span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                        <div class="um-home-btn-b">
+                            <span style="display:flex;align-items:center;gap:6px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"/></svg>
+                                기존 파일 열기
+                            </span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5 space-y-4">
             <div class="flex gap-4 items-start bg-slate-50 border border-slate-200 rounded-xl p-5 print-keep-bg">
                 <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">신규</span>
                 <div>
-                    <p class="font-bold text-slate-700 text-lg mb-1">새 DB 파일 만들기</p>
-                    <p class="text-slate-600 text-lg leading-relaxed">홈 화면에서 <strong>"새 파일 만들기"</strong> 버튼을 클릭하고 저장 위치와 파일명을 지정합니다. 생성 즉시 작업 화면으로 이동합니다.</p>
+                    <p class="font-bold text-slate-700 text-lg mb-1">새 학생부 만들기</p>
+                    <p class="text-slate-600 text-base leading-relaxed">파일 저장 위치와 이름을 지정하면 새 <code class="bg-slate-100 px-1 rounded font-mono text-sm print-keep-bg">.db</code> 파일이 생성되고 작업 화면으로 이동합니다.</p>
                 </div>
             </div>
             <div class="flex gap-4 items-start bg-slate-50 border border-slate-200 rounded-xl p-5 print-keep-bg">
                 <span class="shrink-0 w-8 h-8 rounded-full bg-slate-200 text-slate-600 font-bold text-base flex items-center justify-center print-keep-bg">기존</span>
                 <div>
-                    <p class="font-bold text-slate-700 text-lg mb-1">기존 DB 파일 열기</p>
-                    <p class="text-slate-600 text-lg leading-relaxed">홈 화면에서 <strong>"파일 열기"</strong> 버튼을 클릭하거나, 최근 파일 목록에서 이전에 작업한 파일을 선택합니다.</p>
+                    <p class="font-bold text-slate-700 text-lg mb-1">기존 파일 열기</p>
+                    <p class="text-slate-600 text-base leading-relaxed">이전에 작업한 <code class="bg-slate-100 px-1 rounded font-mono text-sm print-keep-bg">.db</code> 파일을 선택합니다. 암호화된 파일은 비밀번호 입력창이 나타납니다.</p>
                 </div>
             </div>
         </div>
@@ -107,14 +136,13 @@
         <h3 class="text-lg font-bold text-slate-700 mb-3">1-4. 암호화 설정</h3>
         <p class="text-lg text-slate-600 leading-relaxed mb-4">
             DB 파일에 비밀번호를 설정하면 파일을 열 때마다 비밀번호를 입력해야 합니다.
-            학생 개인정보 보호가 필요한 경우 활성화하세요.
-            설정은 작업 화면 좌측 메뉴 하단의 <strong>설정(Settings)</strong> 탭에서 변경할 수 있습니다.
+            설정은 좌측 메뉴 하단의 <strong>설정(Settings)</strong> 탭에서 변경합니다.
         </p>
         <div class="bg-rose-50 border border-rose-300 rounded-xl p-4 flex gap-3 items-start print-keep-bg">
             <span class="text-lg mt-0.5 shrink-0">🔑</span>
             <p class="text-rose-800 text-lg leading-relaxed">
                 <strong>비밀번호를 분실하면 해당 DB 파일을 복구할 수 없습니다.</strong>
-                암호화를 활성화하는 경우 반드시 안전한 곳에 비밀번호를 기록해 두세요.
+                암호화를 사용하는 경우 반드시 안전한 곳에 비밀번호를 별도 보관하세요.
             </p>
         </div>
     </div>

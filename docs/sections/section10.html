@@ -2,105 +2,151 @@
 
     <h2 class="text-xl font-bold text-slate-800 border-b-2 border-indigo-500 pb-2 mb-8">10. 내보내기 (Export)</h2>
 
-    <p class="text-lg text-slate-600 leading-relaxed mb-8">
+    <p class="text-lg text-slate-600 leading-relaxed mb-6">
         좌측 메뉴에서 <strong>내보내기(Export)</strong> 탭을 선택합니다.
-        작성이 완료된 생기부를 NEIS 업로드에 사용할 엑셀 파일로 추출합니다.
-        추출된 파일을 NEIS에 업로드하면 생기부 입력이 완료됩니다.
+        작성이 완료된 생기부를 NEIS 업로드 형식의 엑셀 파일로 저장합니다.
     </p>
 
-    <!-- 내보내기 절차 -->
+    <!-- 10-1 내보내기 절차 -->
     <div class="mb-10">
-        <h3 class="text-lg font-bold text-slate-700 mb-3">내보내기 절차</h3>
-        <ol class="space-y-3 text-lg text-slate-600 leading-relaxed mb-6">
-            <li class="flex gap-3">
-                <span class="shrink-0 w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold text-base flex items-center justify-center print-keep-bg">1</span>
-                <span>내보낼 <strong>영역</strong>을 선택합니다. 영역별로 별도 파일이 생성됩니다.</span>
-            </li>
-            <li class="flex gap-3">
-                <span class="shrink-0 w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold text-base flex items-center justify-center print-keep-bg">2</span>
-                <span>내보낼 <strong>학생 범위</strong>를 선택합니다. 전체 또는 특정 학생만 선택하여 추출할 수 있습니다.</span>
-            </li>
-            <li class="flex gap-3">
-                <span class="shrink-0 w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold text-base flex items-center justify-center print-keep-bg">3</span>
-                <span>요약 정보(총 학생 수, 바이트 초과 학생 수)를 확인합니다. 바이트 초과 학생이 있을 경우 경고가 표시됩니다.</span>
-            </li>
-            <li class="flex gap-3">
-                <span class="shrink-0 w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold text-base flex items-center justify-center print-keep-bg">4</span>
-                <span>면책 안내문을 확인합니다. 내보낸 파일을 NEIS에 입력하기 전 반드시 교사가 내용을 최종 검토해야 합니다.</span>
-            </li>
-            <li class="flex gap-3">
-                <span class="shrink-0 w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold text-base flex items-center justify-center print-keep-bg">5</span>
-                <span><strong>엑셀 내보내기</strong> 버튼을 클릭하고 저장 위치를 지정합니다.</span>
-            </li>
-        </ol>
+        <h3 class="text-lg font-bold text-slate-700 mb-3">10-1. 내보내기 절차</h3>
 
-        <div class="bg-amber-50 border border-amber-300 rounded-xl p-4 flex gap-3 items-start print-keep-bg">
-            <span class="text-lg mt-0.5 shrink-0">⚠️</span>
-            <p class="text-amber-800 text-base leading-relaxed">
-                <strong>바이트 초과 학생이 있는 상태로 내보내기를 진행하면 NEIS 업로드 시 오류가 발생할 수 있습니다.</strong>
-                내보내기 전 생기부 작성 화면에서 모든 학생의 바이트 수를 확인하세요.
-            </p>
+        <div class="ui-callout print-keep-bg">
+            <p class="ui-callout-label">실제 화면 — 내보내기(Export)</p>
+            <div class="ui-mock print-keep-bg">
+                <div class="um-section-header" style="margin-bottom:16px;">
+                    <div>
+                        <p class="um-section-title">내보내기 (Export)</p>
+                        <p class="um-section-desc">완성된 생기부를 NEIS 형식 엑셀 파일로 저장합니다.</p>
+                    </div>
+                </div>
+                <!-- 5단계 위저드 -->
+                <div class="um-wizard">
+                    <div class="um-step um-step-done">
+                        <div class="um-step-num">✓</div>
+                        <div class="um-step-label">영역 선택</div>
+                    </div>
+                    <div class="um-step-line um-line-done"></div>
+                    <div class="um-step um-step-done">
+                        <div class="um-step-num">✓</div>
+                        <div class="um-step-label">학생 선택</div>
+                    </div>
+                    <div class="um-step-line um-line-done"></div>
+                    <div class="um-step um-step-active">
+                        <div class="um-step-num">3</div>
+                        <div class="um-step-label">검토</div>
+                    </div>
+                    <div class="um-step-line"></div>
+                    <div class="um-step um-step-idle">
+                        <div class="um-step-num">4</div>
+                        <div class="um-step-label">옵션</div>
+                    </div>
+                    <div class="um-step-line"></div>
+                    <div class="um-step um-step-idle">
+                        <div class="um-step-num">5</div>
+                        <div class="um-step-label">저장</div>
+                    </div>
+                </div>
+                <!-- 면책 안내 (Step 3) -->
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 16px;margin:14px 16px 16px;">
+                    <p style="font-size:12px;font-weight:700;color:#1d4ed8;margin-bottom:6px;"><i class="fa-solid fa-circle-info" style="margin-right:6px;"></i>검토 단계 안내</p>
+                    <p style="font-size:12px;color:#1e40af;line-height:1.7;">
+                        이 파일은 생기부 작성을 보조하기 위해 생성되었습니다. 최종 제출 전 반드시 담당 교사가 내용을 검토하시기 바랍니다.
+                        바이트 초과 항목은 <span style="color:#dc2626;font-weight:700;">빨간색</span>으로 표시됩니다.
+                    </p>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <!-- 출력 파일 구조 -->
-    <div class="mb-10">
-        <h3 class="text-lg font-bold text-slate-700 mb-3">출력 파일 구조</h3>
-        <p class="text-lg text-slate-600 leading-relaxed mb-4">
-            내보내기로 생성된 엑셀 파일은 NEIS 일괄 업로드 형식에 맞춰져 있습니다.
-        </p>
-        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 print-keep-bg">
-            <div class="overflow-x-auto">
-                <table class="w-full text-base border-collapse">
-                    <thead>
-                        <tr class="bg-slate-200 print-keep-bg">
-                            <th class="border border-slate-300 px-3 py-2 text-left font-bold text-slate-700">열</th>
-                            <th class="border border-slate-300 px-3 py-2 text-left font-bold text-slate-700">내용</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600 font-semibold">학년</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">학생의 학년</td>
-                        </tr>
-                        <tr class="bg-slate-50 print-keep-bg">
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600 font-semibold">반</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">학생의 반</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600 font-semibold">번호</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">학생의 번호</td>
-                        </tr>
-                        <tr class="bg-slate-50 print-keep-bg">
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600 font-semibold">이름</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">학생 이름</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600 font-semibold">내용</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">해당 영역의 모든 활동 기록이 합산된 최종 문장</td>
-                        </tr>
-                        <tr class="bg-slate-50 print-keep-bg">
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600 font-semibold">바이트</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">최종 문장의 총 바이트 수</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- 단계별 설명 -->
+        <div class="mt-6 space-y-4">
+            <div class="flex gap-4 items-start">
+                <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-base flex items-center justify-center print-keep-bg">1</span>
+                <div>
+                    <p class="font-bold text-slate-700 text-lg">영역 선택</p>
+                    <p class="text-slate-600 text-base leading-relaxed">내보낼 영역을 하나 이상 선택합니다. 담임용(자율·동아리·진로활동) 또는 교과용(교과세특)으로 분리하여 내보낼 수 있습니다.</p>
+                </div>
+            </div>
+            <div class="flex gap-4 items-start">
+                <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-base flex items-center justify-center print-keep-bg">2</span>
+                <div>
+                    <p class="font-bold text-slate-700 text-lg">학생 선택</p>
+                    <p class="text-slate-600 text-base leading-relaxed">출력할 학생을 필터링합니다. 전체 또는 반 단위로 선택할 수 있습니다.</p>
+                </div>
+            </div>
+            <div class="flex gap-4 items-start">
+                <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-500 text-white font-bold text-base flex items-center justify-center print-keep-bg">3</span>
+                <div>
+                    <p class="font-bold text-slate-700 text-lg">검토</p>
+                    <p class="text-slate-600 text-base leading-relaxed">바이트 초과 셀이 빨간색으로 강조 표시됩니다. 저장 전 최종 점검을 합니다. 면책 안내문을 확인합니다.</p>
+                </div>
+            </div>
+            <div class="flex gap-4 items-start">
+                <span class="shrink-0 w-8 h-8 rounded-full bg-slate-400 text-white font-bold text-base flex items-center justify-center print-keep-bg">4</span>
+                <div>
+                    <p class="font-bold text-slate-700 text-lg">옵션</p>
+                    <p class="text-slate-600 text-base leading-relaxed">파일 형식(A형/B형), 시트 분할 방식(영역별 / 반별) 등을 선택합니다.</p>
+                </div>
+            </div>
+            <div class="flex gap-4 items-start">
+                <span class="shrink-0 w-8 h-8 rounded-full bg-slate-400 text-white font-bold text-base flex items-center justify-center print-keep-bg">5</span>
+                <div>
+                    <p class="font-bold text-slate-700 text-lg">저장</p>
+                    <p class="text-slate-600 text-base leading-relaxed">저장 경로를 지정하면 <code class="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-sm text-slate-700 print-keep-bg">.xlsx</code> 파일이 생성됩니다.</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 교과교사 전달 워크플로 -->
+    <!-- 10-2 출력 파일 구조 -->
     <div class="mb-10">
-        <h3 class="text-lg font-bold text-slate-700 mb-3">교과교사 → 담임교사 전달 흐름</h3>
-        <div class="flex flex-col gap-3">
-            <div class="flex items-center gap-3">
-                <span class="shrink-0 px-3 py-1 bg-amber-100 text-amber-700 text-base font-bold rounded-lg print-keep-bg">교과교사</span>
-                <span class="text-slate-600 text-base">세특 작성 완료 후 내보내기로 엑셀 파일 저장</span>
+        <h3 class="text-lg font-bold text-slate-700 mb-3">10-2. 출력 파일 구조</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-base border-collapse">
+                <thead>
+                    <tr class="bg-slate-100 print-keep-bg">
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">열</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">내용</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">비고</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">A</td><td class="border border-slate-300 px-4 py-2 text-slate-600">학년</td><td class="border border-slate-300 px-4 py-2 text-slate-500">—</td></tr>
+                    <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">B</td><td class="border border-slate-300 px-4 py-2 text-slate-600">반</td><td class="border border-slate-300 px-4 py-2 text-slate-500">—</td></tr>
+                    <tr><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">C</td><td class="border border-slate-300 px-4 py-2 text-slate-600">번호</td><td class="border border-slate-300 px-4 py-2 text-slate-500">—</td></tr>
+                    <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">D</td><td class="border border-slate-300 px-4 py-2 text-slate-600">이름</td><td class="border border-slate-300 px-4 py-2 text-slate-500">—</td></tr>
+                    <tr><td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">E…</td><td class="border border-slate-300 px-4 py-2 text-slate-600">영역별 최종 합산 내용</td><td class="border border-slate-300 px-4 py-2 text-slate-500">활동 순서대로 연결된 전체 문장</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 10-3 교과→담임 전달 흐름 -->
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-slate-700 mb-3">10-3. 교과교사 → 담임교사 전달 흐름</h3>
+        <div class="flex items-center gap-3 flex-wrap">
+            <div class="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 text-center print-keep-bg" style="min-width:130px;">
+                <p class="text-2xl mb-1">👩‍🏫</p>
+                <p class="font-bold text-amber-800 text-base">교과교사</p>
+                <p class="text-slate-500 text-sm">내보내기 → .xlsx</p>
             </div>
-            <div class="ml-6 text-slate-400 text-base">↓ 파일 전달 (이메일, 메신저 등)</div>
-            <div class="flex items-center gap-3">
-                <span class="shrink-0 px-3 py-1 bg-emerald-100 text-emerald-700 text-base font-bold rounded-lg print-keep-bg">담임교사</span>
-                <span class="text-slate-600 text-base">가져오기(Import) → 검수 → 최종 내보내기</span>
+            <div style="font-size:24px;color:#94a3b8;">→</div>
+            <div class="bg-blue-50 border border-blue-200 rounded-xl px-5 py-4 text-center print-keep-bg" style="min-width:130px;">
+                <p class="text-2xl mb-1">📁</p>
+                <p class="font-bold text-blue-800 text-base">파일 전달</p>
+                <p class="text-slate-500 text-sm">이메일·공유폴더</p>
+            </div>
+            <div style="font-size:24px;color:#94a3b8;">→</div>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-4 text-center print-keep-bg" style="min-width:130px;">
+                <p class="text-2xl mb-1">👨‍🏫</p>
+                <p class="font-bold text-emerald-800 text-base">담임교사</p>
+                <p class="text-slate-500 text-sm">가져오기(Import)로 병합</p>
+            </div>
+            <div style="font-size:24px;color:#94a3b8;">→</div>
+            <div class="bg-indigo-50 border border-indigo-200 rounded-xl px-5 py-4 text-center print-keep-bg" style="min-width:130px;">
+                <p class="text-2xl mb-1">📝</p>
+                <p class="font-bold text-indigo-800 text-base">NEIS 업로드</p>
+                <p class="text-slate-500 text-sm">최종 내보내기</p>
             </div>
         </div>
     </div>

@@ -2,22 +2,80 @@
 
     <h2 class="text-xl font-bold text-slate-800 border-b-2 border-indigo-500 pb-2 mb-8">3. 학생 관리</h2>
 
-    <p class="text-lg text-slate-600 leading-relaxed mb-8">
+    <p class="text-lg text-slate-600 leading-relaxed mb-6">
         좌측 메뉴에서 <strong>학생(Students)</strong> 탭을 선택합니다.
         학생은 학년·반·번호·이름의 네 가지 정보로 관리됩니다.
     </p>
 
+    <!-- 섹션 헤더 목업 -->
+    <div class="ui-callout print-keep-bg">
+        <p class="ui-callout-label">실제 화면 — 학생(Students) 화면 상단</p>
+        <div class="ui-mock print-keep-bg">
+            <div class="um-section-header">
+                <div>
+                    <p class="um-section-title">학생(Students) 관리</p>
+                    <p class="um-section-desc">학교생활기록부 작성을 위한 학생 명단을 설정합니다.</p>
+                </div>
+                <div class="um-header-actions">
+                    <span class="um-btn-secondary">
+                        <i class="fa-solid fa-table-cells" style="font-size:12px;"></i> 일괄 추가
+                    </span>
+                    <span class="um-btn-primary">
+                        <i class="fa-solid fa-plus" style="font-size:12px;"></i> 학생 추가
+                    </span>
+                </div>
+            </div>
+            <!-- 학생 테이블 목업 -->
+            <table class="um-table print-keep-bg">
+                <thead>
+                    <tr>
+                        <th>학년</th><th>반</th><th>번호</th><th>이름</th><th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="um-group-row">
+                        <td colspan="5">1학년 1반 <span class="um-count-hint">3명</span></td>
+                    </tr>
+                    <tr>
+                        <td>1</td><td>1</td><td>1</td><td>홍길동</td>
+                        <td style="text-align:right;"><span class="um-edit-btn"><i class="fa-solid fa-pencil"></i></span></td>
+                    </tr>
+                    <tr>
+                        <td>1</td><td>1</td><td>2</td><td>이순신</td>
+                        <td style="text-align:right;"><span class="um-edit-btn"><i class="fa-solid fa-pencil"></i></span></td>
+                    </tr>
+                    <tr>
+                        <td>1</td><td>1</td><td>3</td><td>강감찬</td>
+                        <td style="text-align:right;"><span class="um-edit-btn"><i class="fa-solid fa-pencil"></i></span></td>
+                    </tr>
+                    <tr class="um-group-row">
+                        <td colspan="5">1학년 2반 <span class="um-count-hint">1명</span></td>
+                    </tr>
+                    <tr>
+                        <td>1</td><td>2</td><td>1</td><td>유관순</td>
+                        <td style="text-align:right;"><span class="um-edit-btn"><i class="fa-solid fa-pencil"></i></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- 3-1 개별 추가 -->
-    <div class="mb-10">
+    <div class="mt-8 mb-10">
         <h3 class="text-lg font-bold text-slate-700 mb-3">3-1. 학생 개별 추가</h3>
         <ol class="space-y-3 text-lg text-slate-600 leading-relaxed">
             <li class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">1</span>
-                <span>화면 오른쪽 위의 <code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 print-keep-bg">+ 학생 추가</code> 버튼을 클릭합니다.</span>
+                <span>화면 오른쪽 위의
+                    <span class="um-btn-primary" style="font-size:13px;padding:5px 12px;border-radius:8px;display:inline-flex;align-items:center;gap:4px;vertical-align:middle;">
+                        <i class="fa-solid fa-plus" style="font-size:11px;"></i> 학생 추가
+                    </span>
+                    버튼을 클릭합니다.
+                </span>
             </li>
             <li class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">2</span>
-                <span>팝업 창에서 <strong>학년, 반, 번호, 이름</strong>을 입력하고 <strong>저장</strong>합니다.</span>
+                <span>팝업 창에서 <strong>학년, 반, 번호, 이름</strong>을 입력하고 저장합니다.</span>
             </li>
         </ol>
     </div>
@@ -31,7 +89,12 @@
         <ol class="space-y-3 text-lg text-slate-600 leading-relaxed mb-6">
             <li class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">1</span>
-                <span>화면 오른쪽 위의 <code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 print-keep-bg">일괄 추가</code> 버튼을 클릭합니다.</span>
+                <span>화면 오른쪽 위의
+                    <span class="um-btn-secondary" style="font-size:13px;padding:5px 12px;border-radius:8px;display:inline-flex;align-items:center;gap:4px;vertical-align:middle;">
+                        <i class="fa-solid fa-table-cells" style="font-size:11px;"></i> 일괄 추가
+                    </span>
+                    버튼을 클릭합니다.
+                </span>
             </li>
             <li class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">2</span>
@@ -39,7 +102,7 @@
             </li>
             <li class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">3</span>
-                <span>파일이 인식되면 각 열이 <strong>학년·반·번호·이름</strong> 중 어느 항목에 해당하는지 매핑 화면이 표시됩니다. 열 이름이 표준 형식이면 자동으로 매핑됩니다.</span>
+                <span>열 이름이 아래 표의 표준 형식이면 자동으로 매핑됩니다. 그렇지 않으면 드롭다운으로 직접 지정합니다.</span>
             </li>
             <li class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">4</span>
@@ -47,7 +110,6 @@
             </li>
         </ol>
 
-        <!-- 인식되는 열 이름 안내 -->
         <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 print-keep-bg">
             <p class="font-semibold text-slate-700 text-base mb-3">자동 인식되는 열 이름 예시</p>
             <div class="overflow-x-auto">
@@ -59,22 +121,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="border border-slate-300 px-3 py-2 font-semibold text-slate-700">학년</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">학년, grade</td>
-                        </tr>
-                        <tr class="bg-slate-50 print-keep-bg">
-                            <td class="border border-slate-300 px-3 py-2 font-semibold text-slate-700">반</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">반, class, 학급, 반번호</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-slate-300 px-3 py-2 font-semibold text-slate-700">번호</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">번호, number, 번, 출석번호</td>
-                        </tr>
-                        <tr class="bg-slate-50 print-keep-bg">
-                            <td class="border border-slate-300 px-3 py-2 font-semibold text-slate-700">이름</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">이름, name, 성명, 학생명, 학생이름</td>
-                        </tr>
+                        <tr><td class="border border-slate-300 px-3 py-2 font-semibold text-slate-700">학년</td><td class="border border-slate-300 px-3 py-2 text-slate-600">학년, grade</td></tr>
+                        <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-3 py-2 font-semibold text-slate-700">반</td><td class="border border-slate-300 px-3 py-2 text-slate-600">반, class, 학급, 반번호</td></tr>
+                        <tr><td class="border border-slate-300 px-3 py-2 font-semibold text-slate-700">번호</td><td class="border border-slate-300 px-3 py-2 text-slate-600">번호, number, 번, 출석번호</td></tr>
+                        <tr class="bg-slate-50 print-keep-bg"><td class="border border-slate-300 px-3 py-2 font-semibold text-slate-700">이름</td><td class="border border-slate-300 px-3 py-2 text-slate-600">이름, name, 성명, 학생명, 학생이름</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -85,8 +135,8 @@
     <div class="mb-10">
         <h3 class="text-lg font-bold text-slate-700 mb-3">학생 수정 및 삭제</h3>
         <p class="text-lg text-slate-600 leading-relaxed">
-            학생 목록에서 해당 학생의 행을 클릭하면 수정 팝업이 열립니다.
-            삭제 버튼을 누르면 해당 학생의 모든 생기부 기록도 함께 삭제되므로 주의하세요.
+            학생 행 오른쪽의 <span class="um-edit-btn" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;border:1px solid #cbd5e1;background:#f8fafc;color:#64748b;font-size:11px;vertical-align:middle;"><i class="fa-solid fa-pencil"></i></span> 아이콘을 클릭하면 수정 팝업이 열립니다.
+            삭제 시 해당 학생의 모든 생기부 기록도 함께 삭제되므로 주의하세요.
         </p>
     </div>
 

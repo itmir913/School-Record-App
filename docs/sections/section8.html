@@ -2,114 +2,142 @@
 
     <h2 class="text-xl font-bold text-slate-800 border-b-2 border-indigo-500 pb-2 mb-8">8. 텍스트 치환 (Replace)</h2>
 
-    <p class="text-lg text-slate-600 leading-relaxed mb-8">
+    <p class="text-lg text-slate-600 leading-relaxed mb-6">
         좌측 메뉴에서 <strong>텍스트 치환(Replace)</strong> 탭을 선택합니다.
-        특정 단어나 문구를 전체 학생의 생기부에서 한 번에 찾아 바꾸는 기능입니다.
-        반복 사용된 표현 수정, 맞춤법 오류 일괄 정정, 금지 어구 교체에 유용합니다.
+        자주 반복되는 표현을 일괄 교체하거나, 불필요한 공백·줄바꿈을 정리합니다.
     </p>
 
-    <!-- 기본 규칙 -->
+    <!-- 8-1 기본 규칙 -->
     <div class="mb-10">
-        <h3 class="text-lg font-bold text-slate-700 mb-3">기본 제공 규칙</h3>
-        <p class="text-lg text-slate-600 leading-relaxed mb-4">
-            프로그램에는 자주 쓰이는 치환 규칙이 기본으로 내장되어 있습니다.
-            줄바꿈 통일, 연속 공백 정리 등의 규칙이 포함되어 있으며, 활성화 여부를 개별로 설정할 수 있습니다.
+        <h3 class="text-lg font-bold text-slate-700 mb-3">8-1. 기본 제공 치환 규칙</h3>
+        <p class="text-lg text-slate-600 leading-relaxed mb-5">
+            프로그램에는 두 가지 기본 치환 규칙이 내장되어 있습니다.
         </p>
-        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 print-keep-bg">
-            <div class="overflow-x-auto">
-                <table class="w-full text-base border-collapse">
-                    <thead>
-                        <tr class="bg-slate-200 print-keep-bg">
-                            <th class="border border-slate-300 px-3 py-2 text-left font-bold text-slate-700">규칙 설명</th>
-                            <th class="border border-slate-300 px-3 py-2 text-left font-bold text-slate-700">찾을 내용</th>
-                            <th class="border border-slate-300 px-3 py-2 text-left font-bold text-slate-700">바꿀 내용</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">연속 줄바꿈 제거</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-500 font-mono text-sm">\n+</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-500 font-mono text-sm">\n</td>
-                        </tr>
-                        <tr class="bg-slate-50 print-keep-bg">
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">연속 공백 제거</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-500 font-mono text-sm">&nbsp;&nbsp;+</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-500 font-mono text-sm">&nbsp;</td>
-                        </tr>
-                    </tbody>
-                </table>
+
+        <div class="ui-callout print-keep-bg">
+            <p class="ui-callout-label">실제 화면 — 텍스트 치환(Replace) 규칙 목록</p>
+            <div class="ui-mock print-keep-bg">
+                <div class="um-section-header" style="margin-bottom:12px;">
+                    <div>
+                        <p class="um-section-title">텍스트 치환 (Replace)</p>
+                        <p class="um-section-desc">생기부 내용에서 텍스트를 찾아 일괄 교체합니다.</p>
+                    </div>
+                    <div class="um-header-actions">
+                        <span style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:10px;background:#16a34a;color:white;font-size:13px;font-weight:600;white-space:nowrap;">
+                            <i class="fa-solid fa-play" style="font-size:11px;"></i> 전체 적용
+                        </span>
+                        <span class="um-btn-secondary">
+                            <i class="fa-solid fa-plus" style="font-size:11px;"></i> 규칙 추가
+                        </span>
+                    </div>
+                </div>
+                <!-- 규칙 목록 -->
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <!-- 기본 규칙 1 -->
+                    <div class="um-rule-row">
+                        <span class="um-rule-label um-rule-builtin">기본</span>
+                        <div class="um-rule-body">
+                            <span class="um-rule-regex">정규식</span>
+                            <code class="um-rule-pattern">\n+</code>
+                            <span class="um-rule-arrow">→</span>
+                            <code class="um-rule-replace">(공백)</code>
+                        </div>
+                        <span class="um-rule-desc">연속된 줄바꿈 제거</span>
+                    </div>
+                    <!-- 기본 규칙 2 -->
+                    <div class="um-rule-row">
+                        <span class="um-rule-label um-rule-builtin">기본</span>
+                        <div class="um-rule-body">
+                            <span class="um-rule-regex">정규식</span>
+                            <code class="um-rule-pattern"> {2,}</code>
+                            <span class="um-rule-arrow">→</span>
+                            <code class="um-rule-replace">(단일 공백)</code>
+                        </div>
+                        <span class="um-rule-desc">연속 공백 단일화</span>
+                    </div>
+                    <!-- 사용자 규칙 1 -->
+                    <div class="um-rule-row">
+                        <span class="um-rule-label um-rule-custom">사용자</span>
+                        <div class="um-rule-body">
+                            <code class="um-rule-pattern">보여줌</code>
+                            <span class="um-rule-arrow">→</span>
+                            <code class="um-rule-replace">보임</code>
+                        </div>
+                        <span class="um-rule-desc">어색한 표현 교정</span>
+                        <span class="um-rule-del"><i class="fa-solid fa-trash"></i></span>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <div class="mt-5 overflow-x-auto">
+            <table class="w-full text-base border-collapse">
+                <thead>
+                    <tr class="bg-slate-100 print-keep-bg">
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">규칙</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">찾을 내용</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">바꿀 내용</th>
+                        <th class="border border-slate-300 px-4 py-2 text-left font-bold text-slate-700">목적</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">기본 1</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">\n+</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">공백 1개</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">줄바꿈 → 공백으로 정리</td>
+                    </tr>
+                    <tr class="bg-slate-50 print-keep-bg">
+                        <td class="border border-slate-300 px-4 py-2 font-semibold text-slate-700">기본 2</td>
+                        <td class="border border-slate-300 px-4 py-2 font-mono text-indigo-700">&nbsp;&nbsp;(공백 2개 이상)</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">공백 1개</td>
+                        <td class="border border-slate-300 px-4 py-2 text-slate-600">연속 공백 단일화</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- 사용자 정의 규칙 -->
+    <!-- 8-2 사용자 규칙 추가 -->
     <div class="mb-10">
-        <h3 class="text-lg font-bold text-slate-700 mb-3">사용자 정의 규칙 추가</h3>
-        <ol class="space-y-3 text-lg text-slate-600 leading-relaxed mb-5">
-            <li class="flex gap-3">
-                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">1</span>
-                <span><code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 print-keep-bg">+ 규칙 추가</code> 버튼을 클릭합니다.</span>
-            </li>
-            <li class="flex gap-3">
-                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">2</span>
-                <span><strong>찾을 내용</strong>과 <strong>바꿀 내용</strong>을 입력합니다. 정규식을 사용하려면 <strong>정규식 사용</strong> 옵션을 활성화합니다.</span>
-            </li>
-            <li class="flex gap-3">
-                <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">3</span>
-                <span>규칙을 저장하면 목록에 추가됩니다. 규칙은 나중에 수정하거나 삭제할 수 있습니다.</span>
-            </li>
-        </ol>
-
-        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 print-keep-bg">
-            <p class="font-semibold text-slate-700 text-base mb-2">사용자 정의 규칙 예시</p>
-            <div class="overflow-x-auto">
-                <table class="w-full text-base border-collapse">
-                    <thead>
-                        <tr class="bg-slate-200 print-keep-bg">
-                            <th class="border border-slate-300 px-3 py-2 text-left font-bold text-slate-700">상황</th>
-                            <th class="border border-slate-300 px-3 py-2 text-left font-bold text-slate-700">찾을 내용</th>
-                            <th class="border border-slate-300 px-3 py-2 text-left font-bold text-slate-700">바꿀 내용</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">금지어 교체</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">최우수</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">탁월한 역량을 보임</td>
-                        </tr>
-                        <tr class="bg-slate-50 print-keep-bg">
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">오타 수정</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">참여하였음</td>
-                            <td class="border border-slate-300 px-3 py-2 text-slate-600">참여함</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- 치환 실행 -->
-    <div class="mb-10">
-        <h3 class="text-lg font-bold text-slate-700 mb-3">치환 실행</h3>
+        <h3 class="text-lg font-bold text-slate-700 mb-3">8-2. 사용자 정의 규칙 추가</h3>
         <ol class="space-y-3 text-lg text-slate-600 leading-relaxed">
             <li class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">1</span>
-                <span>적용할 규칙을 체크하고 <strong>치환 실행</strong> 버튼을 클릭합니다.</span>
+                <span>
+                    <span class="um-btn-secondary" style="font-size:13px;padding:4px 11px;border-radius:8px;display:inline-flex;align-items:center;gap:4px;vertical-align:middle;">
+                        <i class="fa-solid fa-plus" style="font-size:11px;"></i> 규칙 추가
+                    </span>
+                    클릭 → <strong>찾을 내용</strong>과 <strong>바꿀 내용</strong>을 입력하고 저장합니다.
+                </span>
             </li>
             <li class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">2</span>
-                <span>영역과 학생 범위를 선택할 수 있습니다. 전체 또는 특정 영역만 적용 가능합니다.</span>
+                <span><strong>정규식(Regex)</strong> 토글을 켜면 고급 패턴을 사용할 수 있습니다.</span>
             </li>
             <li class="flex gap-3">
                 <span class="shrink-0 w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-base flex items-center justify-center print-keep-bg">3</span>
-                <span>미리보기로 변경 사항을 확인한 뒤 <strong>적용</strong>합니다.</span>
+                <span>규칙 목록을 확인한 후
+                    <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:8px;background:#16a34a;color:white;font-size:13px;font-weight:600;vertical-align:middle;">
+                        <i class="fa-solid fa-play" style="font-size:11px;"></i> 전체 적용
+                    </span>
+                    버튼을 클릭하면 모든 영역·활동의 기록에 일괄 적용됩니다.
+                </span>
             </li>
         </ol>
-        <div class="mt-4 bg-amber-50 border border-amber-300 rounded-xl p-4 flex gap-3 items-start print-keep-bg">
-            <span class="text-lg mt-0.5 shrink-0">⚠️</span>
-            <p class="text-amber-800 text-base leading-relaxed">
-                치환은 즉시 DB에 반영됩니다. 치환 전 스냅샷을 저장해두면 원상복구가 가능합니다.
-            </p>
+    </div>
+
+    <!-- 8-3 주의사항 -->
+    <div class="mb-10">
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 flex gap-3 items-start print-keep-bg">
+            <span class="text-xl shrink-0">⚠️</span>
+            <div>
+                <p class="font-bold text-amber-800 text-base mb-1">전체 적용은 되돌릴 수 없습니다</p>
+                <p class="text-amber-700 text-base leading-relaxed">
+                    전체 적용 전에 <strong>스냅샷</strong>을 생성하거나, 적용 전 미리보기를 통해 바뀔 내용을 먼저 확인하세요.
+                    정규식 패턴이 잘못되면 의도치 않은 내용이 삭제될 수 있습니다.
+                </p>
+            </div>
         </div>
     </div>
 
