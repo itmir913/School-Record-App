@@ -5,6 +5,7 @@ import {Workbook} from 'exceljs'
 import {save} from '@tauri-apps/plugin-dialog'
 import BaseModal from './BaseModal.vue'
 import {useFileStore} from '../stores/file.js'
+import {useStudentStore} from '../stores/student.js'
 import {SAMPLE_CSV} from '../data/sampleStudentCsv.ts'
 
 const props = defineProps({
@@ -16,6 +17,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'saved'])
 
 const fileStore = useFileStore()
+const studentStore = useStudentStore()
 
 // ── 뷰 상태 ──────────────────────────────────────────────
 const currentView = ref('list') // 'list' | 'excel'
@@ -86,7 +88,7 @@ function submit() {
 const fileInputRef = ref(null)
 const dragging = ref(false)
 const excelError = ref('')
-const excelStatus = ref(null) // { matched: N, missing: M } | null
+const excelStatus = ref(null) // { selected: N, newlyAdded: M } | null
 const parsing = ref(false)
 
 const COL_ALIASES = {
@@ -258,32 +260,41 @@ async function processFile(file) {
         return
       }
 
-      const {grade: gi, classNum: ci, number: ni} = colMap
+      const {grade: gi, classNum: ci, number: ni, name: nmi} = colMap
       const parsedRows = rows.slice(1)
           .map(row => ({
             grade: Number(row[gi]),
             classNum: Number(row[ci]),
             number: Number(row[ni]),
+            name: String(row[nmi] ?? '').trim(),
           }))
-          .filter(r => r.grade >= 1 && r.classNum >= 1 && r.number >= 1)
+          .filter(r => r.grade >= 1 && r.classNum >= 1 && r.number >= 1 && r.name)
 
-      // grade + class_num + number 조합으로 매칭
+      if (parsedRows.length === 0) {
+        excelError.value = '유효한 학생 데이터가 없습니다. 학년·반·번호·이름을 모두 확인해 주세요.'
+        parsing.value = false
+        return
+      }
+
+      // 학생 일괄 upsert (없으면 추가, 있으면 유지)
+      const {inserted} = await studentStore.bulkUpsertStudents(
+          parsedRows.map(r => ({grade: r.grade, class_num: r.classNum, number: r.number, name: r.name}))
+      )
+      await studentStore.fetchStudents()
+
+      // fetchStudents 후 갱신된 store에서 매칭 (allStudents prop이 reactive로 자동 반영됨)
       const lookupKey = (grade, classNum, number) => `${grade}-${classNum}-${number}`
       const targetKeys = new Set(parsedRows.map(r => lookupKey(r.grade, r.classNum, r.number)))
 
       const matchedIds = new Set()
-      for (const s of props.allStudents) {
+      for (const s of studentStore.students) {
         if (targetKeys.has(lookupKey(s.grade, s.class_num, s.number))) {
           matchedIds.add(s.id)
         }
       }
 
-      const missing_count = parsedRows.length - matchedIds.size
-
-      // 전체 해제 후 매칭된 학생만 선택
       selectedIds.value = matchedIds
-
-      excelStatus.value = {matched: matchedIds.size, missing: missing_count}
+      excelStatus.value = {selected: matchedIds.size, newlyAdded: inserted}
       currentView.value = 'list'
     } catch (err) {
       excelError.value = '파일 파싱 중 오류가 발생했습니다: ' + err.message
@@ -306,9 +317,9 @@ async function processFile(file) {
     <!-- ── 리스트 뷰 바디 ─────────────────────────────────── -->
     <div v-if="currentView === 'list'" class="modal-body">
       <div v-if="excelStatus" class="excel-result">
-        <span class="excel-result-ok">{{ excelStatus.matched }}명 선택됨</span>
-        <span v-if="excelStatus.missing > 0" class="excel-result-miss">
-          · {{ excelStatus.missing }}명은 현재 학생 명단에 없음
+        <span class="excel-result-ok">{{ excelStatus.selected }}명 선택됨</span>
+        <span v-if="excelStatus.newlyAdded > 0" class="excel-result-new">
+          · {{ excelStatus.newlyAdded }}명 신규 추가됨
         </span>
       </div>
 
@@ -373,6 +384,11 @@ async function processFile(file) {
           <Download :size="14"/>
           샘플 파일 다운로드
         </button>
+      </div>
+
+      <div class="excel-notice">
+        엑셀 파일에 담긴 학생을 <strong>{{ area.name }}</strong> 영역에 일괄 배정합니다.
+        <span style="color: #f59e0b;">엑셀 파일 명단에 없는 학생은 이 영역에서 배정 취소됩니다.</span>
       </div>
 
       <div
@@ -447,8 +463,8 @@ async function processFile(file) {
   font-weight: 600;
 }
 
-.excel-result-miss {
-  color: #fbbf24;
+.excel-result-new {
+  color: #60a5fa;
 }
 
 /* ── 빈 화면 ─────────────────────────────────────────────── */
@@ -582,7 +598,7 @@ async function processFile(file) {
 }
 
 .excel-guide-text {
-  font-size: 14px;
+  font-size: 15px;
   color: #7ba3d4;
   line-height: 1.6;
 }
@@ -665,8 +681,22 @@ async function processFile(file) {
   margin: 0;
 }
 
+.excel-notice {
+  font-size: 14px;
+  color: #7ba3d4;
+  background: rgba(59, 91, 219, 0.06);
+  border: 1px solid rgba(59, 91, 219, 0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  line-height: 1.7;
+}
+
+.excel-notice strong {
+  color: #c8d8f0;
+}
+
 .excel-error {
-  font-size: 13px;
+  font-size: 14px;
   color: #fca5a5;
   background: rgba(239, 68, 68, 0.08);
   border: 1px solid rgba(239, 68, 68, 0.2);
