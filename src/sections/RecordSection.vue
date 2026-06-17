@@ -254,7 +254,7 @@ function isNewGroup(students, index) {
     >
 
       <!-- 툴바 -->
-      <div class="flex flex-wrap items-center px-6 py-3 border-b border-line shrink-0 gap-2 bg-base">
+      <div class="flex flex-wrap items-center px-6 py-2 border-b border-line-2 shrink-0 gap-2 bg-base min-h-15">
         <div class="flex items-center gap-2 min-w-0">
           <select
               v-model="selectedAreaId"
