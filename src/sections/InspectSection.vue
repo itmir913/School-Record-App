@@ -395,7 +395,7 @@ onMounted(() => {
                     <X :size="11"/>
                   </button>
                 </span>
-                <span v-if="group.items.length === 0" class="text-xs text-line-2 italic">단어 없음</span>
+                <span v-if="group.items.length === 0" class="text-xs text-ink-4 italic">단어 없음</span>
               </div>
 
               <!-- 단어 추가 입력 -->
@@ -551,7 +551,7 @@ onMounted(() => {
             :class="{ 'opacity-35 pointer-events-none': scopeMode !== 'specific' }"
         >
           <p class="text-sm text-ink-5 m-0 mb-3">점검할 영역 선택</p>
-          <p v-if="areaStore.areas.length === 0" class="text-sm text-line-2">등록된 영역이 없습니다.</p>
+          <p v-if="areaStore.areas.length === 0" class="text-sm text-ink-4">등록된 영역이 없습니다.</p>
           <div v-else class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))">
             <div
                 v-for="area in areaStore.areas"
@@ -611,9 +611,9 @@ onMounted(() => {
         </div>
 
         <div v-if="inspectResults.length === 0" class="flex flex-col items-center justify-center py-16 gap-3">
-          <ScanSearch :size="40" class="text-line-2"/>
+          <ScanSearch :size="40" class="text-ink-5"/>
           <p class="text-lg font-semibold text-ink-5 m-0">탐지된 유의어가 없습니다</p>
-          <p class="text-base text-line-2 m-0">유의어가 발견되지 않았습니다.</p>
+          <p class="text-base text-ink-4 m-0">유의어가 발견되지 않았습니다.</p>
         </div>
 
         <div v-else class="overflow-x-auto border border-line rounded-[10px]">

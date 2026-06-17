@@ -498,12 +498,12 @@ function isNewGroup(students, index) {
                     :class="isOverLimit(act.id, student.id) ? 'text-red' : 'text-ink-5'"
                 >
                   {{ byteLength(getCellContent(act.id, student.id) || '') }} Bytes
-                  <span class="text-line-2 select-none">|</span>
+                  <span class="text-ink-5 select-none">|</span>
                   <button
                       class="bg-transparent border-none p-0 text-[11px] text-blue-2/70 cursor-pointer leading-none hover:text-blue-2 hover:underline"
                       @click.stop="copyCell(act.id, student.id)"
                   >{{ copiedCells.has(cellKey(act.id, student.id)) ? 'Copied!' : 'Copy' }}</button>
-                  <span class="text-line-2 select-none">|</span>
+                  <span class="text-ink-5 select-none">|</span>
                   <button
                       class="bg-transparent border-none p-0 text-[11px] text-blue-2/70 cursor-pointer leading-none hover:text-blue-2 hover:underline"
                       @click.stop="openHistory(act, student)"

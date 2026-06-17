@@ -311,7 +311,7 @@ onMounted(async () => {
           <p v-if="operationError" class="text-red text-sm m-0 mt-2">{{ operationError }}</p>
 
           <!-- 규칙 테이블 -->
-          <div v-if="ruleStore.rules.length === 0 && !ruleStore.loading" class="text-line-2 text-sm py-3.5 text-center">
+          <div v-if="ruleStore.rules.length === 0 && !ruleStore.loading" class="text-ink-4 text-sm py-3.5 text-center">
             규칙이 없습니다. 추가 버튼으로 새 규칙을 만드세요.
           </div>
 
@@ -476,7 +476,7 @@ onMounted(async () => {
             :class="{ 'opacity-35 pointer-events-none': scopeMode !== 'specific' }"
         >
           <p class="text-sm text-ink-5 m-0 mb-3">치환을 적용할 영역 선택</p>
-          <p v-if="areaStore.areas.length === 0" class="text-sm text-line-2">등록된 영역이 없습니다.</p>
+          <p v-if="areaStore.areas.length === 0" class="text-sm text-ink-4">등록된 영역이 없습니다.</p>
           <div v-else class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))">
             <div
                 v-for="area in areaStore.areas"
@@ -546,7 +546,7 @@ onMounted(async () => {
                class="py-3 border-b border-line last:border-b-0">
             <div class="flex items-center gap-1.5 mb-1.5">
               <span class="text-sm text-ink-5">{{ item.student_name }}</span>
-              <span class="text-line-2">/</span>
+              <span class="text-ink-5">/</span>
               <span class="text-sm text-ink-5">{{ item.activity_name }}</span>
             </div>
             <DiffView :before="item.original" :after="item.result"/>
@@ -571,7 +571,7 @@ onMounted(async () => {
 
         <!-- 초기 안내 -->
         <div v-else-if="!hasRanPreview && !isPreviewing && applyResult === null && !previewError"
-             class="text-line-2 text-sm py-9 px-[18px] text-center border border-dashed border-line rounded-lg">
+             class="text-ink-4 text-sm py-9 px-[18px] text-center border border-dashed border-line rounded-lg">
           미리보기를 실행하면 변경될 항목이 표시됩니다.
         </div>
       </div>

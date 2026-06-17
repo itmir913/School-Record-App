@@ -11,8 +11,8 @@ const steps = [
     desc: '학년 · 반 · 번호 · 이름을 등록합니다. 엑셀 파일로 명렬표를 일괄 불러올 수 있습니다.',
     section: 'student',
     color: 'var(--c-blue)',
-    bg: 'rgba(59,130,246,0.07)',
-    border: 'rgba(59,130,246,0.25)',
+    bg: 'color-mix(in srgb, var(--c-blue) 7%, transparent)',
+    border: 'color-mix(in srgb, var(--c-blue) 25%, transparent)',
   },
   {
     num: 2,
@@ -21,8 +21,8 @@ const steps = [
     desc: '자율활동 · 진로활동 · 동아리활동 등 생기부 영역을 먼저 만들고 바이트 제한을 설정합니다.',
     section: 'area',
     color: 'var(--c-violet)',
-    bg: 'rgba(168,85,247,0.07)',
-    border: 'rgba(168,85,247,0.25)',
+    bg: 'color-mix(in srgb, var(--c-violet) 7%, transparent)',
+    border: 'color-mix(in srgb, var(--c-violet) 25%, transparent)',
   },
   {
     num: 3,
@@ -31,8 +31,8 @@ const steps = [
     desc: '생기부 각 영역 안에 들어갈 세부 활동을 만들고 해당 영역과 연결합니다.',
     section: 'activity',
     color: 'var(--c-violet)',
-    bg: 'rgba(129,140,248,0.07)',
-    border: 'rgba(129,140,248,0.25)',
+    bg: 'color-mix(in srgb, var(--c-violet) 7%, transparent)',
+    border: 'color-mix(in srgb, var(--c-violet) 25%, transparent)',
   },
   {
     num: 4,
@@ -41,8 +41,8 @@ const steps = [
     desc: '학생별 · 활동별 생기부 문장을 셀 단위로 입력합니다. 바이트 제한을 자동으로 표시합니다.',
     section: 'record',
     color: 'var(--c-amber)',
-    bg: 'rgba(245,158,11,0.07)',
-    border: 'rgba(245,158,11,0.25)',
+    bg: 'color-mix(in srgb, var(--c-amber) 7%, transparent)',
+    border: 'color-mix(in srgb, var(--c-amber) 25%, transparent)',
   },
   {
     num: 5,
@@ -51,8 +51,8 @@ const steps = [
     desc: '완성된 생기부 문장을 엑셀 파일로 저장합니다.',
     section: 'export',
     color: 'var(--c-green)',
-    bg: 'rgba(16,185,129,0.07)',
-    border: 'rgba(16,185,129,0.25)',
+    bg: 'color-mix(in srgb, var(--c-green) 7%, transparent)',
+    border: 'color-mix(in srgb, var(--c-green) 25%, transparent)',
   },
 ]
 
