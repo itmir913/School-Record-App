@@ -10,6 +10,14 @@
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.16',
+    date: '2026-06-17',
+    bugFixes: [
+      '라이트 모드 색상 오류 전반 수정',
+      '페이지 전환 트랜지션 및 레이아웃 정렬 수정',
+    ],
+  },
+  {
     version: '0.2.15',
     date: '2026-06-17',
     breaking: [
