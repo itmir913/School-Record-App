@@ -44,8 +44,9 @@ html {
 /* ── 라이트 테마 오버라이드 ─────────────────────── */
 [data-theme="light"] {
   --c-base:    #f0f4f8;
-  --c-surface: #ffffff;
+  --c-surface: #f6f9fd;
   --c-raised:  #e8edf5;
+  --c-sidebar: #d2dce9;
   --c-line:    #d0d9e8;
   --c-line-2:  #b0bdd4;
   --c-blue:    #3b5bdb;
@@ -88,8 +89,9 @@ html {
   --color-overlay: var(--c-overlay);
 }
 
-/* ── bg-base 수동 정의 (--color-base는 text-base 폰트 유틸과 충돌하여 제거됨) ── */
-.bg-base { background-color: var(--c-base); }
+/* ── bg-base / bg-sidebar 수동 정의 ── */
+.bg-base    { background-color: var(--c-base); }
+.bg-sidebar { background-color: var(--c-sidebar, var(--c-base)); }
 
 .sidebar-divider {
   height: 1px;

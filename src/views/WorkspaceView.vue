@@ -64,7 +64,7 @@ onMounted(async () => {
         @select="activeSection = $event"
         @openSnapshot="showSnapshotModal = true"
     />
-    <main class="flex-1 overflow-y-auto bg-base">
+    <main class="flex-1 overflow-y-auto bg-surface">
       <component :is="currentSection" :key="sectionKey" @navigate="activeSection = $event"/>
     </main>
     <SnapshotModal

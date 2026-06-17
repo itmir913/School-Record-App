@@ -101,7 +101,7 @@ const navGroups = [
 
 <template>
   <aside
-      class="flex flex-col min-h-screen bg-base border-r border-line text-ink-3 transition-[width] duration-250 ease-linear overflow-hidden shrink-0"
+      class="flex flex-col min-h-screen bg-sidebar border-r border-line-2 text-ink-3 transition-[width] duration-250 ease-linear overflow-hidden shrink-0"
       :class="collapsed ? 'w-15' : 'w-60'"
   >
 
