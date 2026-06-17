@@ -19,9 +19,13 @@ onMounted(() => {
 
 <style>
 .page-fade-enter-active {
-  transition: opacity 0.25s ease;
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.6s;
 }
-.page-fade-enter-from {
+.page-fade-leave-active {
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.page-fade-enter-from,
+.page-fade-leave-to {
   opacity: 0;
 }
 </style>
