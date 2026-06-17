@@ -1,7 +1,6 @@
 <script setup>
 import {onMounted, ref} from 'vue'
 import {useRouter} from 'vue-router'
-import {invoke} from '@tauri-apps/api/core'
 import {open, save} from '@tauri-apps/plugin-dialog'
 import {getVersion} from '@tauri-apps/api/app'
 import {openUrl} from '@tauri-apps/plugin-opener'
@@ -41,8 +40,7 @@ async function handleNew() {
   })
   if (!path) return
   try {
-    await invoke('new_project', {path})
-    project.setProject(path)
+    await project.newProject(path)
     router.push('/workspace')
   } catch (e) {
     error.value = String(e)

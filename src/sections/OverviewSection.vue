@@ -275,7 +275,7 @@ const subjectActivities = [
 
         <div
             class="text-[15px] text-ink-3 bg-amber/[0.05] rounded-lg px-[18px] py-3.5 leading-[1.75]"
-            style="border: 1px solid rgba(245,158,11,0.18); border-left: 3px solid #f59e0b;"
+            style="border: 1px solid rgba(245,158,11,0.18); border-left: 3px solid var(--c-amber);"
         >
           과목별로 프로젝트를 따로 만들거나, 한 프로젝트 안에 여러 과목을 영역으로 묶어 관리할 수 있습니다.
           학생 수가 많을수록 격자형 입력 화면이 큰 도움이 됩니다.

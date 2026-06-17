@@ -1,6 +1,5 @@
 <script setup>
 import {computed, onMounted, ref, watch} from 'vue'
-import {invoke} from '@tauri-apps/api/core'
 import {save} from '@tauri-apps/plugin-dialog'
 import {revealItemInDir} from '@tauri-apps/plugin-opener'
 import {Workbook} from 'exceljs'
@@ -16,12 +15,14 @@ import {
 } from 'lucide-vue-next'
 import {useSynonymStore} from '../stores/synonymStore'
 import {useAreaStore} from '../stores/area'
+import {useFileStore} from '../stores/file'
 import {performInspection} from '../services/synonymService'
 import DiffView from '../components/DiffView.vue'
 import WizardLayout from '../components/WizardLayout.vue'
 
 const store = useSynonymStore()
 const areaStore = useAreaStore()
+const fileStore = useFileStore()
 
 // ── 단계 ─────────────────────────────────────────────────────
 
@@ -291,7 +292,7 @@ async function exportToExcel() {
 
     const buffer = await wb.xlsx.writeBuffer()
     const data = bufferToBase64(buffer)
-    await invoke('write_bytes_file', {path: filePath, data})
+    await fileStore.writeBytesFile(filePath, data)
     exportResult.value = {
       fileName: filePath.split(/[\\/]/).pop(),
       filePath,
@@ -688,8 +689,8 @@ onMounted(() => {
 <style scoped>
 /* DiffView 내부 유의어 하이라이트 — :deep() 필수 */
 .cell-content :deep(.diff-added) {
-  background-color: rgba(251, 191, 36, 0.3);
-  color: #f59e0b;
+  background-color: color-mix(in srgb, var(--c-amber) 30%, transparent);
+  color: var(--c-amber);
 }
 
 .cell-content :deep(.diff-removed) {
