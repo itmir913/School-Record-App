@@ -287,7 +287,7 @@ async function doImport() {
           ref="fileInputRef"
           type="file"
           accept=".csv,.xlsx,.xls"
-          style="display:none"
+          class="hidden"
           @change="onFileChange"
       />
 

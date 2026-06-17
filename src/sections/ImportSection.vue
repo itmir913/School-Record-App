@@ -699,7 +699,7 @@ function resetWizard() {
           </summary>
           <p class="text-base text-ink-5 m-0 mb-6">가져오기 가능한 파일은 두 가지 유형(행 단위, 열 단위)입니다. 예시 다운로드 버튼을 눌러 각 유형의 예시를 확인하세요.</p>
 
-          <div class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(max(300px, calc(50% - 8px)), 1fr))">
+          <div class="grid gap-4 grid-duo-card">
             <!-- A 타입 (예시용, 클릭 불가) -->
             <div class="border-2 border-line rounded-xl p-5 cursor-default">
               <div class="flex items-center gap-2.5 mb-2.5">
@@ -767,7 +767,7 @@ function resetWizard() {
         <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 1. 가져올 파일 선택</h3>
         <p class="text-base text-ink-5 m-0 mb-6">CSV 또는 XLSX 파일을 선택하거나 드래그하세요.</p>
 
-        <input ref="fileInputRef" type="file" accept=".csv,.xlsx,.xls" style="display:none" @change="onFileChange"/>
+        <input ref="fileInputRef" type="file" accept=".csv,.xlsx,.xls" class="hidden" @change="onFileChange"/>
 
         <div
             class="border-2 rounded-xl py-12 px-6 text-center cursor-pointer transition-[border-color,background-color] duration-200 flex flex-col items-center gap-2"
@@ -808,7 +808,7 @@ function resetWizard() {
         <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 2. 엑셀 파일 양식 선택</h3>
         <p class="text-base text-ink-5 m-0 mb-6">가져올 엑셀 파일 양식에 맞는 타입을 선택하세요. 잘못된 타입을 선택하면 데이터 오류 또는 항목 누락이 발생할 수 있습니다.</p>
 
-        <div class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(max(300px, calc(50% - 8px)), 1fr))">
+        <div class="grid gap-4 grid-duo-card">
           <!-- A 타입 -->
           <div
               class="border-2 rounded-xl p-5 cursor-pointer transition-[border-color,background-color] duration-200"
@@ -980,15 +980,13 @@ function resetWizard() {
         <p v-if="extractedActivities.length === 0" class="text-base text-ink-5 m-0">파일에서 활동을 찾을 수 없습니다. 이전 단계로 돌아가 열 매핑을 확인하세요.</p>
 
         <div v-else class="flex flex-col border border-line rounded-[10px] overflow-hidden">
-          <div class="grid items-center gap-3 py-2.5 px-4 bg-surface text-sm font-semibold text-ink-5 border-b border-line"
-               style="grid-template-columns: 1fr 32px 1fr">
+          <div class="grid items-center gap-3 py-2.5 px-4 bg-surface text-sm font-semibold text-ink-5 border-b border-line grid-mapper">
             <span>파일의 활동명</span>
             <span></span>
             <span>연결할 활동</span>
           </div>
           <div v-for="actName in extractedActivities" :key="actName"
-               class="grid items-center gap-3 py-2.5 px-4 border-b border-line/70 last:border-b-0"
-               style="grid-template-columns: 1fr 32px 1fr">
+               class="grid items-center gap-3 py-2.5 px-4 border-b border-line/70 last:border-b-0 grid-mapper">
             <span class="text-base text-ink-2">{{ actName }}</span>
             <span class="text-base text-ink-5 text-center">→</span>
             <select class="py-[7px] px-2.5 bg-surface border border-line rounded-lg text-ink text-sm outline-none cursor-pointer w-full focus:border-blue/50"
@@ -1114,23 +1112,23 @@ function resetWizard() {
 
         <div v-if="!importResult">
           <div class="border border-line rounded-[10px] overflow-hidden mb-6">
-            <div class="grid gap-3 py-[11px] px-4 border-b border-line/70 last:border-b-0" style="grid-template-columns: 140px 1fr">
+            <div class="grid gap-3 py-[11px] px-4 border-b border-line/70 last:border-b-0 grid-detail-140">
               <span class="text-sm text-ink-5">파일</span>
               <span class="text-sm text-ink-2">{{ fileName }}</span>
             </div>
-            <div class="grid gap-3 py-[11px] px-4 border-b border-line/70 last:border-b-0" style="grid-template-columns: 140px 1fr">
+            <div class="grid gap-3 py-[11px] px-4 border-b border-line/70 last:border-b-0 grid-detail-140">
               <span class="text-sm text-ink-5">양식</span>
               <span class="text-sm text-ink-2">{{ fileType === 'A' ? 'A타입 — 행 단위 활동 형식' : 'B타입 — 열 단위 활동 형식' }}</span>
             </div>
-            <div class="grid gap-3 py-[11px] px-4 border-b border-line/70 last:border-b-0" style="grid-template-columns: 140px 1fr">
+            <div class="grid gap-3 py-[11px] px-4 border-b border-line/70 last:border-b-0 grid-detail-140">
               <span class="text-sm text-ink-5">데이터 행</span>
               <span class="text-sm text-ink-2">{{ rawData.length }}행</span>
             </div>
-            <div class="grid gap-3 py-[11px] px-4 border-b border-line/70 last:border-b-0" style="grid-template-columns: 140px 1fr">
+            <div class="grid gap-3 py-[11px] px-4 border-b border-line/70 last:border-b-0 grid-detail-140">
               <span class="text-sm text-ink-5">활동 수</span>
               <span class="text-sm text-ink-2">{{ extractedActivities.length }}개</span>
             </div>
-            <div class="grid gap-3 py-[11px] px-4" style="grid-template-columns: 140px 1fr">
+            <div class="grid gap-3 py-[11px] px-4 grid-detail-140">
               <span class="text-sm text-ink-5">새로 만들 활동</span>
               <span class="text-sm text-ink-2">{{ Object.values(activityMatchMap).filter(v => v === 0).length }}개</span>
             </div>

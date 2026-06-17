@@ -240,7 +240,7 @@ async function doExport() {
         <h3 class="text-lg font-bold text-ink m-0 mb-1.5">Step 1. 내보내기(Export) 형식 선택</h3>
         <p class="text-base text-ink-5 m-0 mb-6">내보낼 엑셀 파일의 유형을 선택하세요.</p>
 
-        <div class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(max(300px, calc(50% - 8px)), 1fr))">
+        <div class="grid gap-4 grid-duo-card">
 
           <!-- A 타입 -->
           <div
@@ -444,23 +444,23 @@ async function doExport() {
         <div v-if="!exportResult">
           <!-- 요약 -->
           <div class="border border-line rounded-[10px] overflow-hidden mb-6">
-            <div class="grid border-b border-line/70 py-[11px] px-4 last:border-b-0" style="grid-template-columns: 140px 1fr">
+            <div class="grid border-b border-line/70 py-[11px] px-4 last:border-b-0 grid-detail-140">
               <span class="text-sm text-ink-5">유형</span>
               <span class="text-sm text-ink-2">{{ typeLabel }}</span>
             </div>
-            <div class="grid border-b border-line/70 py-[11px] px-4 last:border-b-0" style="grid-template-columns: 140px 1fr">
+            <div class="grid border-b border-line/70 py-[11px] px-4 last:border-b-0 grid-detail-140">
               <span class="text-sm text-ink-5">영역</span>
               <span class="text-sm text-ink-2">{{ selectedArea?.name }}</span>
             </div>
-            <div class="grid border-b border-line/70 py-[11px] px-4 last:border-b-0" style="grid-template-columns: 140px 1fr">
+            <div class="grid border-b border-line/70 py-[11px] px-4 last:border-b-0 grid-detail-140">
               <span class="text-sm text-ink-5">학생 수</span>
               <span class="text-sm text-ink-2">{{ gridData?.students.length ?? 0 }}명</span>
             </div>
-            <div class="grid border-b border-line/70 py-[11px] px-4 last:border-b-0" style="grid-template-columns: 140px 1fr">
+            <div class="grid border-b border-line/70 py-[11px] px-4 last:border-b-0 grid-detail-140">
               <span class="text-sm text-ink-5">활동 수</span>
               <span class="text-sm text-ink-2">{{ gridData?.activities.length ?? 0 }}개</span>
             </div>
-            <div class="grid py-[11px] px-4" style="grid-template-columns: 140px 1fr">
+            <div class="grid py-[11px] px-4 grid-detail-140">
               <span class="text-sm text-ink-5">예상 행 수</span>
               <span class="text-sm text-ink-2">{{ estimatedRows }}행 (헤더 제외)</span>
             </div>

@@ -317,8 +317,7 @@ onMounted(async () => {
 
           <div v-else class="flex flex-col gap-0.5">
             <!-- 헤더 행 -->
-            <div class="grid gap-2 items-center py-1 px-2.5 text-sm text-ink-5 uppercase tracking-[0.05em]"
-                 style="grid-template-columns: 72px 1fr 36px 1fr 64px 76px">
+            <div class="grid gap-2 items-center py-1 px-2.5 text-sm text-ink-5 uppercase tracking-[0.05em] grid-replace">
               <span class="flex justify-center text-center">우선순위</span>
               <span>찾을 텍스트</span>
               <span class="flex justify-center text-center">→</span>
@@ -330,9 +329,8 @@ onMounted(async () => {
             <div
                 v-for="rule in ruleStore.rules"
                 :key="rule.id"
-                class="grid gap-2 items-center py-2 px-2.5 rounded-[6px] transition-colors hover:bg-raised"
+                class="grid gap-2 items-center py-2 px-2.5 rounded-[6px] transition-colors hover:bg-raised grid-replace"
                 :class="{ 'opacity-45': !rule.enabled }"
-                style="grid-template-columns: 72px 1fr 36px 1fr 64px 76px"
             >
               <!-- 인라인 편집 모드 -->
               <template v-if="editingId === rule.id">
@@ -477,7 +475,7 @@ onMounted(async () => {
         >
           <p class="text-sm text-ink-5 m-0 mb-3">치환을 적용할 영역 선택</p>
           <p v-if="areaStore.areas.length === 0" class="text-sm text-ink-4">등록된 영역이 없습니다.</p>
-          <div v-else class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))">
+          <div v-else class="grid gap-3 grid-cards-200">
             <div
                 v-for="area in areaStore.areas"
                 :key="area.id"

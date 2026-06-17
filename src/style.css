@@ -229,3 +229,17 @@ code, pre {
 /* ── Vue 모달 트랜지션 ────────────────────────────── */
 .modal-enter-from, .modal-leave-to  { opacity: 0; transform: scale(0.97); }
 .modal-enter-active, .modal-leave-active { transition: all 0.2s; }
+
+/* ── 그리드 레이아웃 유틸리티 ────────────────────── */
+.grid-cards-220  { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.grid-cards-200  { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.grid-detail-160 { grid-template-columns: 160px 1fr; }
+.grid-detail-140 { grid-template-columns: 140px 1fr; }
+.grid-duo-card   { grid-template-columns: repeat(auto-fit, minmax(max(300px, calc(50% - 8px)), 1fr)); }
+.grid-mapper     { grid-template-columns: 1fr 32px 1fr; }
+.grid-replace    { grid-template-columns: 72px 1fr 36px 1fr 64px 76px; }
+
+/* ── 스티키 테이블 컬럼 오프셋 ──────────────────── */
+.left-48px  { left: 48px; }
+.left-96px  { left: 96px; }
+.left-144px { left: 144px; }

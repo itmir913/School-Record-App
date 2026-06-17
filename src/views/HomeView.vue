@@ -214,7 +214,7 @@ function closeUpdateModal() {
           <div v-if="error" class="error-box">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                 style="flex-shrink:0; margin-top:1px;">
+                 class="shrink-0 mt-px">
               <path
                   d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
             </svg>

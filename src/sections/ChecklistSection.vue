@@ -337,7 +337,7 @@ async function doExport() {
         <p v-if="exportError && areaStore.areas.length === 0" class="text-sm text-red mt-3 m-0">{{ exportError }}</p>
         <p v-else-if="areaStore.areas.length === 0" class="text-base text-ink-5 m-0 mb-6">등록된 영역이 없습니다.</p>
 
-        <div v-else class="grid gap-3 mb-6" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr))">
+        <div v-else class="grid gap-3 mb-6 grid-cards-220">
           <div
               v-for="area in areaStore.areas"
               :key="area.id"
@@ -431,23 +431,23 @@ async function doExport() {
         <div v-if="!exportResult">
           <!-- 요약 박스 -->
           <div class="border border-line rounded-btn overflow-hidden mb-6">
-            <div class="grid gap-3 px-4 py-[11px] border-b border-line/70 last:border-b-0" style="grid-template-columns: 160px 1fr">
+            <div class="grid gap-3 px-4 py-[11px] border-b border-line/70 last:border-b-0 grid-detail-160">
               <span class="text-sm text-ink-5">영역</span>
               <span class="text-sm text-ink-2">{{ selectedArea?.name }}</span>
             </div>
-            <div class="grid gap-3 px-4 py-[11px] border-b border-line/70 last:border-b-0" style="grid-template-columns: 160px 1fr">
+            <div class="grid gap-3 px-4 py-[11px] border-b border-line/70 last:border-b-0 grid-detail-160">
               <span class="text-sm text-ink-5">학생 수</span>
               <span class="text-sm text-ink-2">{{ gridData?.students.length ?? 0 }}명</span>
             </div>
-            <div class="grid gap-3 px-4 py-[11px] border-b border-line/70 last:border-b-0" style="grid-template-columns: 160px 1fr">
+            <div class="grid gap-3 px-4 py-[11px] border-b border-line/70 last:border-b-0 grid-detail-160">
               <span class="text-sm text-ink-5">활동 수</span>
               <span class="text-sm text-ink-2">{{ gridData?.activities.length ?? 0 }}개</span>
             </div>
-            <div class="grid gap-3 px-4 py-[11px] border-b border-line/70 last:border-b-0" style="grid-template-columns: 160px 1fr">
+            <div class="grid gap-3 px-4 py-[11px] border-b border-line/70 last:border-b-0 grid-detail-160">
               <span class="text-sm text-ink-5">예상 페이지 수</span>
               <span class="text-sm text-ink-2">{{ gridData?.students.length ?? 0 }}페이지 (학생 1명 = 1페이지)</span>
             </div>
-            <div class="grid gap-3 px-4 py-[11px] border-b border-line/70 last:border-b-0" style="grid-template-columns: 160px 1fr">
+            <div class="grid gap-3 px-4 py-[11px] border-b border-line/70 last:border-b-0 grid-detail-160">
               <span class="text-sm text-ink-5">한 줄 미리보기</span>
               <span class="text-sm text-ink-2">{{ previewEnabled ? '활성화 (활동주제 포함)' : '비활성화' }}</span>
             </div>

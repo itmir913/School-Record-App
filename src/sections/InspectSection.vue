@@ -552,7 +552,7 @@ onMounted(() => {
         >
           <p class="text-sm text-ink-5 m-0 mb-3">점검할 영역 선택</p>
           <p v-if="areaStore.areas.length === 0" class="text-sm text-ink-4">등록된 영역이 없습니다.</p>
-          <div v-else class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))">
+          <div v-else class="grid gap-3 grid-cards-200">
             <div
                 v-for="area in areaStore.areas"
                 :key="area.id"

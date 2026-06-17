@@ -143,7 +143,7 @@ const subjectActivities = [
             아래 Activity들의 기록이 합쳐져 이 영역 하나를 구성합니다.
           </div>
 
-          <div class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))">
+          <div class="grid gap-3 grid-cards-200">
             <div
                 v-for="act in exampleActivities"
                 :key="act.name"
