@@ -124,7 +124,7 @@ const navGroups = [
     <!-- 네비게이션 -->
     <nav class="flex-1 py-2.5 px-2 flex flex-col gap-0.5 overflow-y-auto">
       <template v-for="(group, gi) in navGroups" :key="gi">
-        <div v-if="gi > 0" class="h-px bg-line-2 my-1.5 mx-1"/>
+        <div v-if="gi > 0" class="sidebar-divider my-2 mx-1"/>
         <button
             v-for="item in group.items"
             :key="item.id"

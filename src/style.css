@@ -91,6 +91,13 @@ html {
 /* ── bg-base 수동 정의 (--color-base는 text-base 폰트 유틸과 충돌하여 제거됨) ── */
 .bg-base { background-color: var(--c-base); }
 
+.sidebar-divider {
+  height: 1px;
+  min-height: 1px;
+  background-color: var(--c-ink-5);
+  opacity: 0.2;
+}
+
 /* ── 폰트 ────────────────────────────────────────── */
 body {
   background-color: var(--c-base);
