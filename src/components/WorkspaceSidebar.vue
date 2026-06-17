@@ -101,7 +101,7 @@ const navGroups = [
 
 <template>
   <aside
-      class="flex flex-col min-h-screen bg-[#0b0f1c] border-r border-line text-ink-3 transition-[width] duration-250 ease-linear overflow-hidden shrink-0"
+      class="flex flex-col min-h-screen bg-base border-r border-line text-ink-3 transition-[width] duration-250 ease-linear overflow-hidden shrink-0"
       :class="collapsed ? 'w-15' : 'w-60'"
   >
 
@@ -133,7 +133,7 @@ const navGroups = [
               collapsed ? 'justify-center p-2.25' : 'py-2.25 px-2.5',
               activeSection === item.id
                 ? 'bg-blue/20 text-blue-2 hover:bg-blue/30 hover:text-ink-2'
-                : 'text-ink-3 hover:bg-[#1e293b] hover:text-ink'
+                : 'text-ink-3 hover:bg-raised hover:text-ink'
             ]"
             @click="item.id === 'manual' ? openManual() : select(item.id)"
             :title="collapsed ? item.label : ''"
@@ -151,7 +151,7 @@ const navGroups = [
       <!-- 파일 경로 버튼 -->
       <button
           v-if="fileName"
-          class="flex items-center gap-2 w-full rounded-btn bg-transparent border-none text-ink-4 cursor-pointer text-left whitespace-nowrap overflow-hidden transition-colors hover:bg-[#1e293b] hover:text-ink-2"
+          class="flex items-center gap-2 w-full rounded-btn bg-transparent border-none text-ink-4 cursor-pointer text-left whitespace-nowrap overflow-hidden transition-colors hover:bg-raised hover:text-ink-2"
           :class="collapsed ? 'justify-center p-2' : 'py-2 px-2.5'"
           @click="openFolder"
           :title="filePath"
@@ -163,7 +163,7 @@ const navGroups = [
       <!-- 스냅샷 버튼 -->
       <button
           v-if="fileName"
-          class="flex items-center gap-2 w-full rounded-btn bg-transparent border-none text-ink-4 cursor-pointer text-left whitespace-nowrap overflow-hidden transition-colors hover:bg-[#1e293b] hover:text-ink-2"
+          class="flex items-center gap-2 w-full rounded-btn bg-transparent border-none text-ink-4 cursor-pointer text-left whitespace-nowrap overflow-hidden transition-colors hover:bg-raised hover:text-ink-2"
           :class="collapsed ? 'justify-center p-2' : 'py-2 px-2.5'"
           @click="$emit('openSnapshot')"
           title="스냅샷 관리"
@@ -179,7 +179,7 @@ const navGroups = [
             collapsed ? 'justify-center p-2' : 'py-2 px-2.5',
             activeSection === 'settings'
               ? 'bg-blue/20 text-blue-2 hover:bg-blue/30 hover:text-ink-2'
-              : 'text-ink-4 hover:bg-[#1e293b] hover:text-ink-2'
+              : 'text-ink-4 hover:bg-raised hover:text-ink-2'
           ]"
           @click="select('settings')"
           title="설정(Settings)"

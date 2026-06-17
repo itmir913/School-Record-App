@@ -3,12 +3,14 @@ import { invoke } from '@tauri-apps/api/core'
 import { ref } from 'vue'
 
 const RECORD_CELL_SIZE_KEY = 'record_section_cell_text_size'
+const THEME_MODE_KEY = 'theme_mode'
 const DEFAULT_CELL_SIZE = 14
 
 export const useConfigStore = defineStore('config', () => {
     const recordCellFontSize = ref(DEFAULT_CELL_SIZE)
     const encryptionEnabled = ref(false)
     const encryptionUnlocked = ref(false)
+    const theme = ref('dark')
 
     async function loadAll() {
         await loadPreferences()
@@ -21,6 +23,26 @@ export const useConfigStore = defineStore('config', () => {
             const parsed = parseInt(val, 10)
             if (!isNaN(parsed)) recordCellFontSize.value = parsed
         }
+
+        const themeVal = await invoke('get_config', { key: THEME_MODE_KEY })
+        if (themeVal === 'light' || themeVal === 'dark') {
+            theme.value = themeVal
+        }
+        applyThemeToDom(theme.value)
+    }
+
+    function applyThemeToDom(mode) {
+        if (mode === 'light') {
+            document.documentElement.dataset.theme = 'light'
+        } else {
+            delete document.documentElement.dataset.theme
+        }
+    }
+
+    async function setTheme(mode) {
+        theme.value = mode
+        await invoke('set_config', { key: THEME_MODE_KEY, value: mode })
+        applyThemeToDom(mode)
     }
 
     async function refreshEncryptionStatus() {
@@ -58,10 +80,12 @@ export const useConfigStore = defineStore('config', () => {
         recordCellFontSize,
         encryptionEnabled,
         encryptionUnlocked,
+        theme,
         loadAll,
         loadPreferences,
         refreshEncryptionStatus,
         setRecordCellFontSize,
+        setTheme,
         unlockEncryption,
         enableEncryption,
         disableEncryption,

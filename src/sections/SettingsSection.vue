@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from 'vue'
-import {AlertTriangle, KeyRound, Shield, ShieldOff} from 'lucide-vue-next'
+import {AlertTriangle, KeyRound, Moon, Shield, ShieldOff, Sun} from 'lucide-vue-next'
 import {useConfigStore} from '../stores/configStore'
 import PasswordModal from '../components/PasswordModal.vue'
 
@@ -78,6 +78,47 @@ async function handlePasswordSubmit(payload) {
     </div>
 
     <div class="flex-1 overflow-y-auto px-10 py-8 pb-12">
+
+      <!-- 테마 설정 카드 -->
+      <div class="bg-surface border border-line rounded-2xl p-6 mb-5">
+        <div class="flex items-center gap-4 mb-5">
+          <div class="flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0 bg-blue/[0.12] border border-blue/30 text-blue">
+            <Sun v-if="config.theme === 'light'" :size="20"/>
+            <Moon v-else :size="20"/>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-ink m-0">테마</h3>
+            <p class="text-base text-ink-4 m-0">화면 색상 모드를 선택합니다.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-2.5">
+          <button
+              :class="[
+                'flex items-center gap-2 px-[18px] py-[9px] rounded-btn text-base font-medium cursor-pointer transition-[background-color,transform] border active:scale-[0.97]',
+                config.theme === 'dark'
+                  ? 'bg-raised border-line-2 text-ink'
+                  : 'bg-transparent border-line text-ink-4 hover:bg-raised/60'
+              ]"
+              @click="config.setTheme('dark')"
+          >
+            <Moon :size="16"/>
+            다크
+          </button>
+          <button
+              :class="[
+                'flex items-center gap-2 px-[18px] py-[9px] rounded-btn text-base font-medium cursor-pointer transition-[background-color,transform] border active:scale-[0.97]',
+                config.theme === 'light'
+                  ? 'bg-raised border-line-2 text-ink'
+                  : 'bg-transparent border-line text-ink-4 hover:bg-raised/60'
+              ]"
+              @click="config.setTheme('light')"
+          >
+            <Sun :size="16"/>
+            라이트
+          </button>
+        </div>
+      </div>
 
       <!-- 암호화 설정 카드 -->
       <div class="bg-surface border border-line rounded-2xl p-6">

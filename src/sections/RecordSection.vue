@@ -384,7 +384,7 @@ function isNewGroup(students, index) {
             <th
                 class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line/50 whitespace-nowrap text-center tracking-[0.03em] w-[110px] min-w-[110px] max-w-[110px]"
                 :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
-                :style="[{ left: '244px' }, freezeColumns ? { boxShadow: '1px 0 6px rgba(0,0,0,0.4)', borderRight: '1px solid rgba(59,91,219,0.35)' } : {}]"
+                :style="[{ left: '244px' }, freezeColumns ? { borderRight: '1px solid rgba(59,91,219,0.35)' } : {}]"
             >바이트</th>
             <th
                 v-for="act in recordStore.gridData.activities"
@@ -452,7 +452,7 @@ function isNewGroup(students, index) {
                 ]"
                 :style="[
                   { left: '244px' },
-                  freezeColumns ? { boxShadow: '1px 0 6px rgba(0,0,0,0.4)', borderRight: '1px solid rgba(59,91,219,0.35)' } : {}
+                  freezeColumns ? { borderRight: '1px solid rgba(59,91,219,0.35)' } : {}
                 ]"
             >
               <span
