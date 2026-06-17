@@ -66,7 +66,6 @@
 
 /* ── Tailwind 색상 브릿지 (inline = var() 직접 주입) ── */
 @theme inline {
-  --color-base:    var(--c-base);
   --color-surface: var(--c-surface);
   --color-raised:  var(--c-raised);
   --color-line:    var(--c-line);
@@ -84,6 +83,9 @@
   --color-violet:  var(--c-violet);
   --color-overlay: var(--c-overlay);
 }
+
+/* ── bg-base 수동 정의 (--color-base는 text-base 폰트 유틸과 충돌하여 제거됨) ── */
+.bg-base { background-color: var(--c-base); }
 
 /* ── 폰트 ────────────────────────────────────────── */
 body, code, pre {
@@ -176,7 +178,8 @@ body, code, pre {
 
 /* ── Input ────────────────────────────────────────── */
 .ui-input {
-  @apply w-full px-3.5 py-2.5 rounded-xl border border-line bg-base text-ink text-base box-border;
+  @apply w-full px-3.5 py-2.5 rounded-xl border border-line text-ink text-base box-border;
+  background-color: var(--c-base);
   @apply transition-colors duration-150;
 }
 .ui-input:focus {

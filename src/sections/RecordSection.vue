@@ -385,7 +385,7 @@ function isNewGroup(students, index) {
                 class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line/50 whitespace-nowrap text-center tracking-[0.03em] w-[110px] min-w-[110px] max-w-[110px]"
                 :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
                 :style="[{ left: '244px' }, freezeColumns ? { boxShadow: '1px 0 6px rgba(0,0,0,0.4)', borderRight: '1px solid rgba(59,91,219,0.35)' } : {}]"
-            >합계</th>
+            >바이트</th>
             <th
                 v-for="act in recordStore.gridData.activities"
                 :key="act.id"
@@ -443,9 +443,9 @@ function isNewGroup(students, index) {
                 ]"
                 style="left: 144px"
             >{{ student.name }}</td>
-            <!-- 합계 -->
+            <!-- 바이트 -->
             <td
-                class="td-fixed bg-base py-1.5 px-2.5 border-b border-line/60 border-r border-line/50 align-middle text-center w-[110px] min-w-[110px] max-w-[110px]"
+                class="td-fixed bg-base py-1.5 px-2.5 border-b border-line/60 border-r border-line/50 align-top text-center w-[110px] min-w-[110px] max-w-[110px]"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
                   isStudentOverLimit(student.id) ? '!bg-[#4a1212]' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-[#1e1a00]' : '')
