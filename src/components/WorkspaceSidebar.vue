@@ -151,7 +151,7 @@ const navGroups = [
       <!-- 파일 경로 버튼 -->
       <button
           v-if="fileName"
-          class="flex items-center gap-2 w-full rounded-btn bg-transparent border-none text-ink-4 cursor-pointer text-left whitespace-nowrap overflow-hidden transition-colors hover:bg-line hover:text-ink-2"
+          class="flex items-center gap-2 w-full rounded-btn bg-transparent border-none text-ink-3 font-medium cursor-pointer text-left whitespace-nowrap overflow-hidden transition-colors hover:bg-line hover:text-ink-2"
           :class="collapsed ? 'justify-center p-2' : 'py-2 px-2.5'"
           @click="openFolder"
           :title="filePath"
@@ -163,7 +163,7 @@ const navGroups = [
       <!-- 스냅샷 버튼 -->
       <button
           v-if="fileName"
-          class="flex items-center gap-2 w-full rounded-btn bg-transparent border-none text-ink-4 cursor-pointer text-left whitespace-nowrap overflow-hidden transition-colors hover:bg-line hover:text-ink-2"
+          class="flex items-center gap-2 w-full rounded-btn bg-transparent border-none text-ink-3 font-medium cursor-pointer text-left whitespace-nowrap overflow-hidden transition-colors hover:bg-line hover:text-ink-2"
           :class="collapsed ? 'justify-center p-2' : 'py-2 px-2.5'"
           @click="$emit('openSnapshot')"
           title="스냅샷 관리"
@@ -174,12 +174,12 @@ const navGroups = [
 
       <!-- 설정 버튼 -->
       <button
-          class="flex items-center gap-2 w-full rounded-btn bg-transparent border-none cursor-pointer text-left whitespace-nowrap overflow-hidden transition-colors"
+          class="flex items-center gap-2 w-full rounded-btn bg-transparent border-none font-medium cursor-pointer text-left whitespace-nowrap overflow-hidden transition-colors"
           :class="[
             collapsed ? 'justify-center p-2' : 'py-2 px-2.5',
             activeSection === 'settings'
               ? 'bg-blue/20 text-blue-2 hover:bg-blue/30 hover:text-ink-2'
-              : 'text-ink-4 hover:bg-line hover:text-ink-2'
+              : 'text-ink-3 hover:bg-line hover:text-ink-2'
           ]"
           @click="select('settings')"
           title="설정(Settings)"
