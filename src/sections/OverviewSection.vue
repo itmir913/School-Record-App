@@ -84,7 +84,7 @@ const subjectActivities = [
       <div class="flex flex-col gap-4">
         <div class="flex items-center gap-2.5 text-base font-medium text-ink-3">
           <span class="text-xs font-bold tracking-[0.06em] text-amber bg-amber/[0.12] border border-amber/[0.28] rounded-[5px] px-2.5 py-[3px]">에디터</span>
-          학교생활기록부 작성 도우미
+          All-in-One 학교생활기록부 에디터
         </div>
         <h1 class="text-[46px] font-extrabold text-ink m-0 leading-[1.25] tracking-[-0.025em]">5단계로 완성하는<br>체계적인 생기부 작성</h1>
         <p class="text-[17px] text-ink-3 m-0 leading-[1.85]">
