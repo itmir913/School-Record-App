@@ -108,8 +108,8 @@ const navGroups = [
     <!-- 상단: 타이틀 + 토글 -->
     <div class="flex items-center justify-between px-3 pt-4 pb-3 border-b border-line min-h-15 gap-2">
       <div v-if="!collapsed" class="flex items-center gap-1.5 overflow-hidden whitespace-nowrap">
-        <span class="text-[11px] font-bold text-amber bg-amber/12 border border-amber/25 rounded-[5px] py-px px-1.5 shrink-0">에디터</span>
-        <span class="font-semibold text-ink-2 whitespace-nowrap">학교생활기록부</span>
+        <span class="text-base font-bold text-amber bg-amber/12 border border-amber/25 rounded-[5px] py-px px-1.5 shrink-0">에디터</span>
+        <span class="text-lg font-semibold text-ink-2 whitespace-nowrap">학교생활기록부</span>
       </div>
       <button
           class="flex items-center justify-center w-8 h-8 shrink-0 rounded-lg bg-transparent border-none text-ink-5 cursor-pointer transition-colors ml-auto hover:bg-line hover:text-ink-3"

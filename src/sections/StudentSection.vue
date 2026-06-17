@@ -93,7 +93,7 @@ async function handleDeleted() {
         </div>
         <div class="flex items-center gap-2 flex-shrink-0">
           <button
-              class="flex items-center gap-[7px] px-[18px] py-2.5 rounded-xl bg-blue/10 border border-blue/30 text-[#7ba8f0] text-base font-semibold cursor-pointer whitespace-nowrap transition-colors enabled:hover:bg-blue/[0.18]"
+              class="flex items-center gap-[7px] px-[18px] py-2.5 rounded-xl bg-blue/10 border border-blue/30 text-blue-2 text-base font-semibold cursor-pointer whitespace-nowrap transition-colors enabled:hover:bg-blue/[0.18]"
               @click="bulkModalVisible = true"
           >
             <TableProperties :size="16"/>
@@ -151,7 +151,7 @@ async function handleDeleted() {
             <tbody>
             <template v-for="group in groupedStudents" :key="`${group.grade}-${group.classNum}`">
               <tr>
-                <td colspan="5" class="text-sm font-semibold text-[#7ba3d4] px-4 py-2.5 bg-blue/[0.05] border-t border-line border-b border-line">
+                <td colspan="5" class="text-sm font-semibold text-blue-2 px-4 py-2.5 bg-blue/[0.05] border-t border-line border-b border-line">
                   {{ group.grade }}학년 {{ group.classNum }}반
                   <span class="text-sm font-normal text-ink-5 ml-2">{{ group.students.length }}명</span>
                 </td>

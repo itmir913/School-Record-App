@@ -10,7 +10,7 @@ const steps = [
     title: '학생(Students) 등록',
     desc: '학년 · 반 · 번호 · 이름을 등록합니다. 엑셀 파일로 명렬표를 일괄 불러올 수 있습니다.',
     section: 'student',
-    color: '#3b82f6',
+    color: 'var(--c-blue)',
     bg: 'rgba(59,130,246,0.07)',
     border: 'rgba(59,130,246,0.25)',
   },
@@ -20,7 +20,7 @@ const steps = [
     title: '영역(Area) 구성',
     desc: '자율활동 · 진로활동 · 동아리활동 등 생기부 영역을 먼저 만들고 바이트 제한을 설정합니다.',
     section: 'area',
-    color: '#a855f7',
+    color: 'var(--c-violet)',
     bg: 'rgba(168,85,247,0.07)',
     border: 'rgba(168,85,247,0.25)',
   },
@@ -30,7 +30,7 @@ const steps = [
     title: '활동(Activity) 생성',
     desc: '생기부 각 영역 안에 들어갈 세부 활동을 만들고 해당 영역과 연결합니다.',
     section: 'activity',
-    color: '#818cf8',
+    color: 'var(--c-violet)',
     bg: 'rgba(129,140,248,0.07)',
     border: 'rgba(129,140,248,0.25)',
   },
@@ -40,7 +40,7 @@ const steps = [
     title: '생기부 작성',
     desc: '학생별 · 활동별 생기부 문장을 셀 단위로 입력합니다. 바이트 제한을 자동으로 표시합니다.',
     section: 'record',
-    color: '#f59e0b',
+    color: 'var(--c-amber)',
     bg: 'rgba(245,158,11,0.07)',
     border: 'rgba(245,158,11,0.25)',
   },
@@ -50,7 +50,7 @@ const steps = [
     title: '엑셀로 내보내기',
     desc: '완성된 생기부 문장을 엑셀 파일로 저장합니다.',
     section: 'export',
-    color: '#10b981',
+    color: 'var(--c-green)',
     bg: 'rgba(16,185,129,0.07)',
     border: 'rgba(16,185,129,0.25)',
   },
@@ -136,7 +136,7 @@ const subjectActivities = [
           <div class="flex items-center gap-3.5">
             <span class="text-sm font-bold tracking-[0.06em] text-violet bg-violet/[0.16] border border-violet/35 rounded-md px-3 py-1">Area</span>
             <span class="text-[26px] font-extrabold text-ink">진로활동</span>
-            <span class="text-sm text-ink-4 ml-auto border border-[#30395c] rounded-md px-3 py-1">최대 1,500 byte</span>
+            <span class="text-sm text-ink-4 ml-auto border border-line-2 rounded-md px-3 py-1">최대 1,500 byte</span>
           </div>
 
           <div class="text-[15px] text-ink-4 pb-1 border-b border-line">
@@ -147,9 +147,9 @@ const subjectActivities = [
             <div
                 v-for="act in exampleActivities"
                 :key="act.name"
-                class="flex items-center gap-3.5 px-[18px] py-3.5 bg-[#0d1220] border border-[rgba(129,140,248,0.25)] rounded-xl transition-colors hover:border-[rgba(129,140,248,0.5)]"
+                class="flex items-center gap-3.5 px-[18px] py-3.5 bg-surface border border-violet/25 rounded-xl transition-colors hover:border-violet/50"
             >
-              <div class="w-2.5 h-2.5 rounded-full bg-[#818cf8] flex-shrink-0 opacity-75"/>
+              <div class="w-2.5 h-2.5 rounded-full bg-violet flex-shrink-0 opacity-75"/>
               <div class="min-w-0">
                 <div class="text-base font-semibold text-ink-2 whitespace-nowrap overflow-hidden text-ellipsis">{{ act.name }}</div>
                 <div class="text-sm text-ink-5 mt-[3px]">{{ act.desc }}</div>
@@ -157,7 +157,7 @@ const subjectActivities = [
             </div>
 
             <!-- 추가 가능 암시 카드 -->
-            <div class="flex items-center gap-3.5 px-[18px] py-3.5 bg-transparent border border-dashed border-[#1e2a45] rounded-xl">
+            <div class="flex items-center gap-3.5 px-[18px] py-3.5 bg-transparent border border-dashed border-line-2 rounded-xl">
               <div class="w-2.5 text-center text-base text-ink-5 flex-shrink-0">＋</div>
               <div class="min-w-0">
                 <div class="text-base font-semibold whitespace-nowrap overflow-hidden text-ellipsis text-ink-5">활동 더 추가 가능</div>
@@ -186,15 +186,15 @@ const subjectActivities = [
           합산 바이트를 실시간으로 확인하며 영역 제한을 맞출 수 있습니다.
         </p>
 
-        <div class="flex items-center bg-base border border-[#1e2a45] rounded-xl px-6 py-[18px] flex-wrap gap-3">
+        <div class="flex items-center bg-base border border-line-2 rounded-xl px-6 py-[18px] flex-wrap gap-3">
           <div class="flex items-center gap-2.5 flex-1 min-w-[200px]">
             <span class="text-sm font-bold rounded-md px-3 py-[5px] whitespace-nowrap text-violet bg-violet/[0.12] border border-violet/30">영역 (Area)</span>
             <span class="text-[15px] text-ink-5 flex-shrink-0">→</span>
             <span class="text-[15px] text-ink-3">자율활동 · 동아리활동 · 진로활동</span>
           </div>
-          <div class="w-px h-8 bg-[#1e2a45] flex-shrink-0"/>
+          <div class="w-px h-8 bg-line-2 flex-shrink-0"/>
           <div class="flex items-center gap-2.5 flex-1 min-w-[200px]">
-            <span class="text-sm font-bold rounded-md px-3 py-[5px] whitespace-nowrap text-[#818cf8] bg-[rgba(129,140,248,0.12)] border border-[rgba(129,140,248,0.3)]">활동 (Activity)</span>
+            <span class="text-sm font-bold rounded-md px-3 py-[5px] whitespace-nowrap text-violet bg-violet/[0.12] border border-violet/30">활동 (Activity)</span>
             <span class="text-[15px] text-ink-5 flex-shrink-0">→</span>
             <span class="text-[15px] text-ink-3">체육대회, 현장체험학습, 진로상담 프로그램 …</span>
           </div>
@@ -209,7 +209,7 @@ const subjectActivities = [
             </div>
             <div class="flex flex-col gap-2">
               <div v-for="act in area.activities" :key="act" class="flex items-start gap-2.5">
-                <span class="w-2 h-2 rounded-full bg-[#818cf8] flex-shrink-0 mt-[5px] opacity-70"/>
+                <span class="w-2 h-2 rounded-full bg-violet flex-shrink-0 mt-[5px] opacity-70"/>
                 <span class="text-[15px] font-medium text-ink-2 leading-[1.5]">{{ act }}</span>
               </div>
             </div>
@@ -218,7 +218,7 @@ const subjectActivities = [
 
         <div
             class="text-[15px] text-ink-3 bg-green/[0.05] rounded-lg px-[18px] py-3.5 leading-[1.75]"
-            style="border: 1px solid rgba(16,185,129,0.18); border-left: 3px solid #10b981;"
+            style="border: 1px solid rgba(16,185,129,0.18); border-left: 3px solid var(--c-green);"
         >
           지도교사에게 기재 문장을 <strong class="text-green/80 font-semibold">엑셀 파일</strong>로 받아 <strong class="text-green/80 font-semibold">가져오기(Import)</strong> 탭에서
           불러오면 활동별 문장이 자동으로 채워집니다. 영역 바이트를 초과하는 항목은 즉시 표시되므로
@@ -239,15 +239,15 @@ const subjectActivities = [
           합산 바이트를 확인하며 완성도 높은 세특을 만들 수 있습니다.
         </p>
 
-        <div class="flex items-center bg-base border border-[#1e2a45] rounded-xl px-6 py-[18px] flex-wrap gap-3">
+        <div class="flex items-center bg-base border border-line-2 rounded-xl px-6 py-[18px] flex-wrap gap-3">
           <div class="flex items-center gap-2.5 flex-1 min-w-[200px]">
             <span class="text-sm font-bold rounded-md px-3 py-[5px] whitespace-nowrap text-violet bg-violet/[0.12] border border-violet/30">영역 (Area)</span>
             <span class="text-[15px] text-ink-5 flex-shrink-0">→</span>
             <span class="text-[15px] text-ink-3">세부능력 및 특기사항 (과목명)</span>
           </div>
-          <div class="w-px h-8 bg-[#1e2a45] flex-shrink-0"/>
+          <div class="w-px h-8 bg-line-2 flex-shrink-0"/>
           <div class="flex items-center gap-2.5 flex-1 min-w-[200px]">
-            <span class="text-sm font-bold rounded-md px-3 py-[5px] whitespace-nowrap text-[#818cf8] bg-[rgba(129,140,248,0.12)] border border-[rgba(129,140,248,0.3)]">활동 (Activity)</span>
+            <span class="text-sm font-bold rounded-md px-3 py-[5px] whitespace-nowrap text-violet bg-violet/[0.12] border border-violet/30">활동 (Activity)</span>
             <span class="text-[15px] text-ink-5 flex-shrink-0">→</span>
             <span class="text-[15px] text-ink-3">수행평가 1, 수행평가 2, 수업 태도 …</span>
           </div>
@@ -257,7 +257,7 @@ const subjectActivities = [
           <div class="flex items-center gap-2.5">
             <span class="text-xs font-bold tracking-[0.06em] text-amber bg-amber/[0.14] border border-amber/35 rounded-[5px] px-[9px] py-[3px] flex-shrink-0">Area</span>
             <span class="text-[17px] font-bold text-ink">수학 세부능력 및 특기사항</span>
-            <span class="text-sm text-ink-4 ml-auto border border-[#30395c] rounded-md px-2.5 py-[3px] whitespace-nowrap">최대 1,500 byte</span>
+            <span class="text-sm text-ink-4 ml-auto border border-line-2 rounded-md px-2.5 py-[3px] whitespace-nowrap">최대 1,500 byte</span>
           </div>
           <div class="flex flex-col gap-2">
             <div v-for="act in subjectActivities" :key="act.name" class="flex items-start gap-2.5">

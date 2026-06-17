@@ -412,7 +412,7 @@ function isNewGroup(students, index) {
                 class="td-fixed text-ink-3 bg-base py-1.5 px-1 border-b border-line/60 border-r border-line/50 align-top text-center w-12 min-w-12 max-w-12"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
-                  isStudentOverLimit(student.id) ? '!bg-[#4a1212]' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-[#1e1a00]' : '')
+                  isStudentOverLimit(student.id) ? '!bg-red/30' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-amber/[0.18]' : '')
                 ]"
                 style="left: 0"
             >{{ student.grade }}</td>
@@ -421,7 +421,7 @@ function isNewGroup(students, index) {
                 class="td-fixed text-ink-3 bg-base py-1.5 px-1 border-b border-line/60 border-r border-line/50 align-top text-center w-12 min-w-12 max-w-12"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
-                  isStudentOverLimit(student.id) ? '!bg-[#4a1212]' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-[#1e1a00]' : '')
+                  isStudentOverLimit(student.id) ? '!bg-red/30' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-amber/[0.18]' : '')
                 ]"
                 style="left: 48px"
             >{{ student.class_num }}</td>
@@ -430,7 +430,7 @@ function isNewGroup(students, index) {
                 class="td-fixed text-ink-3 bg-base py-1.5 px-1 border-b border-line/60 border-r border-line/50 align-top text-center w-12 min-w-12 max-w-12"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
-                  isStudentOverLimit(student.id) ? '!bg-[#4a1212]' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-[#1e1a00]' : '')
+                  isStudentOverLimit(student.id) ? '!bg-red/30' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-amber/[0.18]' : '')
                 ]"
                 style="left: 96px"
             >{{ student.number }}</td>
@@ -439,7 +439,7 @@ function isNewGroup(students, index) {
                 class="td-fixed text-ink-2 bg-base py-1.5 px-2.5 border-b border-line/60 border-r border-line/50 align-top text-center w-[100px] min-w-[100px] max-w-[100px] break-all"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
-                  isStudentOverLimit(student.id) ? '!bg-[#4a1212]' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-[#1e1a00]' : '')
+                  isStudentOverLimit(student.id) ? '!bg-red/30' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-amber/[0.18]' : '')
                 ]"
                 style="left: 144px"
             >{{ student.name }}</td>
@@ -448,7 +448,7 @@ function isNewGroup(students, index) {
                 class="td-fixed bg-base py-1.5 px-2.5 border-b border-line/60 border-r border-line/50 align-top text-center w-[110px] min-w-[110px] max-w-[110px]"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
-                  isStudentOverLimit(student.id) ? '!bg-[#4a1212]' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-[#1e1a00]' : '')
+                  isStudentOverLimit(student.id) ? '!bg-red/30' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-amber/[0.18]' : '')
                 ]"
                 :style="[
                   { left: '244px' },

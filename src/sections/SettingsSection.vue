@@ -130,7 +130,7 @@ async function handlePasswordSubmit(payload) {
                 'flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0',
                 config.encryptionEnabled
                   ? 'bg-green/[0.12] border border-green/30 text-green'
-                  : 'bg-[rgba(100,116,139,0.12)] border border-[rgba(100,116,139,0.3)] text-[#64748b]'
+                  : 'bg-ink-4/12 border border-ink-4/30 text-ink-4'
               ]"
           >
             <Shield v-if="config.encryptionEnabled" :size="20"/>
@@ -145,7 +145,7 @@ async function handlePasswordSubmit(payload) {
                 'ml-auto px-3 py-1 rounded-[20px] text-sm font-semibold flex-shrink-0',
                 config.encryptionEnabled
                   ? 'bg-green/[0.12] border border-green/30 text-green'
-                  : 'bg-[rgba(100,116,139,0.10)] border border-[rgba(100,116,139,0.25)] text-[#64748b]'
+                  : 'bg-ink-4/10 border border-ink-4/25 text-ink-4'
               ]"
           >
             {{ config.encryptionEnabled ? '활성화됨' : '비활성화됨' }}
@@ -175,7 +175,7 @@ async function handlePasswordSubmit(payload) {
           </button>
           <template v-else>
             <button
-                class="flex items-center gap-2 px-[18px] py-[9px] rounded-btn text-base font-medium cursor-pointer transition-[background-color,transform] border bg-blue/15 border-blue/35 text-[#6ea8fe] enabled:hover:bg-blue/25 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                class="flex items-center gap-2 px-[18px] py-[9px] rounded-btn text-base font-medium cursor-pointer transition-[background-color,transform] border bg-blue/15 border-blue/35 text-blue-2 enabled:hover:bg-blue/25 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 :disabled="disableEncryptLoading"
                 @click="openChange"
             >
@@ -184,7 +184,7 @@ async function handlePasswordSubmit(payload) {
             </button>
             <button
                 v-if="!confirmEncryptDisable"
-                class="flex items-center gap-2 px-[18px] py-[9px] rounded-btn text-base font-medium cursor-pointer transition-[background-color,transform] border bg-red/10 border-red/30 text-[#fca5a5] enabled:hover:bg-red/[0.18] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                class="flex items-center gap-2 px-[18px] py-[9px] rounded-btn text-base font-medium cursor-pointer transition-[background-color,transform] border bg-red/10 border-red/30 text-red enabled:hover:bg-red/[0.18] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 :disabled="disableEncryptLoading"
                 @click="handleDisable"
             >
@@ -198,14 +198,14 @@ async function handlePasswordSubmit(payload) {
               </div>
               <div class="flex items-center gap-2">
                 <button
-                    class="px-[18px] py-[9px] rounded-lg border border-[rgba(100,116,139,0.4)] bg-transparent text-[#94a3b8] text-base cursor-pointer box-border enabled:hover:bg-[rgba(100,116,139,0.12)] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                    class="px-[18px] py-[9px] rounded-lg border border-ink-4/40 bg-transparent text-ink-4 text-base cursor-pointer box-border enabled:hover:bg-ink-4/12 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                     :disabled="disableEncryptLoading"
                     @click="confirmEncryptDisable = false"
                 >
                   취소
                 </button>
                 <button
-                    class="px-[18px] py-[9px] rounded-lg border border-transparent bg-[#ef4444] text-white text-base font-semibold cursor-pointer transition-colors box-border enabled:hover:bg-[#dc2626] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                    class="px-[18px] py-[9px] rounded-lg border border-transparent bg-red text-white text-base font-semibold cursor-pointer transition-colors box-border enabled:hover:bg-red/80 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                     :disabled="disableEncryptLoading"
                     @click="handleDisable"
                 >
@@ -225,7 +225,7 @@ async function handlePasswordSubmit(payload) {
         >
           <p
               v-if="statusEncryptMessage"
-              :class="['mt-3.5 text-base font-medium m-0', statusEncryptMessage.startsWith('오류') ? 'text-[#fca5a5]' : 'text-green']"
+              :class="['mt-3.5 text-base font-medium m-0', statusEncryptMessage.startsWith('오류') ? 'text-red' : 'text-green']"
           >
             {{ statusEncryptMessage }}
           </p>

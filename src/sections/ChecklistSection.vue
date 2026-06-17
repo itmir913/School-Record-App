@@ -364,7 +364,7 @@ async function doExport() {
             <span class="text-sm text-ink-5 leading-relaxed">O(참여함)인 활동에 한해 생기부 첫 문장의 활동주제를 추출해 C열에 표시합니다.</span>
           </div>
           <div :class="['flex-shrink-0 w-[42px] h-6 rounded-full relative transition-colors border', previewEnabled ? 'bg-blue/60 border-blue/80' : 'bg-line border-line-2']">
-            <div :class="['absolute top-[3px] w-4 h-4 rounded-full transition-all duration-200', previewEnabled ? 'left-[21px] bg-[#93c5fd]' : 'left-[3px] bg-[#4a5568]']"/>
+            <div :class="['absolute top-[3px] w-4 h-4 rounded-full transition-all duration-200', previewEnabled ? 'left-[21px] bg-blue-2' : 'left-[3px] bg-ink-4']"/>
           </div>
         </div>
 
@@ -396,23 +396,23 @@ async function doExport() {
             <tbody>
             <template v-for="group in previewGroups" :key="group.studentId">
               <tr class="bg-blue/[0.07]">
-                <td :colspan="previewEnabled ? 3 : 2" class="px-3.5 py-2 text-sm text-[#7ba8f0] border-t border-blue/20 border-b border-blue/12">
+                <td :colspan="previewEnabled ? 3 : 2" class="px-3.5 py-2 text-sm text-blue-2 border-t border-blue/20 border-b border-blue/12">
                   {{ group.grade }}학년 {{ group.classNum }}반 {{ group.number }}번 &nbsp;
-                  <strong class="font-bold text-[#93c5fd]">{{ group.name }}</strong>
+                  <strong class="font-bold text-blue-2">{{ group.name }}</strong>
                 </td>
               </tr>
               <tr v-for="row in group.rows" :key="row.activityId">
                 <td :class="['px-3.5 py-[7px] border-b border-line/60 text-ink align-middle min-w-[100px]', !row.hasContent && 'opacity-[0.45]']">
                   {{ row.activityName }}
                 </td>
-                <td :class="['px-3.5 py-[7px] border-b border-line/60 align-middle text-center font-bold w-[60px]', !row.hasContent && 'opacity-[0.45]', row.hasContent ? 'text-green' : 'text-[#64748b]']">
+                <td :class="['px-3.5 py-[7px] border-b border-line/60 align-middle text-center font-bold w-[60px]', !row.hasContent && 'opacity-[0.45]', row.hasContent ? 'text-green' : 'text-ink-4']">
                   {{ row.hasContent ? 'O' : 'X' }}
                 </td>
                 <td v-if="previewEnabled" :class="['px-3.5 py-[7px] border-b border-line/60 align-middle min-w-[180px]', !row.hasContent && 'opacity-[0.45]']">
                   <textarea
                       v-if="row.hasContent"
                       v-model="row.topic"
-                      class="w-full bg-[rgba(15,23,42,0.6)] border border-line-2 rounded-md px-2.5 py-[5px] text-ink text-sm outline-none transition-colors box-border leading-[1.4] min-h-5 resize-y whitespace-pre-wrap focus:border-blue/60 placeholder:text-ink-4"
+                      class="w-full bg-surface border border-line-2 rounded-md px-2.5 py-[5px] text-ink text-sm outline-none transition-colors box-border leading-[1.4] min-h-5 resize-y whitespace-pre-wrap focus:border-blue/60 placeholder:text-ink-4"
                       rows="2"
                       placeholder="활동주제 입력…"
                   />
@@ -469,7 +469,7 @@ async function doExport() {
           <p v-if="exportError" class="text-sm text-red mt-3 m-0">{{ exportError }}</p>
 
           <button
-              class="px-7 py-2.5 bg-blue/15 border border-blue/40 rounded-lg text-[#7ba8f0] text-base font-semibold cursor-pointer transition-[background-color,color] enabled:hover:bg-blue/25 enabled:hover:text-[#93c5fd] disabled:opacity-40 disabled:cursor-not-allowed"
+              class="px-7 py-2.5 bg-blue/15 border border-blue/40 rounded-lg text-blue-2 text-base font-semibold cursor-pointer transition-[background-color,color] enabled:hover:bg-blue/25 enabled:hover:text-ink-2 disabled:opacity-40 disabled:cursor-not-allowed"
               :disabled="exporting"
               @click="doExport"
           >
@@ -484,14 +484,14 @@ async function doExport() {
         <p class="text-xl font-bold text-ink m-0">내보내기 완료</p>
         <div class="flex gap-8">
           <div class="flex flex-col items-center gap-1">
-            <span class="text-[28px] font-bold text-[#7ba8f0]">{{ exportResult.pageCount }}</span>
+            <span class="text-[28px] font-bold text-blue-2">{{ exportResult.pageCount }}</span>
             <span class="text-sm text-ink-5">페이지</span>
           </div>
         </div>
         <p class="text-sm text-ink-5 m-0">{{ exportResult.fileName }}</p>
         <div class="flex gap-2.5 mt-2">
           <button
-              class="px-6 py-[9px] bg-blue/[0.12] border border-blue/35 rounded-lg text-[#7ba8f0] text-base cursor-pointer transition-[background-color,color] hover:bg-blue/[0.22] hover:text-[#93c5fd]"
+              class="px-6 py-[9px] bg-blue/[0.12] border border-blue/35 rounded-lg text-blue-2 text-base cursor-pointer transition-[background-color,color] hover:bg-blue/[0.22] hover:text-ink-2"
               @click="revealItemInDir(exportResult.filePath)"
           >파일 확인</button>
           <button
