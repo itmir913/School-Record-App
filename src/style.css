@@ -44,9 +44,9 @@ html {
 /* ── 라이트 테마 오버라이드 ─────────────────────── */
 [data-theme="light"] {
   --c-base:    #f0f4f8;
-  --c-surface: #f6f9fd;
-  --c-raised:  #e8edf5;
-  --c-sidebar: #d2dce9;
+  --c-surface: #f7f8fb;
+  --c-raised:  #eaecf2;
+  --c-sidebar: #dde1e7;
   --c-line:    #d0d9e8;
   --c-line-2:  #b0bdd4;
   --c-blue:    #3b5bdb;
@@ -112,14 +112,15 @@ code, pre {
 
 /* ── 스크롤바 ─────────────────────────────────────── */
 ::-webkit-scrollbar { width: 12px; height: 12px; }
-::-webkit-scrollbar-track  { background-color: var(--c-surface); }
+::-webkit-scrollbar-track  { background-color: transparent; }
 ::-webkit-scrollbar-thumb  {
   background-color: var(--c-line-2);
   border-radius: 6px;
-  border: 3px solid var(--c-surface);
+  border: 3px solid transparent;
+  background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover { background-color: var(--c-ink-5); }
-::-webkit-scrollbar-corner      { background-color: var(--c-surface); }
+::-webkit-scrollbar-corner      { background-color: transparent; }
 
 /* ── Modal overlay ────────────────────────────────── */
 .modal-overlay {
