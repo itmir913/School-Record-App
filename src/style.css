@@ -23,7 +23,8 @@ html {
   --c-green:   #34d399;
   --c-amber:   #fbbf24;
   --c-violet:  #a855f7;
-  --c-overlay: rgba(4, 6, 12, 0.75);
+  --c-overlay:      rgba(4, 6, 12, 0.75);
+  --c-modal-shadow: rgba(0, 0, 0, 0.70);
 
   /* 하위 호환 별칭 — 파일 마이그레이션 완료 시 순차 제거 */
   --clr-bg-base:     var(--c-base);
@@ -43,24 +44,25 @@ html {
 
 /* ── 라이트 테마 오버라이드 ─────────────────────── */
 [data-theme="light"] {
-  --c-base:    #f3f1ed;
-  --c-surface: #f9f7f3;
-  --c-raised:  #ffffff;
-  --c-sidebar: #e5e1db;
-  --c-line:    #dedad4;
-  --c-line-2:  #c6c0b8;
-  --c-blue:    #3b5bdb;
-  --c-blue-2:  #2f4fc4;
-  --c-ink:     #1d1b17;
-  --c-ink-2:   #403d37;
-  --c-ink-3:   #504d47;
-  --c-ink-4:   #706b64;
-  --c-ink-5:   #9a958d;
-  --c-red:     #b91c1c;
-  --c-green:   #065f46;
-  --c-amber:   #d97706;
-  --c-violet:  #9333ea;
-  --c-overlay: rgba(0, 0, 0, 0.50);
+  --c-base:         #f3f1ed;
+  --c-surface:      #f9f7f3;
+  --c-raised:       #ffffff;
+  --c-sidebar:      #e5e1db;
+  --c-line:         #dedad4;
+  --c-line-2:       #c6c0b8;
+  --c-blue:         #3b5bdb;
+  --c-blue-2:       #2f4fc4;
+  --c-ink:          #1d1b17;
+  --c-ink-2:        #403d37;
+  --c-ink-3:        #504d47;
+  --c-ink-4:        #706b64;
+  --c-ink-5:        #9a958d;
+  --c-red:          #b91c1c;
+  --c-green:        #065f46;
+  --c-amber:        #d97706;
+  --c-violet:       #9333ea;
+  --c-overlay:      rgba(0, 0, 0, 0.50);
+  --c-modal-shadow: rgba(0, 0, 0, 0.12);
 }
 
 /* ── Tailwind 커스텀 값 ──────────────────────────── */
@@ -143,7 +145,7 @@ code, pre {
 .modal-container {
   @apply bg-surface border border-line w-full flex flex-col overflow-hidden;
   border-radius: var(--radius-modal);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 24px 80px var(--c-modal-shadow);
 }
 
 /* ── Modal header / footer ────────────────────────── */

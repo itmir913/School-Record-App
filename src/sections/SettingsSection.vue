@@ -98,7 +98,7 @@ async function handlePasswordSubmit(payload) {
                 'flex items-center gap-2 px-[18px] py-[9px] rounded-btn text-base font-medium cursor-pointer transition-[background-color,transform] border active:scale-[0.97]',
                 config.theme === 'dark'
                   ? 'bg-raised border-line-2 text-ink'
-                  : 'bg-transparent border-line text-ink-4 hover:bg-raised/60'
+                  : 'bg-transparent border-line text-ink-4 hover:bg-line/40'
               ]"
               @click="config.setTheme('dark')"
           >
@@ -110,7 +110,7 @@ async function handlePasswordSubmit(payload) {
                 'flex items-center gap-2 px-[18px] py-[9px] rounded-btn text-base font-medium cursor-pointer transition-[background-color,transform] border active:scale-[0.97]',
                 config.theme === 'light'
                   ? 'bg-raised border-line-2 text-ink'
-                  : 'bg-transparent border-line text-ink-4 hover:bg-raised/60'
+                  : 'bg-transparent border-line text-ink-4 hover:bg-line/40'
               ]"
               @click="config.setTheme('light')"
           >
