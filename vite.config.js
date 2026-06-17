@@ -11,7 +11,7 @@ export default defineConfig(async () => ({
     rollupOptions: {
       input: {
         main: resolve("index.html"),
-        manual: resolve("manual/index.html"),
+        manual: resolve("manual.html"),
       },
     },
   },

@@ -55,7 +55,7 @@ async function openManual() {
     return
   }
   new WebviewWindow('manual', {
-    url: '/manual/index.html',
+    url: '/manual.html',
     title: '사용 매뉴얼 — All-in-One 학교생활기록부 에디터',
     width: 960,
     height: 720,

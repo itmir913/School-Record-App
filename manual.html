@@ -5,7 +5,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>사용 매뉴얼 — All-in-One 학교생활기록부 에디터</title>
 
-    <link rel="stylesheet" href="../src/manual.css">
+    <link rel="stylesheet" href="src/manual.css">
 
     <style>
         body {
@@ -32,7 +32,9 @@
         }
 
         @media print {
-            @page { size: A4; }
+            @page {
+                size: A4;
+            }
 
             body {
                 font-size: 11pt;
@@ -59,6 +61,11 @@
             #manual { padding: 0; max-width: 100%; }
 
             section { padding: 0 !important; margin-bottom: 0 !important; }
+
+            .manual-cover {
+                height: 267mm;
+                min-height: unset !important;
+            }
 
             table,
             .bg-slate-50, .bg-slate-100,
@@ -395,19 +402,19 @@
 
 <script>
     const SECTIONS = [
-        'sections/cover.html',
-        'sections/toc.html',
-        'sections/section1.html',
-        'sections/section2.html',
-        'sections/section3.html',
-        'sections/section4.html',
-        'sections/section5.html',
-        'sections/section6.html',
-        'sections/section7.html',
-        'sections/section8.html',
-        'sections/section9.html',
-        'sections/section10.html',
-        'sections/section11.html',
+        'manual/sections/cover.html',
+        'manual/sections/toc.html',
+        'manual/sections/section1.html',
+        'manual/sections/section2.html',
+        'manual/sections/section3.html',
+        'manual/sections/section4.html',
+        'manual/sections/section5.html',
+        'manual/sections/section6.html',
+        'manual/sections/section7.html',
+        'manual/sections/section8.html',
+        'manual/sections/section9.html',
+        'manual/sections/section10.html',
+        'manual/sections/section11.html',
     ];
 
     async function loadSection(url) {
