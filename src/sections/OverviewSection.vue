@@ -217,8 +217,7 @@ const subjectActivities = [
         </div>
 
         <div
-            class="text-[15px] text-ink-3 bg-green/[0.05] rounded-lg px-[18px] py-3.5 leading-[1.75]"
-            style="border: 1px solid rgba(16,185,129,0.18); border-left: 3px solid var(--c-green);"
+            class="text-[15px] text-ink-3 bg-green/[0.05] rounded-lg px-[18px] py-3.5 leading-[1.75] border border-green/[0.18] border-l-[3px] border-l-green"
         >
           지도교사에게 기재 문장을 <strong class="text-green/80 font-semibold">엑셀 파일</strong>로 받아 <strong class="text-green/80 font-semibold">가져오기(Import)</strong> 탭에서
           불러오면 활동별 문장이 자동으로 채워집니다. 영역 바이트를 초과하는 항목은 즉시 표시되므로
@@ -274,8 +273,7 @@ const subjectActivities = [
         </div>
 
         <div
-            class="text-[15px] text-ink-3 bg-amber/[0.05] rounded-lg px-[18px] py-3.5 leading-[1.75]"
-            style="border: 1px solid rgba(245,158,11,0.18); border-left: 3px solid var(--c-amber);"
+            class="text-[15px] text-ink-3 bg-amber/[0.05] rounded-lg px-[18px] py-3.5 leading-[1.75] border border-amber/[0.18] border-l-[3px] border-l-amber"
         >
           과목별로 프로젝트를 따로 만들거나, 한 프로젝트 안에 여러 과목을 영역으로 묶어 관리할 수 있습니다.
           학생 수가 많을수록 격자형 입력 화면이 큰 도움이 됩니다.

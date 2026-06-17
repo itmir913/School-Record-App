@@ -38,7 +38,7 @@ const hiddenCount = computed(() =>
         >{{ act.name }}</span>
         <span
           v-if="hiddenCount > 0"
-          class="text-sm text-ink-4 bg-white/4 border border-line rounded-full px-[10px] py-0.5"
+          class="text-sm text-ink-4 bg-line/30 border border-line rounded-full px-[10px] py-0.5"
         >+{{ hiddenCount }}개 더</span>
       </div>
       <p v-else class="text-sm text-ink-5 m-0">등록된 활동 없음</p>

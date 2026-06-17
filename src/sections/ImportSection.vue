@@ -1016,7 +1016,7 @@ function resetWizard() {
           <div class="flex gap-2.5 mb-5 flex-wrap">
             <span class="text-sm font-semibold py-1 px-2.5 rounded-[6px] border text-amber bg-amber/[0.10] border-amber/30">변경 {{ changedPreviewItems.length }}건</span>
             <span class="text-sm font-semibold py-1 px-2.5 rounded-[6px] border text-green bg-green/[0.10] border-green/30">신규 {{ newPreviewItemsCount }}건</span>
-            <span class="text-sm font-semibold py-1 px-2.5 rounded-[6px] border text-ink-5 bg-white/[0.03] border-line">동일 {{ unchangedCount }}건</span>
+            <span class="text-sm font-semibold py-1 px-2.5 rounded-[6px] border text-ink-5 bg-line/20 border-line">동일 {{ unchangedCount }}건</span>
           </div>
 
           <!-- 변경 항목 없음 -->

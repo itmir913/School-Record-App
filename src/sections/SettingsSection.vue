@@ -157,7 +157,7 @@ async function handlePasswordSubmit(payload) {
           <AlertTriangle :size="16" class="flex-shrink-0 mt-px"/>
           <span>
             비밀번호 분실 시
-            <strong><span style="text-decoration: underline;">어떠한 방법으로도</span></strong>
+            <strong><span class="underline">어떠한 방법으로도</span></strong>
             데이터를 복구할 수 없습니다.
             비밀번호를 잊지 않도록 반드시 주의해 주세요.
           </span>
