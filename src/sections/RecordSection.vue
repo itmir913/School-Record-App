@@ -371,34 +371,34 @@ function isNewGroup(students, index) {
           <thead>
           <tr>
             <th
-                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line/50 whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12"
                 :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
                 style="left: 0"
             >학년</th>
             <th
-                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line/50 whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12"
                 :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
                 style="left: 48px"
             >반</th>
             <th
-                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line/50 whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12"
                 :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
                 style="left: 96px"
             >번호</th>
             <th
-                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line/50 whitespace-nowrap text-center tracking-[0.03em] w-[100px] min-w-[100px] max-w-[100px]"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-[100px] min-w-[100px] max-w-[100px]"
                 :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
                 style="left: 144px"
             >이름</th>
             <th
-                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line/50 whitespace-nowrap text-center tracking-[0.03em] w-[110px] min-w-[110px] max-w-[110px]"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-[110px] min-w-[110px] max-w-[110px]"
                 :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
                 :style="[{ left: '244px' }, freezeColumns ? { borderRight: '1px solid color-mix(in srgb, var(--c-blue) 35%, transparent)' } : {}]"
             >바이트</th>
             <th
                 v-for="act in recordStore.gridData.activities"
                 :key="act.id"
-                class="text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line/50 text-center tracking-[0.03em] w-[320px] min-w-[280px] cursor-pointer select-none hover:text-ink-2 hover:bg-surface"
+                class="text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line text-center tracking-[0.03em] w-[320px] min-w-[280px] cursor-pointer select-none hover:text-ink-2 hover:bg-surface"
                 :class="[
                   freezeColumns ? 'sticky top-0 z-[3]' : '',
                   collapsedActivities.has(act.id)
@@ -418,7 +418,7 @@ function isNewGroup(students, index) {
           >
             <!-- 학년 -->
             <td
-                class="td-fixed text-ink-3 bg-base py-1.5 px-1 border-b border-line/60 border-r border-line/50 align-top text-center w-12 min-w-12 max-w-12"
+                class="td-fixed text-ink-3 bg-base py-1.5 px-1 border-b border-line-2 border-r border-line-2 align-top text-center w-12 min-w-12 max-w-12"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
                   isStudentOverLimit(student.id) ? '!bg-red/30' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-amber/[0.18]' : '')
@@ -427,7 +427,7 @@ function isNewGroup(students, index) {
             >{{ student.grade }}</td>
             <!-- 반 -->
             <td
-                class="td-fixed text-ink-3 bg-base py-1.5 px-1 border-b border-line/60 border-r border-line/50 align-top text-center w-12 min-w-12 max-w-12"
+                class="td-fixed text-ink-3 bg-base py-1.5 px-1 border-b border-line-2 border-r border-line-2 align-top text-center w-12 min-w-12 max-w-12"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
                   isStudentOverLimit(student.id) ? '!bg-red/30' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-amber/[0.18]' : '')
@@ -436,7 +436,7 @@ function isNewGroup(students, index) {
             >{{ student.class_num }}</td>
             <!-- 번호 -->
             <td
-                class="td-fixed text-ink-3 bg-base py-1.5 px-1 border-b border-line/60 border-r border-line/50 align-top text-center w-12 min-w-12 max-w-12"
+                class="td-fixed text-ink-3 bg-base py-1.5 px-1 border-b border-line-2 border-r border-line-2 align-top text-center w-12 min-w-12 max-w-12"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
                   isStudentOverLimit(student.id) ? '!bg-red/30' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-amber/[0.18]' : '')
@@ -445,7 +445,7 @@ function isNewGroup(students, index) {
             >{{ student.number }}</td>
             <!-- 이름 -->
             <td
-                class="td-fixed text-ink-2 bg-base py-1.5 px-2.5 border-b border-line/60 border-r border-line/50 align-top text-center w-[100px] min-w-[100px] max-w-[100px] break-all"
+                class="td-fixed text-ink-2 bg-base py-1.5 px-2.5 border-b border-line-2 border-r border-line-2 align-top text-center w-[100px] min-w-[100px] max-w-[100px] break-all"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
                   isStudentOverLimit(student.id) ? '!bg-red/30' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-amber/[0.18]' : '')
@@ -454,7 +454,7 @@ function isNewGroup(students, index) {
             >{{ student.name }}</td>
             <!-- 바이트 -->
             <td
-                class="td-fixed bg-base py-1.5 px-2.5 border-b border-line/60 border-r border-line/50 align-top text-center w-[110px] min-w-[110px] max-w-[110px]"
+                class="td-fixed bg-base py-1.5 px-2.5 border-b border-line-2 border-r border-line-2 align-top text-center w-[110px] min-w-[110px] max-w-[110px]"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
                   isStudentOverLimit(student.id) ? '!bg-red/30' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-amber/[0.18]' : '')
@@ -474,7 +474,7 @@ function isNewGroup(students, index) {
             <td
                 v-for="act in recordStore.gridData.activities"
                 :key="act.id"
-                class="text-ink-2 py-1.5 px-2 border-b border-line/60 border-r border-line/50 align-top relative transition-[background-color] duration-500 w-[600px] min-w-[480px]"
+                class="text-ink-2 py-1.5 px-2 border-b border-line-2 border-r border-line-2 align-top relative transition-[background-color] duration-500 w-[600px] min-w-[480px]"
                 :class="{
                   '!p-0 !bg-blue/[0.04]': collapsedActivities.has(act.id),
                   '!bg-blue/30': !collapsedActivities.has(act.id) && getCellSavingState(act.id, student.id) === 'saving',
@@ -486,7 +486,7 @@ function isNewGroup(students, index) {
             >
               <template v-if="!collapsedActivities.has(act.id)">
                 <textarea
-                    class="cell-input w-full box-border py-1.5 px-2 leading-[1.5] bg-transparent border border-blue/50 rounded-[6px] text-ink resize-none outline-none transition-[border-color,background-color] duration-150 min-h-[60px] overflow-y-auto focus:border-ink/70 focus:bg-black/60 placeholder:text-ink-5"
+                    class="cell-input w-full box-border py-1.5 px-2 leading-[1.5] bg-transparent border rounded-[6px] text-ink resize-none outline-none transition-[border-color,background-color] duration-150 min-h-[60px] overflow-y-auto placeholder:text-ink-5"
                     :class="compactCell ? 'max-h-[60px] overflow-y-auto' : ''"
                     :style="{ fontSize: 'calc(var(--cell-fs, 14px) + 2px)' }"
                     :value="getCellContent(act.id, student.id)"
@@ -533,5 +533,16 @@ function isNewGroup(students, index) {
 /* 반 구분선 — 자식 td 선택자 */
 .row-group-start td {
   border-top: 1px solid color-mix(in srgb, var(--c-blue) 30%, transparent);
+}
+
+.cell-input {
+  border-color: var(--c-cell-border);
+}
+.cell-input:hover {
+  border-color: var(--c-line-2);
+}
+.cell-input:focus {
+  border-color: color-mix(in srgb, var(--c-blue) 70%, transparent);
+  background-color: var(--c-cell-focus);
 }
 </style>

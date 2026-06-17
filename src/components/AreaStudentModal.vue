@@ -354,7 +354,7 @@ async function processFile(file) {
             <ChevronRight v-else :size="16" class="text-ink-4 shrink-0"/>
           </div>
 
-          <div v-if="isGroupExpanded(groupKey(g))" class="flex flex-col py-1 pb-2 pl-5 bg-[color-mix(in_oklab,var(--c-base)_40%,transparent)]">
+          <div v-if="isGroupExpanded(groupKey(g))" class="flex flex-col py-1 pb-2 ml-5 pl-4 border-l-2 border-line-2 bg-[color-mix(in_oklab,var(--c-base)_40%,transparent)]">
             <label v-for="s in g.students" :key="s.id"
                    class="flex items-center gap-2.5 py-2 pr-5 cursor-pointer transition-colors hover:bg-blue/[4%]">
               <input

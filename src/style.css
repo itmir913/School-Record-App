@@ -43,21 +43,21 @@ html {
 
 /* ── 라이트 테마 오버라이드 ─────────────────────── */
 [data-theme="light"] {
-  --c-base:    #f0f4f8;
-  --c-surface: #f7f8fb;
-  --c-raised:  #eaecf2;
-  --c-sidebar: #dde1e7;
-  --c-line:    #d0d9e8;
-  --c-line-2:  #b0bdd4;
+  --c-base:    #f3f1ed;
+  --c-surface: #f9f7f3;
+  --c-raised:  #ffffff;
+  --c-sidebar: #e5e1db;
+  --c-line:    #dedad4;
+  --c-line-2:  #c6c0b8;
   --c-blue:    #3b5bdb;
   --c-blue-2:  #2f4fc4;
-  --c-ink:     #1a2035;
-  --c-ink-2:   #3a4f6c;
-  --c-ink-3:   #5a7090;
-  --c-ink-4:   #7a90a8;
-  --c-ink-5:   #9aabb8;
-  --c-red:     #dc2626;
-  --c-green:   #059669;
+  --c-ink:     #1d1b17;
+  --c-ink-2:   #403d37;
+  --c-ink-3:   #504d47;
+  --c-ink-4:   #706b64;
+  --c-ink-5:   #9a958d;
+  --c-red:     #b91c1c;
+  --c-green:   #065f46;
   --c-amber:   #d97706;
   --c-violet:  #9333ea;
   --c-overlay: rgba(0, 0, 0, 0.50);
@@ -92,6 +92,16 @@ html {
 /* ── bg-base / bg-sidebar 수동 정의 ── */
 .bg-base    { background-color: var(--c-base); }
 .bg-sidebar { background-color: var(--c-sidebar, var(--c-base)); }
+
+/* ── 셀 border / 포커스 배경 (테마별 분기) ── */
+:root {
+  --c-cell-border: color-mix(in srgb, var(--c-ink-5) 40%, transparent);
+  --c-cell-focus:  rgba(0, 0, 0, 0.28);
+}
+[data-theme="light"] {
+  --c-cell-border: var(--c-line-2);
+  --c-cell-focus:  #fefaf4;
+}
 
 .sidebar-divider {
   height: 1px;
