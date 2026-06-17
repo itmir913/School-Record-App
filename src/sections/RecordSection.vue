@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
-import {ALargeSmall, ArrowLeftRight, CircleAlert, Minimize2, Pin, PinOff} from 'lucide-vue-next'
+import {ALargeSmall, ArrowLeftRight, CircleAlert, Minimize2, Moon, Pin, PinOff, Sun} from 'lucide-vue-next'
 import {useAreaStore} from '../stores/area'
 import {useRecordStore} from '../stores/record'
 import {useConfigStore} from '../stores/configStore'
@@ -321,6 +321,15 @@ function isNewGroup(students, index) {
           >
             <CircleAlert :size="15"/>
             {{ highlightEmpty ? '빈 학생 ON' : '빈 학생 OFF' }}
+          </button>
+
+          <button
+              class="flex items-center justify-center w-[34px] h-[34px] rounded-lg border bg-transparent cursor-pointer transition-[background-color,color,border-color] text-ink-3 border-line hover:bg-line hover:text-ink-2"
+              :title="configStore.theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'"
+              @click="configStore.setTheme(configStore.theme === 'dark' ? 'light' : 'dark')"
+          >
+            <Sun v-if="configStore.theme === 'dark'" :size="15"/>
+            <Moon v-else :size="15"/>
           </button>
         </div>
       </div>

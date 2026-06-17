@@ -10,5 +10,18 @@ onMounted(() => {
 </script>
 
 <template>
-  <RouterView />
+  <RouterView v-slot="{ Component }">
+    <Transition name="page-fade" mode="out-in">
+      <component :is="Component" />
+    </Transition>
+  </RouterView>
 </template>
+
+<style>
+.page-fade-enter-active {
+  transition: opacity 0.25s ease;
+}
+.page-fade-enter-from {
+  opacity: 0;
+}
+</style>

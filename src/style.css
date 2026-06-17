@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 
+html {
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
 /* ── 런타임 테마 토큰 (다크 기본) ───────────────── */
 :root {
   --c-base:    #080b14;
@@ -88,7 +92,12 @@
 .bg-base { background-color: var(--c-base); }
 
 /* ── 폰트 ────────────────────────────────────────── */
-body, code, pre {
+body {
+  background-color: var(--c-base);
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+code, pre {
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
