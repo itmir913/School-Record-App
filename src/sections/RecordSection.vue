@@ -270,13 +270,13 @@ function isNewGroup(students, index) {
           <div class="flex items-center gap-1 py-2 px-3.5 rounded-lg border border-blue/30 bg-blue/[0.08] text-blue-2" title="셀 글자 크기">
             <ALargeSmall :size="15" class="shrink-0 mr-0.5 opacity-70"/>
             <button
-                class="flex items-center justify-center w-[22px] h-[22px] rounded-[5px] border-none bg-transparent text-sm text-ink-3 leading-none cursor-pointer transition-[background-color,color] shrink-0 enabled:hover:bg-white/[0.08] enabled:hover:text-ink-2 disabled:opacity-30 disabled:cursor-default"
+                class="flex items-center justify-center w-[22px] h-[22px] rounded-[5px] border-none bg-transparent text-sm text-ink-3 leading-none cursor-pointer transition-[background-color,color] shrink-0 enabled:hover:bg-blue/20 enabled:hover:text-ink-2 disabled:opacity-30 disabled:cursor-default"
                 :disabled="configStore.recordCellFontSize <= FONT_SIZE_MIN"
                 @click="changeFontSize(-1)"
             >−</button>
             <span class="text-sm font-semibold text-blue-2 min-w-8 text-center">{{ configStore.recordCellFontSize }}px</span>
             <button
-                class="flex items-center justify-center w-[22px] h-[22px] rounded-[5px] border-none bg-transparent text-sm text-ink-3 leading-none cursor-pointer transition-[background-color,color] shrink-0 enabled:hover:bg-white/[0.08] enabled:hover:text-ink-2 disabled:opacity-30 disabled:cursor-default"
+                class="flex items-center justify-center w-[22px] h-[22px] rounded-[5px] border-none bg-transparent text-sm text-ink-3 leading-none cursor-pointer transition-[background-color,color] shrink-0 enabled:hover:bg-blue/20 enabled:hover:text-ink-2 disabled:opacity-30 disabled:cursor-default"
                 :disabled="configStore.recordCellFontSize >= FONT_SIZE_MAX"
                 @click="changeFontSize(+1)"
             >+</button>

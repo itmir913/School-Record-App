@@ -102,7 +102,7 @@ async function saveManualSnapshot() {
 </script>
 
 <template>
-  <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-[1000]" @click.self="emit('close')">
+  <div class="fixed inset-0 bg-overlay backdrop-blur-[6px] flex items-center justify-center z-[1000]" @click.self="emit('close')">
     <div class="bg-surface border border-line rounded-[14px] w-[680px] max-w-[95vw] h-[85vh] flex flex-col overflow-hidden">
 
       <!-- 헤더 -->
