@@ -1,4 +1,4 @@
-<section class="page-break print-keep-bg" style="padding: 40px 0;">
+<section class="ms-section page-break print-keep-bg">
 
     <h2 class="text-xl font-bold text-slate-800 border-b-2 border-indigo-500 pb-2 mb-8">6. 생기부 작성</h2>
 
@@ -14,23 +14,23 @@
         <div class="ui-callout print-keep-bg">
             <p class="ui-callout-label">실제 화면 — 생기부 작성(Write)</p>
             <div class="ui-mock print-keep-bg p-5">
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
-                    <span style="font-size:12px;color:#64748b;font-weight:600;">영역</span>
-                    <select class="um-select" style="min-width:160px;">
+                <div class="flex items-center gap-[10px] mb-3 flex-wrap">
+                    <span class="text-xs text-slate-500 font-semibold">영역</span>
+                    <select class="um-select min-w-[160px]">
                         <option selected>1반 자율활동</option>
                         <option>1반 진로활동</option>
                         <option>프로그래밍 A반</option>
                     </select>
-                    <span style="flex:1;"></span>
+                    <span class="flex-1"></span>
                 </div>
                 <table class="um-grid-table print-keep-bg">
                     <thead>
                         <tr>
-                            <th style="width:40px;">학년</th>
-                            <th style="width:30px;">반</th>
-                            <th style="width:40px;">번호</th>
-                            <th style="width:80px;">이름</th>
-                            <th style="width:80px;text-align:center;">합계</th>
+                            <th class="w-10">학년</th>
+                            <th class="w-[30px]">반</th>
+                            <th class="w-10">번호</th>
+                            <th class="w-20">이름</th>
+                            <th class="w-20 text-center">합계</th>
                             <th>학급자치회</th>
                         </tr>
                     </thead>
@@ -40,7 +40,7 @@
                             <td>1</td>
                             <td>1</td>
                             <td>학생A</td>
-                            <td style="text-align:center;">82 Bytes</td>
+                            <td class="text-center">82 Bytes</td>
                             <td><div class="um-cell-content">학급 회의에서 적극적으로 의견을 제시하였으며 친구들의 이야기를 경청하고 조율하는 리더십을 발휘함.</div></td>
                         </tr>
                         <tr>
@@ -48,7 +48,7 @@
                             <td>1</td>
                             <td>2</td>
                             <td>학생B</td>
-                            <td style="text-align:center;">118 Bytes</td>
+                            <td class="text-center">118 Bytes</td>
                             <td><div class="um-cell-content">학급 대표로 다양한 활동을 기획하고 주도하여 학급의 단결력 향상에 기여하였으며, 조용하지만 신뢰를 주는 리더십을 보여줌.</div></td>
                         </tr>
                         <tr>
@@ -56,7 +56,7 @@
                             <td><span class="um-byte-over">1</span></td>
                             <td><span class="um-byte-over">3</span></td>
                             <td><span class="um-byte-over">학생C</span></td>
-                            <td style="text-align:center;"><span class="um-byte-over">1040 Bytes</span></td>
+                            <td class="text-center"><span class="um-byte-over">1040 Bytes</span></td>
                             <td><div class="um-cell-content um-cell-over">전략적 사고와 뛰어난 통솔력으로 학급 활동 전반을 이끌었으며, 갈등 상황에서도 냉정하고 합리적인 판단으로 구성원 모두의 신뢰를 받음. 향후 더욱 성장할 것으로 기대되며 다양한 역량을 발휘할 리더임이 분명함. 앞으로도 꾸준히 성장하길 바람.</div></td>
                         </tr>
                         <tr>
@@ -64,8 +64,8 @@
                             <td>1</td>
                             <td>4</td>
                             <td>학생E</td>
-                            <td style="text-align:center;">0 Bytes</td>
-                            <td><div class="um-cell-content" style="color:#334155;font-style:italic;"></div></td>
+                            <td class="text-center">0 Bytes</td>
+                            <td><div class="um-cell-content text-slate-700 italic"></div></td>
                         </tr>
                     </tbody>
                 </table>
@@ -180,7 +180,7 @@
             <span class="text-xl shrink-0 mt-0.5">💡</span>
             <p class="text-blue-800 text-base leading-relaxed">
                 큰 수정이 예정된 경우 먼저 <strong>스냅샷</strong>을 생성해두면 DB 전체를 이전 상태로 되돌릴 수 있습니다.
-                스냅샷은 좌측 사이드바 하단 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7ba3d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg> <strong>스냅샷</strong> 탭에서 생성합니다.
+                스냅샷은 좌측 사이드바 하단 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7ba3d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block align-middle"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg> <strong>스냅샷</strong> 탭에서 생성합니다.
             </p>
         </div>
     </div>

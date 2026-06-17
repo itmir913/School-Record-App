@@ -89,6 +89,21 @@
             }
         }
 
+        /* ── Section-level layout (replaces element style="" attributes) ── */
+        .ms-section { padding: 40px 0; }
+        .manual-cover { min-height: 1040px; padding: 0; }
+
+        #loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-size: 16px;
+            color: #64748b;
+        }
+        #manual { display: none; }
+        .ms-load-error { padding: 32px; text-align: center; color: #ef4444; }
+
         /* ═══════════════════════════════════════════
            UI MOCKUP — 라이트 테마 (잉크 절약 최적화)
            ═══════════════════════════════════════════ */
@@ -393,12 +408,11 @@
 </head>
 <body>
 
-<div id="loading"
-     style="display:flex; align-items:center; justify-content:center; min-height:100vh; font-size:16px; color:#64748b;">
+<div id="loading">
     문서를 불러오는 중입니다...
 </div>
 
-<div id="manual" style="display:none;"></div>
+<div id="manual"></div>
 
 <script>
     const SECTIONS = [
@@ -423,9 +437,7 @@
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             return await res.text();
         } catch (e) {
-            return `<section style="padding:32px;text-align:center;color:#ef4444;">
-                섹션을 불러오지 못했습니다: ${url}
-            </section>`;
+            return `<section class="ms-load-error">섹션을 불러오지 못했습니다: ${url}</section>`;
         }
     }
 
