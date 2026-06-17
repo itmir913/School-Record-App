@@ -280,7 +280,7 @@ async function doImport() {
 
 <template>
   <div class="modal-overlay">
-    <div class="modal modal-container">
+    <div class="modal-container max-w-[860px] max-h-[85vh] overflow-hidden">
 
       <!-- 항상 DOM에 존재하는 숨김 파일 입력 -->
       <input
@@ -300,15 +300,18 @@ async function doImport() {
       </div>
 
       <!-- 바디 -->
-      <div class="modal-body">
+      <div class="flex-1 overflow-y-auto min-h-0 pt-5 px-6 pb-2 flex flex-col gap-4">
 
         <!-- 샘플 다운로드 (항상 표시) -->
-        <div class="sample-section">
-          <div class="guide-text">
+        <div class="flex items-center justify-between gap-3">
+          <div class="text-base text-ink-4 leading-[1.6] [&_p]:m-0">
             <p>학생 명단이 담긴 CSV 또는 엑셀 파일을 업로드해 주세요.</p>
             <p>파일 내에 '학년, 반, 번호, 이름' 열이 포함되어 있는지 확인해 주세요.</p>
           </div>
-          <button class="btn-sample" @click="downloadSample">
+          <button
+              class="flex items-center gap-1.5 py-[7px] px-3 rounded-lg border border-blue/30 bg-blue/8 text-ink-3 text-sm cursor-pointer whitespace-nowrap transition-colors duration-150 shrink-0 hover:bg-blue/15"
+              @click="downloadSample"
+          >
             <Download :size="14"/>
             샘플 파일 다운로드
           </button>
@@ -317,44 +320,47 @@ async function doImport() {
         <!-- 파일 미선택: 드롭존 -->
         <div
             v-if="!rawHeaders.length"
-            class="drop-zone"
-            :class="dragging ? 'drop-zone--active' : ''"
+            class="border-2 border-dashed border-line rounded-[14px] py-12 px-6 flex flex-col items-center gap-2 cursor-pointer transition-colors duration-150 hover:border-blue/50 hover:bg-blue/4"
+            :class="dragging ? 'border-blue/50 bg-blue/4' : ''"
             @dragover="onDragOver"
             @dragleave="onDragLeave"
             @drop="onDrop"
             @click="fileInputRef.click()"
         >
-          <FileSpreadsheet :size="32" class="drop-icon"/>
-          <p class="drop-text">
-            파일을 여기에 드래그하거나 <span class="drop-link">파일 선택</span>
+          <FileSpreadsheet :size="32" class="text-ink-5"/>
+          <p class="text-base text-ink-3 m-0">
+            파일을 여기에 드래그하거나 <span class="text-ink-2 underline">파일 선택</span>
           </p>
-          <p class="drop-hint">CSV, XLSX, XLS 지원</p>
+          <p class="text-sm text-ink-5 m-0">CSV, XLSX, XLS 지원</p>
         </div>
 
         <!-- 파일 선택됨: 2단 레이아웃 -->
-        <div v-else class="split-layout">
+        <div v-else class="flex gap-4 items-stretch">
 
           <!-- 좌: 열 매핑 -->
-          <div class="mapping-column">
-            <div class="mapping-panel">
-              <div class="mapping-panel-head">
-                <p class="mapping-title">열 매핑 확인</p>
-                <button class="btn-change-file" @click="resetFile();">
+          <div class="w-[300px] shrink-0">
+            <div class="h-full bg-blue/5 border border-blue/20 rounded-xl py-4 px-[18px] flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <p class="text-sm font-semibold text-ink-3 m-0 tracking-[0.04em] uppercase">열 매핑 확인</p>
+                <button
+                    class="flex items-center gap-1 py-[5px] px-2.5 rounded-[7px] border border-blue/30 bg-blue/8 text-ink-3 text-sm cursor-pointer whitespace-nowrap transition-colors duration-150 hover:bg-blue/15"
+                    @click="resetFile();"
+                >
                   <FileSpreadsheet :size="13"/>
                   파일 초기화
                 </button>
               </div>
-              <p class="mapping-desc">📄 {{ fileName }}</p>
-              <div class="mapping-grid">
+              <p class="text-sm text-ink-4 -mt-1.5 truncate m-0">📄 {{ fileName }}</p>
+              <div class="flex flex-col gap-2">
                 <div
                     v-for="(label, field) in FIELD_LABELS"
                     :key="field"
-                    class="mapping-row"
+                    class="flex items-center gap-2"
                 >
-                  <span class="mapping-label">{{ label }}</span>
+                  <span class="text-base font-semibold text-ink-2 w-9 shrink-0">{{ label }}</span>
                   <select
-                      class="mapping-select"
-                      :class="colMap[field] === null ? 'mapping-select--empty' : 'mapping-select--set'"
+                      class="flex-1 min-w-0 py-1.5 px-2 rounded-lg border bg-base text-ink text-sm outline-none cursor-pointer transition-colors duration-150 focus:border-blue/50"
+                      :class="colMap[field] === null ? 'border-amber/30' : 'border-green/30'"
                       :value="colMap[field] ?? ''"
                       @change="colMap[field] = $event.target.value === '' ? null : Number($event.target.value)"
                   >
@@ -366,42 +372,48 @@ async function doImport() {
                     >{{ header || `(${idx + 1}번째 열)` }}
                     </option>
                   </select>
-                  <span v-if="colMap[field] !== null" class="mapping-badge mapping-badge--ok">자동</span>
-                  <span v-else class="mapping-badge mapping-badge--empty">미선택</span>
+                  <span
+                      v-if="colMap[field] !== null"
+                      class="text-[11px] font-semibold rounded py-0.5 px-1 shrink-0 whitespace-nowrap text-green bg-green/10"
+                  >자동</span>
+                  <span
+                      v-else
+                      class="text-[11px] font-semibold rounded py-0.5 px-1 shrink-0 whitespace-nowrap text-amber bg-amber/10"
+                  >미선택</span>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- 우: 실시간 미리보기 -->
-          <div class="preview-column">
-            <div class="preview-panel">
-              <p class="preview-panel-title">미리보기</p>
-              <p class="preview-desc">
+          <div class="flex-1 min-w-0">
+            <div class="h-full bg-blue/5 border border-blue/20 rounded-xl py-4 px-[18px] flex flex-col gap-3">
+              <p class="text-sm font-semibold text-ink-3 m-0 tracking-[0.04em] uppercase">미리보기</p>
+              <p class="text-sm text-ink-4 -mt-1.5 m-0">
                 <template v-if="allMapped">
                   총 {{ parsedRows.length }}행
-                  <span v-if="errorRows.length > 0" class="error-count">(오류 {{ errorRows.length }}행 제외)</span>
+                  <span v-if="errorRows.length > 0" class="text-red">(오류 {{ errorRows.length }}행 제외)</span>
                 </template>
                 <template v-else>열 매핑을 완료하면 전체 인원이 표시됩니다.</template>
               </p>
-              <div class="preview-wrap">
-                <table class="preview-table">
+              <div class="border border-line rounded-[10px] overflow-hidden">
+                <table class="w-full border-collapse [&_tr:last-child_td]:border-b-0">
                   <thead>
                   <tr>
-                    <th>행</th>
-                    <th>학년</th>
-                    <th>반</th>
-                    <th>번호</th>
-                    <th>이름</th>
+                    <th class="text-xs font-semibold text-ink-4 py-2 px-2.5 bg-base border-b border-line text-left tracking-[0.04em] uppercase">행</th>
+                    <th class="text-xs font-semibold text-ink-4 py-2 px-2.5 bg-base border-b border-line text-left tracking-[0.04em] uppercase">학년</th>
+                    <th class="text-xs font-semibold text-ink-4 py-2 px-2.5 bg-base border-b border-line text-left tracking-[0.04em] uppercase">반</th>
+                    <th class="text-xs font-semibold text-ink-4 py-2 px-2.5 bg-base border-b border-line text-left tracking-[0.04em] uppercase">번호</th>
+                    <th class="text-xs font-semibold text-ink-4 py-2 px-2.5 bg-base border-b border-line text-left tracking-[0.04em] uppercase">이름</th>
                   </tr>
                   </thead>
                   <tbody>
                   <tr v-for="row in livePreviewRows" :key="row._row">
-                    <td class="td-row">{{ row._row }}</td>
-                    <td :class="row.grade === null ? 'td-unmapped' : ''">{{ row.grade ?? '—' }}</td>
-                    <td :class="row.classNum === null ? 'td-unmapped' : ''">{{ row.classNum ?? '—' }}</td>
-                    <td :class="row.number === null ? 'td-unmapped' : ''">{{ row.number ?? '—' }}</td>
-                    <td :class="row.name === null ? 'td-unmapped' : ''">{{ row.name ?? '—' }}</td>
+                    <td class="text-sm text-ink-4 py-[7px] px-2.5 border-b border-line/60">{{ row._row }}</td>
+                    <td class="text-sm py-[7px] px-2.5 border-b border-line/60" :class="row.grade === null ? 'text-ink-4' : 'text-ink-2'">{{ row.grade ?? '—' }}</td>
+                    <td class="text-sm py-[7px] px-2.5 border-b border-line/60" :class="row.classNum === null ? 'text-ink-4' : 'text-ink-2'">{{ row.classNum ?? '—' }}</td>
+                    <td class="text-sm py-[7px] px-2.5 border-b border-line/60" :class="row.number === null ? 'text-ink-4' : 'text-ink-2'">{{ row.number ?? '—' }}</td>
+                    <td class="text-sm py-[7px] px-2.5 border-b border-line/60" :class="row.name === null ? 'text-ink-4' : 'text-ink-2'">{{ row.name ?? '—' }}</td>
                   </tr>
                   </tbody>
                 </table>
@@ -411,13 +423,13 @@ async function doImport() {
         </div>
 
         <!-- 오류 -->
-        <div v-if="parseError" class="msg-error alert">
+        <div v-if="parseError" class="msg-error flex items-center gap-2">
           <AlertCircle :size="15"/>
           {{ parseError }}
         </div>
 
         <!-- 가져오기 결과 -->
-        <div v-if="importResult" class="msg-success alert">
+        <div v-if="importResult" class="msg-success flex items-center gap-2">
           <CheckCircle2 :size="15"/>
           <template v-if="importResult.inserted > 0 && importResult.updated > 0">
             {{ importResult.inserted }}명 추가, {{ importResult.updated }}명 업데이트됨.
@@ -433,10 +445,10 @@ async function doImport() {
       </div>
 
       <!-- 푸터 -->
-      <div class="modal-ftr modal-footer">
+      <div class="flex items-center justify-end gap-2 px-6 pt-4 pb-5 border-t border-line shrink-0">
         <button class="btn-secondary" @click="emit('close')">닫기</button>
         <button
-            class="btn-primary btn-import"
+            class="btn-primary"
             :disabled="!allMapped || validRows.length === 0 || importing || !!importResult"
             @click="doImport"
         >
@@ -447,343 +459,3 @@ async function doImport() {
     </div>
   </div>
 </template>
-
-<style scoped>
-.modal {
-  max-width: 860px;
-  max-height: 85vh;
-  overflow: hidden;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #e2e8f0;
-  margin: 0;
-}
-
-.modal-body {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 20px 24px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-
-/* 샘플 섹션 */
-.sample-section {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.guide-text {
-  font-size: 15px;
-  color: #7ba3d4;
-  margin: 0;
-  line-height: 1.6;
-}
-
-.btn-sample {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(59, 91, 219, 0.3);
-  background: rgba(59, 91, 219, 0.08);
-  color: #7ba8f0;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.15s;
-  flex-shrink: 0;
-}
-
-.btn-sample:hover {
-  background: rgba(59, 91, 219, 0.15);
-}
-
-/* 드롭존 */
-.drop-zone {
-  border: 2px dashed #1a2035;
-  border-radius: 14px;
-  padding: 48px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: border-color 0.15s, background-color 0.15s;
-}
-
-.drop-zone:hover,
-.drop-zone--active {
-  border-color: rgba(59, 91, 219, 0.5);
-  background-color: rgba(59, 91, 219, 0.04);
-}
-
-.drop-icon {
-  color: var(--clr-text-hint);
-}
-
-.drop-text {
-  font-size: 15px;
-  color: #7ba3d4;
-  margin: 0;
-}
-
-.drop-link {
-  color: #7ba8f0;
-  text-decoration: underline;
-}
-
-.drop-hint {
-  font-size: 13px;
-  color: var(--clr-text-hint);
-  margin: 0;
-}
-
-/* 2단 레이아웃 */
-.split-layout {
-  display: flex;
-  gap: 16px;
-  align-items: stretch;
-}
-
-.mapping-column {
-  width: 300px;
-  flex-shrink: 0;
-}
-
-.preview-column {
-  flex: 1;
-  min-width: 0;
-}
-
-/* 열 매핑 패널 */
-.mapping-panel {
-  height: 100%;
-  background-color: rgba(59, 91, 219, 0.05);
-  border: 1px solid rgba(59, 91, 219, 0.2);
-  border-radius: 12px;
-  padding: 16px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.mapping-panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.mapping-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #93afd4;
-  margin: 0;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.mapping-desc {
-  font-size: 14px;
-  color: var(--clr-text-subtle);
-  margin: -6px 0 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.mapping-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.mapping-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mapping-label {
-  font-size: 15px;
-  font-weight: 600;
-  color: #c8d8f0;
-  width: 36px;
-  flex-shrink: 0;
-}
-
-.mapping-select {
-  flex: 1;
-  min-width: 0;
-  padding: 6px 8px;
-  border-radius: 8px;
-  border: 1px solid #1a2035;
-  background-color: #080b14;
-  color: #e2e8f0;
-  font-size: 13px;
-  outline: none;
-  cursor: pointer;
-  transition: border-color 0.15s;
-}
-
-.mapping-select:focus {
-  border-color: rgba(59, 91, 219, 0.5);
-}
-
-.mapping-select--set {
-  border-color: rgba(52, 211, 153, 0.3);
-}
-
-.mapping-select--empty {
-  border-color: rgba(251, 191, 36, 0.3);
-}
-
-.mapping-badge {
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 4px;
-  padding: 2px 5px;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.mapping-badge--ok {
-  color: #34d399;
-  background-color: rgba(52, 211, 153, 0.1);
-}
-
-.mapping-badge--empty {
-  color: #fbbf24;
-  background-color: rgba(251, 191, 36, 0.1);
-}
-
-.btn-change-file {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  border-radius: 7px;
-  border: 1px solid rgba(59, 91, 219, 0.3);
-  background: rgba(59, 91, 219, 0.08);
-  color: #7ba8f0;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.15s;
-}
-
-.btn-change-file:hover {
-  background: rgba(59, 91, 219, 0.15);
-}
-
-/* 미리보기 패널 */
-.preview-panel {
-  flex: 1;
-  height: 100%;
-  background-color: rgba(59, 91, 219, 0.05);
-  border: 1px solid rgba(59, 91, 219, 0.2);
-  border-radius: 12px;
-  padding: 16px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.preview-panel-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #93afd4;
-  margin: 0;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.preview-desc {
-  font-size: 14px;
-  color: var(--clr-text-subtle);
-  margin: -6px 0 0;
-}
-
-.error-count {
-  color: #fca5a5;
-}
-
-.preview-wrap {
-  border: 1px solid #1a2035;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.preview-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.preview-table th {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--clr-text-subtle);
-  padding: 8px 10px;
-  background-color: #080b14;
-  border-bottom: 1px solid #1a2035;
-  text-align: left;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.preview-table td {
-  font-size: 14px;
-  color: #c8d8f0;
-  padding: 7px 10px;
-  border-bottom: 1px solid rgba(26, 32, 53, 0.6);
-}
-
-.preview-table tr:last-child td {
-  border-bottom: none;
-}
-
-.td-row {
-  color: var(--clr-text-subtle);
-  font-size: 13px;
-}
-
-.td-unmapped {
-  color: var(--clr-text-subtle);
-}
-
-/* 알림 — layout override (색상은 전역 .msg-error / .msg-success 사용) */
-.alert {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 14px;
-  border-radius: 10px;
-}
-
-/* 푸터 */
-.modal-footer {
-  justify-content: flex-end;
-  padding-bottom: 20px;
-  gap: 8px;
-}
-
-.btn-import {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.btn-import:disabled {
-  opacity: 0.4;
-  box-shadow: none;
-}
-</style>
