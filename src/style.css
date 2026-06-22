@@ -242,6 +242,9 @@ code, pre {
 /* ── 활동 열 너비 상태 ──────────────────────────── */
 .act-col-collapsed { width: 80px; min-width: 80px; max-width: 80px; }
 
+/* ── 틀고정 바이트 열 구분선 ─────────────────────── */
+.freeze-border-right { border-right: 1px solid color-mix(in srgb, var(--c-blue) 35%, transparent) !important; }
+
 /* ── 스티키 테이블 컬럼 오프셋 ──────────────────── */
 .left-48px  { left: 48px; }
 .left-96px  { left: 96px; }
