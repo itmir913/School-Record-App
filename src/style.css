@@ -243,3 +243,32 @@ code, pre {
 .left-48px  { left: 48px; }
 .left-96px  { left: 96px; }
 .left-144px { left: 144px; }
+
+/* ── 활동 미리보기 형광펜 팔레트 ─────────────────── */
+.act-hl-base { padding: 1px 2px; border-radius: 3px; }
+
+.act-hl-0  { background-color: hsl(4,   55%, 29%); }
+.act-hl-1  { background-color: hsl(28,  60%, 29%); }
+.act-hl-2  { background-color: hsl(52,  55%, 27%); }
+.act-hl-3  { background-color: hsl(80,  45%, 27%); }
+.act-hl-4  { background-color: hsl(142, 45%, 26%); }
+.act-hl-5  { background-color: hsl(170, 45%, 25%); }
+.act-hl-6  { background-color: hsl(198, 52%, 27%); }
+.act-hl-7  { background-color: hsl(220, 55%, 30%); }
+.act-hl-8  { background-color: hsl(248, 48%, 31%); }
+.act-hl-9  { background-color: hsl(272, 48%, 31%); }
+.act-hl-10 { background-color: hsl(310, 48%, 30%); }
+.act-hl-11 { background-color: hsl(340, 52%, 30%); }
+
+[data-theme="light"] .act-hl-0  { background-color: hsl(4,   80%, 87%); }
+[data-theme="light"] .act-hl-1  { background-color: hsl(28,  85%, 84%); }
+[data-theme="light"] .act-hl-2  { background-color: hsl(52,  88%, 82%); }
+[data-theme="light"] .act-hl-3  { background-color: hsl(80,  68%, 83%); }
+[data-theme="light"] .act-hl-4  { background-color: hsl(142, 58%, 82%); }
+[data-theme="light"] .act-hl-5  { background-color: hsl(170, 62%, 81%); }
+[data-theme="light"] .act-hl-6  { background-color: hsl(198, 72%, 83%); }
+[data-theme="light"] .act-hl-7  { background-color: hsl(220, 75%, 86%); }
+[data-theme="light"] .act-hl-8  { background-color: hsl(248, 68%, 87%); }
+[data-theme="light"] .act-hl-9  { background-color: hsl(272, 68%, 87%); }
+[data-theme="light"] .act-hl-10 { background-color: hsl(310, 65%, 87%); }
+[data-theme="light"] .act-hl-11 { background-color: hsl(340, 75%, 87%); }

@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
-import {ALargeSmall, ArrowLeftRight, CircleAlert, Minimize2, Moon, Pin, PinOff, Sun} from 'lucide-vue-next'
+import {ALargeSmall, ArrowLeftRight, CircleAlert, Eye, EyeOff, Minimize2, Moon, Pin, PinOff, Sun} from 'lucide-vue-next'
 import {useAreaStore} from '../stores/area'
 import {useRecordStore} from '../stores/record'
 import {useConfigStore} from '../stores/configStore'
@@ -16,6 +16,7 @@ const freezeColumns = ref(true)
 const smartScroll = ref(true)
 const compactCell = ref(true)
 const highlightEmpty = ref(false)
+const showPreview = ref(false)
 const collapsedActivities = ref(new Set())
 
 const FONT_SIZE_MIN = 10
@@ -244,6 +245,32 @@ async function copyStudentRecord(studentId) {
   }, 1000)
 }
 
+const activityColorMap = computed(() => {
+  if (!recordStore.gridData) return new Map()
+  return new Map(
+    recordStore.gridData.activities.map((act, i) => [act.id, i % 12])
+  )
+})
+
+function getActivityColorClass(actId) {
+  const idx = activityColorMap.value.get(actId)
+  return idx !== undefined ? `act-hl-${idx}` : ''
+}
+
+function studentPreviewSpans(studentId) {
+  if (!recordStore.gridData) return []
+  return recordStore.gridData.activities
+    .filter(act => getCellContent(act.id, studentId).trim() !== '')
+    .map(act => ({ act, content: getCellContent(act.id, studentId) }))
+}
+
+function focusActivityCell(actId, studentId) {
+  const el = document.querySelector(`[data-cell-key="${cellKey(actId, studentId)}"]`)
+  if (!el) return
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' })
+  el.focus()
+}
+
 const historyModal = ref(null)
 
 function openHistory(act, student) {
@@ -341,6 +368,17 @@ function isNewGroup(students, index) {
           </button>
 
           <button
+              class="flex items-center gap-1.5 py-2 px-3.5 rounded-lg border bg-transparent text-sm cursor-pointer transition-[background-color,color,border-color] whitespace-nowrap hover:bg-line hover:text-ink-2"
+              :class="showPreview ? 'text-blue-2 border-blue/30 bg-blue/[0.08]' : 'text-ink-3 border-line'"
+              title="미리보기 열 켜기/끄기"
+              @click="showPreview = !showPreview"
+          >
+            <Eye v-if="showPreview" :size="15"/>
+            <EyeOff v-else :size="15"/>
+            {{ showPreview ? '미리보기 ON' : '미리보기 OFF' }}
+          </button>
+
+          <button
               class="flex items-center justify-center w-[34px] h-[34px] rounded-lg border bg-transparent cursor-pointer transition-[background-color,color,border-color] text-ink-3 border-line hover:bg-line hover:text-ink-2"
               :title="configStore.theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'"
               @click="configStore.setTheme(configStore.theme === 'dark' ? 'light' : 'dark')"
@@ -421,6 +459,11 @@ function isNewGroup(students, index) {
                 :style="collapsedActivities.has(act.id) ? { width: '80px', minWidth: '80px', maxWidth: '80px' } : {}"
                 @click="toggleActivity(act.id)"
             >{{ collapsedActivities.has(act.id) ? truncateName(act.name) : act.name }}</th>
+            <th
+                v-if="showPreview"
+                class="text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-[500px] min-w-[400px]"
+                :class="freezeColumns ? 'sticky top-0 z-[3]' : ''"
+            >미리보기</th>
           </tr>
           </thead>
           <tbody>
@@ -502,6 +545,7 @@ function isNewGroup(students, index) {
                     class="cell-input w-full box-border py-1.5 px-2 leading-[1.5] bg-transparent border rounded-[6px] text-ink resize-none outline-none transition-[border-color,background-color] duration-150 min-h-[60px] overflow-y-auto placeholder:text-ink-5"
                     :class="compactCell ? 'max-h-[60px] overflow-y-auto' : ''"
                     :style="{ fontSize: 'calc(var(--cell-fs, 14px) + 2px)' }"
+                    :data-cell-key="cellKey(act.id, student.id)"
                     :value="getCellContent(act.id, student.id)"
                     @input="onCellInput(act.id, student.id, $event)"
                     rows="1"
@@ -522,6 +566,21 @@ function isNewGroup(students, index) {
                       @click.stop="openHistory(act, student)"
                   >History</button>
                 </div>
+              </template>
+            </td>
+            <!-- 미리보기 -->
+            <td
+                v-if="showPreview"
+                class="bg-base py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[500px] min-w-[400px] leading-relaxed"
+            >
+              <template v-for="(seg, i) in studentPreviewSpans(student.id)" :key="seg.act.id">
+                <span v-if="i > 0"> </span>
+                <span
+                    class="act-hl-base cursor-pointer hover:opacity-75 transition-opacity duration-100"
+                    :class="getActivityColorClass(seg.act.id)"
+                    :title="seg.act.name"
+                    @click="focusActivityCell(seg.act.id, student.id)"
+                >{{ seg.content }}</span>
               </template>
             </td>
           </tr>
