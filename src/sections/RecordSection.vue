@@ -292,7 +292,13 @@ async function togglePreview() {
   }
 }
 
-function focusActivityCell(actId, studentId) {
+async function focusActivityCell(actId, studentId) {
+  if (collapsedActivities.value.has(actId)) {
+    const next = new Set(collapsedActivities.value)
+    next.delete(actId)
+    collapsedActivities.value = next
+    await nextTick()
+  }
   const el = document.querySelector(`[data-cell-key="${cellKey(actId, studentId)}"]`)
   if (!el) return
   el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' })
