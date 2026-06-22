@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
-import {ALargeSmall, ArrowLeftRight, CircleAlert, Eye, EyeOff, Minimize2, Moon, Pin, PinOff, Sun} from 'lucide-vue-next'
+import {ALargeSmall, ArrowLeftRight, ArrowUpDown, Circle, CircleAlert, Eye, EyeOff, Maximize2, Minimize2, Moon, Pin, PinOff, Sun} from 'lucide-vue-next'
 import {useAreaStore} from '../stores/area'
 import {useRecordStore} from '../stores/record'
 import {useConfigStore} from '../stores/configStore'
@@ -348,7 +348,7 @@ function isNewGroup(students, index) {
           >
             <Pin v-if="freezeColumns" :size="15"/>
             <PinOff v-else :size="15"/>
-            {{ freezeColumns ? '틀고정 ON' : '틀고정 OFF' }}
+            틀고정
           </button>
 
           <button
@@ -357,8 +357,9 @@ function isNewGroup(students, index) {
               title="스마트 스크롤: 활동 영역에서 휠 → 좌우 스크롤"
               @click="smartScroll = !smartScroll"
           >
-            <ArrowLeftRight :size="15"/>
-            {{ smartScroll ? '스마트스크롤 ON' : '스마트스크롤 OFF' }}
+            <ArrowLeftRight v-if="smartScroll" :size="15"/>
+            <ArrowUpDown v-else :size="15"/>
+            스마트스크롤
           </button>
 
           <button
@@ -367,7 +368,8 @@ function isNewGroup(students, index) {
               title="셀 높이: 고정(ON) / 자동(OFF)"
               @click="toggleCompactCell"
           >
-            <Minimize2 :size="15"/>
+            <Minimize2 v-if="compactCell" :size="15"/>
+            <Maximize2 v-else :size="15"/>
             {{ compactCell ? '셀높이 고정' : '셀높이 자동' }}
           </button>
 
@@ -377,8 +379,9 @@ function isNewGroup(students, index) {
               title="기록이 없는 학생 행 강조 켜기/끄기"
               @click="highlightEmpty = !highlightEmpty"
           >
-            <CircleAlert :size="15"/>
-            {{ highlightEmpty ? '빈 학생 ON' : '빈 학생 OFF' }}
+            <CircleAlert v-if="highlightEmpty" :size="15"/>
+            <Circle v-else :size="15"/>
+            빈 학생
           </button>
 
           <button
@@ -389,7 +392,7 @@ function isNewGroup(students, index) {
           >
             <Eye v-if="showPreview" :size="15"/>
             <EyeOff v-else :size="15"/>
-            {{ showPreview ? '미리보기 ON' : '미리보기 OFF' }}
+            미리보기
           </button>
 
           <button
