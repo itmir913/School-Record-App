@@ -25,6 +25,7 @@ html {
   --c-violet:  #a855f7;
   --c-overlay:      rgba(4, 6, 12, 0.75);
   --c-modal-shadow: rgba(0, 0, 0, 0.70);
+  --c-overlimit-bg: color-mix(in srgb, var(--c-red) 22%, var(--c-base));
 
   /* 하위 호환 별칭 — 파일 마이그레이션 완료 시 순차 제거 */
   --clr-bg-base:     var(--c-base);
@@ -63,6 +64,7 @@ html {
   --c-violet:       #9333ea;
   --c-overlay:      rgba(0, 0, 0, 0.50);
   --c-modal-shadow: rgba(0, 0, 0, 0.12);
+  --c-overlimit-bg: color-mix(in srgb, var(--c-red) 18%, var(--c-base));
 }
 
 /* ── Tailwind 커스텀 값 ──────────────────────────── */

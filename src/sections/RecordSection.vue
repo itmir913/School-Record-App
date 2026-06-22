@@ -241,6 +241,15 @@ function isStudentEmpty(studentId) {
   return studentTotalBytes(studentId) === 0
 }
 
+function getCellBgClass(actId, studentId) {
+  const state = getCellSavingState(actId, studentId)
+  if (state === 'saving') return '!bg-blue/30'
+  if (state === 'saved') return '!bg-green/30'
+  if (state === 'error') return '!bg-red/40 outline outline-2 outline-red/80'
+  if (isOverLimit(actId, studentId)) return 'cell-overlimit-bg'
+  return ''
+}
+
 const copiedCells = ref(new Set())
 const copiedStudents = ref(new Set())
 
@@ -622,14 +631,9 @@ function isNewGroup(students, index) {
                 v-for="act in recordStore.gridData.activities"
                 :key="act.id"
                 class="text-ink-2 py-1.5 px-2 border-b border-line-2 border-r border-line-2 align-top relative transition-[background-color] duration-500 w-[600px] min-w-[480px]"
-                :class="{
-                  'act-col-collapsed': collapsedActivities.has(act.id),
-                  '!p-0 !bg-blue/[0.04]': collapsedActivities.has(act.id),
-                  '!bg-blue/30': !collapsedActivities.has(act.id) && getCellSavingState(act.id, student.id) === 'saving',
-                  '!bg-green/30': !collapsedActivities.has(act.id) && getCellSavingState(act.id, student.id) === 'saved',
-                  '!bg-red/40 outline outline-2 outline-red/80': !collapsedActivities.has(act.id) && getCellSavingState(act.id, student.id) === 'error',
-                  '!bg-red/30': !collapsedActivities.has(act.id) && isOverLimit(act.id, student.id),
-                }"
+                :class="[
+                  collapsedActivities.has(act.id) ? 'act-col-collapsed !p-0 !bg-blue/[0.04]' : getCellBgClass(act.id, student.id)
+                ]"
             >
               <template v-if="!collapsedActivities.has(act.id)">
                 <textarea
@@ -697,9 +701,11 @@ function isNewGroup(students, index) {
 }
 
 /* sticky 셀 행 강조 — 불투명 (반투명 bg는 스크롤 시 뒤 내용이 비침) */
-.td-fixed.cell-overlimit {
-  background-color: color-mix(in srgb, var(--c-red) 30%, var(--c-base)) !important;
+.td-fixed.cell-overlimit,
+.cell-overlimit-bg {
+  background-color: var(--c-overlimit-bg) !important;
 }
+
 .td-fixed.cell-empty-row {
   background-color: color-mix(in srgb, var(--c-amber) 18%, var(--c-base)) !important;
 }
