@@ -110,7 +110,9 @@ function syncRowHeights(tr) {
   const inputs = Array.from(tr.querySelectorAll('.cell-input'))
   if (!inputs.length) return
   inputs.forEach(el => autoResize(el))
-  const maxH = Math.max(...inputs.map(el => el.scrollHeight))
+  const previewTd = tr.querySelector('.preview-col')
+  const previewH = previewTd ? previewTd.scrollHeight : 0
+  const maxH = Math.max(previewH, ...inputs.map(el => el.scrollHeight))
   inputs.forEach(el => { el.style.height = maxH + 'px' })
 }
 
@@ -587,7 +589,7 @@ function isNewGroup(students, index) {
             <!-- 미리보기 -->
             <td
                 v-if="showPreview"
-                class="td-fixed bg-base text-ink py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[360px] min-w-[360px] max-w-[360px] leading-relaxed"
+                class="preview-col td-fixed bg-base text-ink py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[360px] min-w-[360px] max-w-[360px] leading-relaxed"
                 :class="[freezeColumns ? 'sticky z-[2]' : '', previewColLeft, studentRowBgClass(student.id)]"
             >
               <template v-for="(seg, i) in studentPreviewSpans(student.id)" :key="seg.act.id">
