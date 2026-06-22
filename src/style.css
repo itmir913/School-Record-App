@@ -264,18 +264,18 @@ code, pre {
 /* ── 활동 미리보기 형광펜 팔레트 ─────────────────── */
 .act-hl-base { padding: 1px 2px; border-radius: 3px; }
 
-.act-hl-0  { background-color: hsl(4,   55%, 29%); }
-.act-hl-1  { background-color: hsl(28,  60%, 29%); }
-.act-hl-2  { background-color: hsl(52,  55%, 27%); }
-.act-hl-3  { background-color: hsl(80,  45%, 27%); }
-.act-hl-4  { background-color: hsl(142, 45%, 26%); }
-.act-hl-5  { background-color: hsl(170, 45%, 25%); }
-.act-hl-6  { background-color: hsl(198, 52%, 27%); }
-.act-hl-7  { background-color: hsl(220, 55%, 30%); }
-.act-hl-8  { background-color: hsl(248, 48%, 31%); }
-.act-hl-9  { background-color: hsl(272, 48%, 31%); }
-.act-hl-10 { background-color: hsl(310, 48%, 30%); }
-.act-hl-11 { background-color: hsl(340, 52%, 30%); }
+.act-hl-0  { background-color: hsl(4,   58%, 32%); }
+.act-hl-1  { background-color: hsl(28,  63%, 32%); }
+.act-hl-2  { background-color: hsl(52,  62%, 38%); }
+.act-hl-3  { background-color: hsl(80,  52%, 34%); }
+.act-hl-4  { background-color: hsl(142, 50%, 33%); }
+.act-hl-5  { background-color: hsl(170, 50%, 28%); }
+.act-hl-6  { background-color: hsl(198, 56%, 31%); }
+.act-hl-7  { background-color: hsl(220, 58%, 31%); }
+.act-hl-8  { background-color: hsl(248, 52%, 35%); }
+.act-hl-9  { background-color: hsl(272, 50%, 30%); }
+.act-hl-10 { background-color: hsl(310, 52%, 32%); }
+.act-hl-11 { background-color: hsl(340, 55%, 32%); }
 
 [data-theme="light"] .act-hl-0  { background-color: hsl(4,   82%, 83%); }
 [data-theme="light"] .act-hl-1  { background-color: hsl(28,  87%, 79%); }
