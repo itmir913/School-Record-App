@@ -471,21 +471,21 @@ function isNewGroup(students, index) {
           <tr>
             <th
                 v-if="!collapsePersonalInfo"
-                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12 left-0 cursor-pointer select-none hover:bg-surface"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12 left-0 cursor-pointer select-none underline decoration-dotted hover:bg-surface"
                 :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
                 title="클릭하여 학년·반·번호 숨기기"
                 @click="collapsePersonalInfo = true"
             >학년</th>
             <th
                 v-if="!collapsePersonalInfo"
-                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12 left-48px cursor-pointer select-none hover:bg-surface"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12 left-48px cursor-pointer select-none underline decoration-dotted hover:bg-surface"
                 :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
                 title="클릭하여 학년·반·번호 숨기기"
                 @click="collapsePersonalInfo = true"
             >반</th>
             <th
                 v-if="!collapsePersonalInfo"
-                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12 left-96px cursor-pointer select-none hover:bg-surface"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12 left-96px cursor-pointer select-none underline decoration-dotted hover:bg-surface"
                 :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
                 title="클릭하여 학년·반·번호 숨기기"
                 @click="collapsePersonalInfo = true"
@@ -496,7 +496,7 @@ function isNewGroup(students, index) {
                   freezeColumns ? 'sticky top-0 z-[5]' : '',
                   nameColLeft,
                   collapsePersonalInfo
-                    ? 'text-amber border-l-2 border-l-amber/50 cursor-pointer select-none'
+                    ? 'text-amber border-l-2 border-l-amber/50 cursor-pointer select-none underline decoration-dotted'
                     : 'text-ink-2'
                 ]"
                 :title="collapsePersonalInfo ? '학년·반·번호 숨김 — 클릭하여 복원' : ''"
@@ -519,7 +519,7 @@ function isNewGroup(students, index) {
             <th
                 v-for="act in recordStore.gridData.activities"
                 :key="act.id"
-                class="text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line text-center tracking-[0.03em] w-[320px] min-w-[280px] cursor-pointer select-none hover:text-ink-2 hover:bg-surface"
+                class="text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line text-center tracking-[0.03em] w-[320px] min-w-[280px] cursor-pointer select-none underline decoration-dotted hover:text-ink-2 hover:bg-surface"
                 :class="[
                   freezeColumns ? 'sticky top-0 z-[3]' : '',
                   showPreview ? getActivityColorClass(act.id) : '',
