@@ -286,8 +286,8 @@ function getActivityColorClass(actId) {
 function studentPreviewSpans(studentId) {
   if (!recordStore.gridData) return []
   return recordStore.gridData.activities
-    .filter(act => getCellContent(act.id, studentId).trim() !== '')
     .map(act => ({ act, content: getCellContent(act.id, studentId) }))
+    .filter(s => s.content.trim() !== '')
 }
 
 async function togglePreview() {
