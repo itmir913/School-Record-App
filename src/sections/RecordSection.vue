@@ -29,15 +29,19 @@ async function changeFontSize(delta) {
   configStore.setRecordCellFontSize(next)
   if (!compactCell.value) {
     await nextTick()
-    document.querySelectorAll('.cell-input').forEach(el => autoResize(el))
+    syncAllRows()
   }
 }
 
-function toggleActivity(actId) {
+async function toggleActivity(actId) {
   const next = new Set(collapsedActivities.value)
   if (next.has(actId)) next.delete(actId)
   else next.add(actId)
   collapsedActivities.value = next
+  if (!compactCell.value) {
+    await nextTick()
+    syncAllRows()
+  }
 }
 
 const savingState = ref(new Map())
@@ -73,7 +77,7 @@ watch(selectedAreaId, async (id) => {
     collapsedActivities.value = new Set()
     if (!compactCell.value) {
       await nextTick()
-      document.querySelectorAll('.cell-input').forEach(el => autoResize(el))
+      syncAllRows()
     }
   } catch (e) {
     if (selectedAreaId.value !== id) return
@@ -102,23 +106,36 @@ function autoResize(el) {
   el.style.height = el.scrollHeight + 'px'
 }
 
+function syncRowHeights(tr) {
+  const inputs = Array.from(tr.querySelectorAll('.cell-input'))
+  if (!inputs.length) return
+  inputs.forEach(el => autoResize(el))
+  const maxH = Math.max(...inputs.map(el => el.scrollHeight))
+  inputs.forEach(el => { el.style.height = maxH + 'px' })
+}
+
+function syncAllRows() {
+  document.querySelectorAll('.record-table tr').forEach(syncRowHeights)
+}
+
 async function toggleCompactCell() {
   compactCell.value = !compactCell.value
   await nextTick()
-  document.querySelectorAll('.cell-input').forEach(el => {
-    if (compactCell.value) {
-      el.style.height = ''
-    } else {
-      autoResize(el)
-    }
-  })
+  if (compactCell.value) {
+    document.querySelectorAll('.cell-input').forEach(el => { el.style.height = '' })
+  } else {
+    syncAllRows()
+  }
 }
 
 function onCellInput(activityId, studentId, event) {
   const key = cellKey(activityId, studentId)
   const content = event.target.value
   cellContent.set(key, content)
-  if (!compactCell.value) autoResize(event.target)
+  if (!compactCell.value) {
+    const tr = event.target.closest('tr')
+    if (tr) syncRowHeights(tr)
+  }
 
   if (savingState.value.get(key) === 'error') {
     const cleared = new Map(savingState.value)
@@ -294,8 +311,10 @@ async function togglePreview() {
   showPreview.value = !showPreview.value
   if (showPreview.value && compactCell.value) {
     compactCell.value = false
+  }
+  if (!compactCell.value) {
     await nextTick()
-    document.querySelectorAll('.cell-input').forEach(el => autoResize(el))
+    syncAllRows()
   }
 }
 
