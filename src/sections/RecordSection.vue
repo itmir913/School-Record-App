@@ -558,7 +558,7 @@ function isNewGroup(students, index) {
             <td
                 v-if="showPreview"
                 class="td-fixed bg-base text-ink py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[360px] min-w-[360px] max-w-[360px] leading-relaxed"
-                :class="[freezeColumns ? 'sticky z-[2]' : '', previewColLeft]"
+                :class="[freezeColumns ? 'sticky z-[2]' : '', previewColLeft, studentRowBgClass(student.id)]"
             >
               <template v-for="(seg, i) in studentPreviewSpans(student.id)" :key="seg.act.id">
                 <span v-if="i > 0"> </span>
