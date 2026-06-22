@@ -217,16 +217,22 @@ function isStudentEmpty(studentId) {
 const copiedCells = ref(new Set())
 const copiedStudents = ref(new Set())
 
-async function copyCell(activityId, studentId) {
-  const content = getCellContent(activityId, studentId)
-  await navigator.clipboard.writeText(content)
-  const key = cellKey(activityId, studentId)
-  copiedCells.value.add(key)
-  copiedCells.value = new Set(copiedCells.value)
+function markCopied(setRef, key) {
+  setRef.value.add(key)
+  setRef.value = new Set(setRef.value)
   setTimeout(() => {
-    copiedCells.value.delete(key)
-    copiedCells.value = new Set(copiedCells.value)
+    setRef.value.delete(key)
+    setRef.value = new Set(setRef.value)
   }, 1000)
+}
+
+async function copyCell(activityId, studentId) {
+  try {
+    await navigator.clipboard.writeText(getCellContent(activityId, studentId))
+    markCopied(copiedCells, cellKey(activityId, studentId))
+  } catch (e) {
+    console.error('클립보드 복사 실패:', e)
+  }
 }
 
 async function copyStudentRecord(studentId) {
@@ -236,13 +242,12 @@ async function copyStudentRecord(studentId) {
     .join(' ')
     .replace(/ {2,}/g, ' ')
     .trim()
-  await navigator.clipboard.writeText(joined)
-  copiedStudents.value.add(studentId)
-  copiedStudents.value = new Set(copiedStudents.value)
-  setTimeout(() => {
-    copiedStudents.value.delete(studentId)
-    copiedStudents.value = new Set(copiedStudents.value)
-  }, 1000)
+  try {
+    await navigator.clipboard.writeText(joined)
+    markCopied(copiedStudents, studentId)
+  } catch (e) {
+    console.error('클립보드 복사 실패:', e)
+  }
 }
 
 const activityColorMap = computed(() => {
@@ -457,8 +462,8 @@ function isNewGroup(students, index) {
             >미리보기</th>
             <th
                 class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-[110px] min-w-[110px] max-w-[110px]"
-                :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
-                :style="[{ left: showPreview ? '744px' : '244px' }, freezeColumns ? { borderRight: '1px solid color-mix(in srgb, var(--c-blue) 35%, transparent)' } : {}]"
+                :class="[freezeColumns ? 'sticky top-0 z-[5]' : '', showPreview ? 'left-744px' : 'left-244px']"
+                :style="freezeColumns ? { borderRight: '1px solid color-mix(in srgb, var(--c-blue) 35%, transparent)' } : {}"
             >바이트</th>
             <th
                 v-for="act in recordStore.gridData.activities"
@@ -535,12 +540,10 @@ function isNewGroup(students, index) {
                 class="td-fixed bg-base py-1.5 px-2.5 border-b border-line-2 border-r border-line-2 align-top text-center w-[110px] min-w-[110px] max-w-[110px]"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
+                  showPreview ? 'left-744px' : 'left-244px',
                   isStudentOverLimit(student.id) ? '!bg-red/30' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-amber/[0.18]' : '')
                 ]"
-                :style="[
-                  { left: showPreview ? '744px' : '244px' },
-                  freezeColumns ? { borderRight: '1px solid color-mix(in srgb, var(--c-blue) 35%, transparent)' } : {}
-                ]"
+                :style="freezeColumns ? { borderRight: '1px solid color-mix(in srgb, var(--c-blue) 35%, transparent)' } : {}"
             >
               <span
                   v-if="byteLimit"
