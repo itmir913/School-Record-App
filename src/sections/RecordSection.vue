@@ -589,7 +589,7 @@ function isNewGroup(students, index) {
             <!-- 미리보기 -->
             <td
                 v-if="showPreview"
-                class="preview-col td-fixed bg-base text-ink py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[360px] min-w-[360px] max-w-[360px] leading-relaxed"
+                class="preview-col td-fixed bg-base text-ink py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[360px] min-w-[360px] max-w-[360px] leading-relaxed overflow-hidden break-all"
                 :class="[freezeColumns ? 'sticky z-[2]' : '', previewColLeft, studentRowBgClass(student.id)]"
             >
               <template v-for="(seg, i) in studentPreviewSpans(student.id)" :key="seg.act.id">
