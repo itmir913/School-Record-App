@@ -443,7 +443,7 @@ function isNewGroup(students, index) {
             >이름</th>
             <th
                 v-if="showPreview"
-                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-[500px] min-w-[400px] left-244px"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-[500px] min-w-[500px] max-w-[500px] left-244px"
                 :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
             >미리보기</th>
             <th
@@ -508,7 +508,7 @@ function isNewGroup(students, index) {
             <!-- 미리보기 -->
             <td
                 v-if="showPreview"
-                class="td-fixed bg-base text-ink py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[500px] min-w-[400px] leading-relaxed left-244px"
+                class="td-fixed bg-base text-ink py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[500px] min-w-[500px] max-w-[500px] max-h-[120px] overflow-y-auto leading-relaxed left-244px"
                 :class="freezeColumns ? 'sticky z-[2]' : ''"
             >
               <template v-for="(seg, i) in studentPreviewSpans(student.id)" :key="seg.act.id">
