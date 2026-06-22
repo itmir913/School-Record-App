@@ -396,7 +396,7 @@ function isNewGroup(students, index) {
           </button>
 
           <button
-              class="flex items-center justify-center w-[34px] h-[34px] rounded-lg border bg-transparent cursor-pointer transition-[background-color,color,border-color] text-ink-3 border-line hover:bg-line hover:text-ink-2"
+              class="flex items-center justify-center py-2.5 px-3.5 rounded-lg border bg-transparent cursor-pointer transition-[background-color,color,border-color] text-ink-3 border-line hover:bg-line hover:text-ink-2"
               :title="configStore.theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'"
               @click="configStore.setTheme(configStore.theme === 'dark' ? 'light' : 'dark')"
           >
