@@ -242,8 +242,10 @@ code, pre {
 /* ── 스티키 테이블 컬럼 오프셋 ──────────────────── */
 .left-48px  { left: 48px; }
 .left-96px  { left: 96px; }
+.left-100px { left: 100px; }
 .left-144px { left: 144px; }
 .left-244px { left: 244px; }
+.left-600px { left: 600px; }
 .left-744px { left: 744px; }
 
 /* ── 활동 미리보기 형광펜 팔레트 ─────────────────── */

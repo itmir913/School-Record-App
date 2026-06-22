@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
-import {ALargeSmall, ArrowLeftRight, ArrowUpDown, Circle, CircleAlert, Eye, EyeOff, Maximize2, Minimize2, Moon, Pin, PinOff, Sun} from 'lucide-vue-next'
+import {ALargeSmall, ArrowLeftRight, ArrowUpDown, Circle, CircleAlert, ChevronsRight, Eye, EyeOff, Maximize2, Minimize2, Moon, Pin, PinOff, Sun} from 'lucide-vue-next'
 import {useAreaStore} from '../stores/area'
 import {useRecordStore} from '../stores/record'
 import {useConfigStore} from '../stores/configStore'
@@ -17,6 +17,7 @@ const smartScroll = ref(true)
 const compactCell = ref(true)
 const highlightEmpty = ref(false)
 const showPreview = ref(false)
+const collapsePersonalInfo = ref(false)
 const collapsedActivities = ref(new Set())
 
 const FONT_SIZE_MIN = 10
@@ -250,6 +251,13 @@ async function copyStudentRecord(studentId) {
   }
 }
 
+const nameColLeft = computed(() => collapsePersonalInfo.value ? 'left-0' : 'left-144px')
+const previewColLeft = computed(() => collapsePersonalInfo.value ? 'left-100px' : 'left-244px')
+const byteColLeft = computed(() => {
+  if (collapsePersonalInfo.value) return showPreview.value ? 'left-600px' : 'left-100px'
+  return showPreview.value ? 'left-744px' : 'left-244px'
+})
+
 const activityColorMap = computed(() => {
   if (!recordStore.gridData) return new Map()
   return new Map(
@@ -443,29 +451,51 @@ function isNewGroup(students, index) {
           <thead>
           <tr>
             <th
-                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12 left-0"
+                v-if="!collapsePersonalInfo"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12 left-0 cursor-pointer select-none hover:bg-surface"
                 :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
+                title="클릭하여 학년·반·번호 숨기기"
+                @click="collapsePersonalInfo = true"
             >학년</th>
             <th
-                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12 left-48px"
+                v-if="!collapsePersonalInfo"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12 left-48px cursor-pointer select-none hover:bg-surface"
                 :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
+                title="클릭하여 학년·반·번호 숨기기"
+                @click="collapsePersonalInfo = true"
             >반</th>
             <th
-                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12 left-96px"
+                v-if="!collapsePersonalInfo"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-[5px] border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-12 min-w-12 max-w-12 left-96px cursor-pointer select-none hover:bg-surface"
                 :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
+                title="클릭하여 학년·반·번호 숨기기"
+                @click="collapsePersonalInfo = true"
             >번호</th>
             <th
-                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-[100px] min-w-[100px] max-w-[100px] left-144px"
-                :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
-            >이름</th>
+                class="th-fixed text-[13px] font-semibold bg-base py-2.5 px-2.5 border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-[100px] min-w-[100px] max-w-[100px]"
+                :class="[
+                  freezeColumns ? 'sticky top-0 z-[5]' : '',
+                  nameColLeft,
+                  collapsePersonalInfo
+                    ? 'text-amber border-l-2 border-l-amber/50 cursor-pointer select-none'
+                    : 'text-ink-2'
+                ]"
+                :title="collapsePersonalInfo ? '학년·반·번호 숨김 — 클릭하여 복원' : ''"
+                @click="if (collapsePersonalInfo) collapsePersonalInfo = false"
+            >
+              <span class="flex items-center justify-center gap-1">
+                <ChevronsRight v-if="collapsePersonalInfo" :size="13" class="shrink-0"/>
+                이름
+              </span>
+            </th>
             <th
                 v-if="showPreview"
-                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-[500px] min-w-[500px] max-w-[500px] left-244px"
-                :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-[500px] min-w-[500px] max-w-[500px]"
+                :class="[freezeColumns ? 'sticky top-0 z-[5]' : '', previewColLeft]"
             >미리보기</th>
             <th
                 class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-[110px] min-w-[110px] max-w-[110px]"
-                :class="[freezeColumns ? 'sticky top-0 z-[5]' : '', showPreview ? 'left-744px' : 'left-244px']"
+                :class="[freezeColumns ? 'sticky top-0 z-[5]' : '', byteColLeft]"
                 :style="freezeColumns ? { borderRight: '1px solid color-mix(in srgb, var(--c-blue) 35%, transparent)' } : {}"
             >바이트</th>
             <th
@@ -492,6 +522,7 @@ function isNewGroup(students, index) {
           >
             <!-- 학년 -->
             <td
+                v-if="!collapsePersonalInfo"
                 class="td-fixed text-ink-3 bg-base py-1.5 px-1 border-b border-line-2 border-r border-line-2 align-top text-center w-12 min-w-12 max-w-12 left-0"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
@@ -500,6 +531,7 @@ function isNewGroup(students, index) {
             >{{ student.grade }}</td>
             <!-- 반 -->
             <td
+                v-if="!collapsePersonalInfo"
                 class="td-fixed text-ink-3 bg-base py-1.5 px-1 border-b border-line-2 border-r border-line-2 align-top text-center w-12 min-w-12 max-w-12 left-48px"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
@@ -508,6 +540,7 @@ function isNewGroup(students, index) {
             >{{ student.class_num }}</td>
             <!-- 번호 -->
             <td
+                v-if="!collapsePersonalInfo"
                 class="td-fixed text-ink-3 bg-base py-1.5 px-1 border-b border-line-2 border-r border-line-2 align-top text-center w-12 min-w-12 max-w-12 left-96px"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
@@ -516,17 +549,19 @@ function isNewGroup(students, index) {
             >{{ student.number }}</td>
             <!-- 이름 -->
             <td
-                class="td-fixed text-ink-2 bg-base py-1.5 px-2.5 border-b border-line-2 border-r border-line-2 align-top text-center w-[100px] min-w-[100px] max-w-[100px] break-all left-144px"
+                class="td-fixed text-ink-2 bg-base py-1.5 px-2.5 border-b border-line-2 border-r border-line-2 align-top text-center w-[100px] min-w-[100px] max-w-[100px] break-all"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
+                  nameColLeft,
+                  collapsePersonalInfo ? 'border-l-2 border-l-amber/40' : '',
                   isStudentOverLimit(student.id) ? '!bg-red/30' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-amber/[0.18]' : '')
                 ]"
             >{{ student.name }}</td>
             <!-- 미리보기 -->
             <td
                 v-if="showPreview"
-                class="td-fixed bg-base text-ink py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[500px] min-w-[500px] max-w-[500px] leading-relaxed left-244px"
-                :class="freezeColumns ? 'sticky z-[2]' : ''"
+                class="td-fixed bg-base text-ink py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[500px] min-w-[500px] max-w-[500px] leading-relaxed"
+                :class="[freezeColumns ? 'sticky z-[2]' : '', previewColLeft]"
             >
               <template v-for="(seg, i) in studentPreviewSpans(student.id)" :key="seg.act.id">
                 <span v-if="i > 0"> </span>
@@ -543,7 +578,7 @@ function isNewGroup(students, index) {
                 class="td-fixed bg-base py-1.5 px-2.5 border-b border-line-2 border-r border-line-2 align-top text-center w-[110px] min-w-[110px] max-w-[110px]"
                 :class="[
                   freezeColumns ? 'sticky z-[2]' : '',
-                  showPreview ? 'left-744px' : 'left-244px',
+                  byteColLeft,
                   isStudentOverLimit(student.id) ? '!bg-red/30' : (highlightEmpty && isStudentEmpty(student.id) ? '!bg-amber/[0.18]' : '')
                 ]"
                 :style="freezeColumns ? { borderRight: '1px solid color-mix(in srgb, var(--c-blue) 35%, transparent)' } : {}"
