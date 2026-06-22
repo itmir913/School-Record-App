@@ -239,6 +239,13 @@ code, pre {
 .grid-mapper     { grid-template-columns: 1fr 32px 1fr; }
 .grid-replace    { grid-template-columns: 72px 1fr 36px 1fr 64px 76px; }
 
+/* ── 툴바 토글 버튼 ─────────────────────────────── */
+.toolbar-btn {
+  @apply flex items-center gap-1.5 py-2 px-3.5 rounded-lg border bg-transparent text-sm;
+  @apply cursor-pointer transition-[background-color,color,border-color] whitespace-nowrap;
+  @apply hover:bg-line hover:text-ink-2;
+}
+
 /* ── 활동 열 너비 상태 ──────────────────────────── */
 .act-col-collapsed { width: 80px; min-width: 80px; max-width: 80px; }
 

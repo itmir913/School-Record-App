@@ -368,7 +368,7 @@ function isNewGroup(students, index) {
           </div>
 
           <button
-              class="flex items-center gap-1.5 py-2 px-3.5 rounded-lg border bg-transparent text-sm cursor-pointer transition-[background-color,color,border-color] whitespace-nowrap hover:bg-line hover:text-ink-2"
+              class="toolbar-btn"
               :class="freezeColumns ? 'text-blue-2 border-blue/30 bg-blue/[0.08]' : 'text-ink-3 border-line'"
               title="틀고정 켜기/끄기"
               @click="freezeColumns = !freezeColumns"
@@ -379,7 +379,7 @@ function isNewGroup(students, index) {
           </button>
 
           <button
-              class="flex items-center gap-1.5 py-2 px-3.5 rounded-lg border bg-transparent text-sm cursor-pointer transition-[background-color,color,border-color] whitespace-nowrap hover:bg-line hover:text-ink-2"
+              class="toolbar-btn"
               :class="smartScroll ? 'text-blue-2 border-blue/30 bg-blue/[0.08]' : 'text-ink-3 border-line'"
               title="스마트 스크롤: 활동 영역에서 휠 → 좌우 스크롤"
               @click="smartScroll = !smartScroll"
@@ -390,7 +390,7 @@ function isNewGroup(students, index) {
           </button>
 
           <button
-              class="flex items-center gap-1.5 py-2 px-3.5 rounded-lg border bg-transparent text-sm cursor-pointer transition-[background-color,color,border-color] whitespace-nowrap hover:bg-line hover:text-ink-2"
+              class="toolbar-btn"
               :class="compactCell ? 'text-blue-2 border-blue/30 bg-blue/[0.08]' : 'text-ink-3 border-line'"
               title="셀 높이: 고정(ON) / 자동(OFF)"
               @click="toggleCompactCell"
@@ -401,7 +401,7 @@ function isNewGroup(students, index) {
           </button>
 
           <button
-              class="flex items-center gap-1.5 py-2 px-3.5 rounded-lg border bg-transparent text-sm cursor-pointer transition-[background-color,color,border-color] whitespace-nowrap hover:bg-line hover:text-ink-2"
+              class="toolbar-btn"
               :class="highlightEmpty ? 'text-amber border-amber/30 bg-amber/[0.08]' : 'text-ink-3 border-line'"
               title="기록이 없는 학생 행 강조 켜기/끄기"
               @click="highlightEmpty = !highlightEmpty"
@@ -412,7 +412,7 @@ function isNewGroup(students, index) {
           </button>
 
           <button
-              class="flex items-center gap-1.5 py-2 px-3.5 rounded-lg border bg-transparent text-sm cursor-pointer transition-[background-color,color,border-color] whitespace-nowrap hover:bg-line hover:text-ink-2"
+              class="toolbar-btn"
               :class="showPreview ? 'text-blue-2 border-blue/30 bg-blue/[0.08]' : 'text-ink-3 border-line'"
               title="미리보기 열 켜기/끄기"
               @click="togglePreview"
