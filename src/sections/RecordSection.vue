@@ -175,11 +175,13 @@ async function saveCell(activityId, studentId, content) {
   }
 }
 
+const _encoder = new TextEncoder()
+
 function byteLength(str) {
   if (!str) return 0
   const safeStr = String(str)
   const normalizedStr = safeStr.replace(/\r/g, '').replace(/\n/g, '\r\n')
-  return new TextEncoder().encode(normalizedStr).length
+  return _encoder.encode(normalizedStr).length
 }
 
 const byteLimit = computed(() => {
