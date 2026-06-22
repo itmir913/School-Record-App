@@ -518,10 +518,9 @@ function isNewGroup(students, index) {
                   freezeColumns ? 'sticky top-0 z-[3]' : '',
                   showPreview ? getActivityColorClass(act.id) : '',
                   collapsedActivities.has(act.id)
-                    ? 'whitespace-nowrap overflow-hidden text-ellipsis !py-2.5 !px-2 text-blue-2'
+                    ? 'act-col-collapsed whitespace-nowrap overflow-hidden text-ellipsis !py-2.5 !px-2 text-blue-2'
                     : 'whitespace-normal break-keep'
                 ]"
-                :style="collapsedActivities.has(act.id) ? { width: '80px', minWidth: '80px', maxWidth: '80px' } : {}"
                 @click="toggleActivity(act.id)"
             >{{ collapsedActivities.has(act.id) ? truncateName(act.name) : act.name }}</th>
           </tr>
@@ -598,13 +597,13 @@ function isNewGroup(students, index) {
                 :key="act.id"
                 class="text-ink-2 py-1.5 px-2 border-b border-line-2 border-r border-line-2 align-top relative z-0 transition-[background-color] duration-500 w-[600px] min-w-[480px]"
                 :class="{
+                  'act-col-collapsed': collapsedActivities.has(act.id),
                   '!p-0 !bg-blue/[0.04]': collapsedActivities.has(act.id),
                   '!bg-blue/30': !collapsedActivities.has(act.id) && getCellSavingState(act.id, student.id) === 'saving',
                   '!bg-green/30': !collapsedActivities.has(act.id) && getCellSavingState(act.id, student.id) === 'saved',
                   '!bg-red/40 outline outline-2 outline-red/80': !collapsedActivities.has(act.id) && getCellSavingState(act.id, student.id) === 'error',
                   '!bg-red/30': !collapsedActivities.has(act.id) && isOverLimit(act.id, student.id),
                 }"
-                :style="collapsedActivities.has(act.id) ? { width: '80px', minWidth: '80px', maxWidth: '80px' } : {}"
             >
               <template v-if="!collapsedActivities.has(act.id)">
                 <textarea

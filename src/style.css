@@ -239,6 +239,9 @@ code, pre {
 .grid-mapper     { grid-template-columns: 1fr 32px 1fr; }
 .grid-replace    { grid-template-columns: 72px 1fr 36px 1fr 64px 76px; }
 
+/* ── 활동 열 너비 상태 ──────────────────────────── */
+.act-col-collapsed { width: 80px; min-width: 80px; max-width: 80px; }
+
 /* ── 스티키 테이블 컬럼 오프셋 ──────────────────── */
 .left-48px  { left: 48px; }
 .left-96px  { left: 96px; }
