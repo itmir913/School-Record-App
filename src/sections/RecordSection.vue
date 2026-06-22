@@ -600,7 +600,7 @@ function isNewGroup(students, index) {
             <td
                 v-for="act in recordStore.gridData.activities"
                 :key="act.id"
-                class="text-ink-2 py-1.5 px-2 border-b border-line-2 border-r border-line-2 align-top relative z-0 transition-[background-color] duration-500 w-[600px] min-w-[480px]"
+                class="text-ink-2 py-1.5 px-2 border-b border-line-2 border-r border-line-2 align-top relative transition-[background-color] duration-500 w-[600px] min-w-[480px]"
                 :class="{
                   'act-col-collapsed': collapsedActivities.has(act.id),
                   '!p-0 !bg-blue/[0.04]': collapsedActivities.has(act.id),
