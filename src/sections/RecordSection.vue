@@ -513,7 +513,7 @@ function isNewGroup(students, index) {
                 :class="[freezeColumns ? 'sticky top-0 z-[5]' : '', previewColLeft]"
             >미리보기</th>
             <th
-                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-[110px] min-w-[110px] max-w-[110px]"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-[90px] min-w-[90px] max-w-[90px]"
                 :class="[freezeColumns ? 'sticky top-0 z-[5] freeze-border-right' : '', byteColLeft]"
             >바이트</th>
             <th
@@ -583,7 +583,7 @@ function isNewGroup(students, index) {
             </td>
             <!-- 바이트 -->
             <td
-                class="td-fixed bg-base py-1.5 px-2.5 border-b border-line-2 border-r border-line-2 align-top text-center w-[110px] min-w-[110px] max-w-[110px]"
+                class="td-fixed bg-base py-1.5 px-2.5 border-b border-line-2 border-r border-line-2 align-top text-center w-[90px] min-w-[90px] max-w-[90px]"
                 :class="[freezeColumns ? 'sticky z-[2] freeze-border-right' : '', byteColLeft, studentRowBgClass(student.id)]"
             >
               <span
