@@ -457,6 +457,7 @@ function isNewGroup(students, index) {
                 class="text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line text-center tracking-[0.03em] w-[320px] min-w-[280px] cursor-pointer select-none hover:text-ink-2 hover:bg-surface"
                 :class="[
                   freezeColumns ? 'sticky top-0 z-[3]' : '',
+                  getActivityColorClass(act.id),
                   collapsedActivities.has(act.id)
                     ? 'whitespace-nowrap overflow-hidden text-ellipsis !py-2.5 !px-2 text-blue-2'
                     : 'whitespace-normal break-keep'
