@@ -453,7 +453,7 @@ function isNewGroup(students, index) {
           :class="freezeColumns ? 'flex-1 overflow-auto' : 'overflow-x-auto'"
           @wheel="onGridWheel"
       >
-        <table class="border-separate border-spacing-0 min-w-full" :style="{ fontSize: 'var(--cell-fs, 14px)' }">
+        <table class="record-table border-separate border-spacing-0 min-w-full">
           <thead>
           <tr>
             <th
@@ -604,7 +604,6 @@ function isNewGroup(students, index) {
                 <textarea
                     class="cell-input w-full box-border py-1.5 px-2 leading-[1.5] bg-transparent border rounded-[6px] text-ink resize-none outline-none transition-[border-color,background-color] duration-150 min-h-[60px] overflow-y-auto placeholder:text-ink-5"
                     :class="compactCell ? 'max-h-[60px] overflow-y-auto' : ''"
-                    :style="{ fontSize: 'calc(var(--cell-fs, 14px) + 2px)' }"
                     :data-cell-key="cellKey(act.id, student.id)"
                     :value="getCellContent(act.id, student.id)"
                     @input="onCellInput(act.id, student.id, $event)"
@@ -647,12 +646,15 @@ function isNewGroup(students, index) {
 </template>
 
 <style scoped>
+.record-table { font-size: var(--cell-fs, 14px); }
+
 /* 반 구분선 — 자식 td 선택자 */
 .row-group-start td {
   border-top: 1px solid color-mix(in srgb, var(--c-blue) 30%, transparent);
 }
 
 .cell-input {
+  font-size: calc(var(--cell-fs, 14px) + 2px);
   border-color: var(--c-cell-border);
 }
 .cell-input:hover {
