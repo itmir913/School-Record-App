@@ -214,6 +214,7 @@ function isStudentEmpty(studentId) {
 }
 
 const copiedCells = ref(new Set())
+const copiedStudents = ref(new Set())
 
 async function copyCell(activityId, studentId) {
   const content = getCellContent(activityId, studentId)
@@ -224,6 +225,22 @@ async function copyCell(activityId, studentId) {
   setTimeout(() => {
     copiedCells.value.delete(key)
     copiedCells.value = new Set(copiedCells.value)
+  }, 1000)
+}
+
+async function copyStudentRecord(studentId) {
+  const joined = recordStore.gridData.activities
+    .map(act => getCellContent(act.id, studentId))
+    .filter(c => c.trim() !== '')
+    .join(' ')
+    .replace(/ {2,}/g, ' ')
+    .trim()
+  await navigator.clipboard.writeText(joined)
+  copiedStudents.value.add(studentId)
+  copiedStudents.value = new Set(copiedStudents.value)
+  setTimeout(() => {
+    copiedStudents.value.delete(studentId)
+    copiedStudents.value = new Set(copiedStudents.value)
   }, 1000)
 }
 
@@ -461,6 +478,10 @@ function isNewGroup(students, index) {
                   class="text-[12px]"
                   :class="isStudentOverLimit(student.id) ? 'text-red font-bold' : (highlightEmpty && isStudentEmpty(student.id) ? 'text-amber' : 'text-ink-3')"
               >{{ studentTotalBytes(student.id) }} / {{ byteLimit }} Bytes</span>
+              <button
+                  class="bg-transparent border-none p-0 text-[11px] text-blue-2/70 cursor-pointer leading-none hover:text-blue-2 hover:underline block mx-auto mt-1"
+                  @click.stop="copyStudentRecord(student.id)"
+              >{{ copiedStudents.has(student.id) ? 'Copied!' : 'Copy' }}</button>
             </td>
             <!-- 활동 셀 -->
             <td
