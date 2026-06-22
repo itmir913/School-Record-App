@@ -196,13 +196,21 @@ function isOverLimit(activityId, studentId) {
   return byteLength(content) > byteLimit.value
 }
 
-function studentTotalBytes(studentId) {
-  if (!recordStore.gridData) return 0
-  let total = 0
-  for (const act of recordStore.gridData.activities) {
-    total += byteLength(getCellContent(act.id, studentId))
+const totalBytesCache = computed(() => {
+  if (!recordStore.gridData) return new Map()
+  const map = new Map()
+  for (const student of recordStore.gridData.students) {
+    let total = 0
+    for (const act of recordStore.gridData.activities) {
+      total += byteLength(getCellContent(act.id, student.id))
+    }
+    map.set(student.id, total)
   }
-  return total
+  return map
+})
+
+function studentTotalBytes(studentId) {
+  return totalBytesCache.value.get(studentId) ?? 0
 }
 
 function isStudentOverLimit(studentId) {
