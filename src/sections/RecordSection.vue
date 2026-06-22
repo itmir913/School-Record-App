@@ -518,11 +518,11 @@ function isNewGroup(students, index) {
             >
               <span
                   v-if="byteLimit"
-                  class="text-[12px]"
+                  class="text-[12px] block leading-tight"
                   :class="isStudentOverLimit(student.id) ? 'text-red font-bold' : (highlightEmpty && isStudentEmpty(student.id) ? 'text-amber' : 'text-ink-3')"
               >{{ studentTotalBytes(student.id) }} / {{ byteLimit }} Bytes</span>
               <button
-                  class="bg-transparent border-none p-0 text-[11px] text-blue-2/70 cursor-pointer leading-none hover:text-blue-2 hover:underline block mx-auto mt-1"
+                  class="bg-transparent border-none p-0 text-[11px] text-blue-2/70 cursor-pointer leading-none hover:text-blue-2 hover:underline block mx-auto mt-0.5"
                   @click.stop="copyStudentRecord(student.id)"
               >{{ copiedStudents.has(student.id) ? 'Copied!' : 'Copy' }}</button>
             </td>
@@ -571,7 +571,7 @@ function isNewGroup(students, index) {
             <!-- 미리보기 -->
             <td
                 v-if="showPreview"
-                class="bg-base py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[500px] min-w-[400px] leading-relaxed"
+                class="bg-base text-ink py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[500px] min-w-[400px] leading-relaxed"
             >
               <template v-for="(seg, i) in studentPreviewSpans(student.id)" :key="seg.act.id">
                 <span v-if="i > 0"> </span>
