@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue'
+import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch} from 'vue'
 import {ALargeSmall, ArrowLeftRight, ArrowUpDown, Circle, CircleAlert, ChevronsRight, Eye, EyeOff, Maximize2, Minimize2, Moon, Pin, PinOff, Sun} from 'lucide-vue-next'
 import {useAreaStore} from '../stores/area'
 import {useRecordStore} from '../stores/record'
@@ -41,7 +41,7 @@ function toggleActivity(actId) {
 }
 
 const savingState = ref(new Map())
-const cellContent = ref(new Map())
+const cellContent = reactive(new Map())
 const debounceTimers = new Map()
 
 onMounted(async () => {
@@ -65,11 +65,10 @@ watch(selectedAreaId, async (id) => {
   try {
     await recordStore.fetchAreaGrid(id)
     if (selectedAreaId.value !== id) return
-    const map = new Map()
+    cellContent.clear()
     for (const r of recordStore.gridData.records) {
-      map.set(cellKey(r.activity_id, r.student_id), r.content)
+      cellContent.set(cellKey(r.activity_id, r.student_id), r.content)
     }
-    cellContent.value = map
     savingState.value = new Map()
     collapsedActivities.value = new Set()
     if (!compactCell.value) {
@@ -91,7 +90,7 @@ function cellKey(activityId, studentId) {
 }
 
 function getCellContent(activityId, studentId) {
-  return cellContent.value.get(cellKey(activityId, studentId)) ?? ''
+  return cellContent.get(cellKey(activityId, studentId)) ?? ''
 }
 
 function getCellSavingState(activityId, studentId) {
@@ -118,9 +117,7 @@ async function toggleCompactCell() {
 function onCellInput(activityId, studentId, event) {
   const key = cellKey(activityId, studentId)
   const content = event.target.value
-  const map = new Map(cellContent.value)
-  map.set(key, content)
-  cellContent.value = map
+  cellContent.set(key, content)
   if (!compactCell.value) autoResize(event.target)
 
   if (savingState.value.get(key) === 'error') {
