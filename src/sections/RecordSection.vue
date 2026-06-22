@@ -264,6 +264,15 @@ function studentPreviewSpans(studentId) {
     .map(act => ({ act, content: getCellContent(act.id, studentId) }))
 }
 
+async function togglePreview() {
+  showPreview.value = !showPreview.value
+  if (showPreview.value && compactCell.value) {
+    compactCell.value = false
+    await nextTick()
+    document.querySelectorAll('.cell-input').forEach(el => autoResize(el))
+  }
+}
+
 function focusActivityCell(actId, studentId) {
   const el = document.querySelector(`[data-cell-key="${cellKey(actId, studentId)}"]`)
   if (!el) return
@@ -371,7 +380,7 @@ function isNewGroup(students, index) {
               class="flex items-center gap-1.5 py-2 px-3.5 rounded-lg border bg-transparent text-sm cursor-pointer transition-[background-color,color,border-color] whitespace-nowrap hover:bg-line hover:text-ink-2"
               :class="showPreview ? 'text-blue-2 border-blue/30 bg-blue/[0.08]' : 'text-ink-3 border-line'"
               title="미리보기 열 켜기/끄기"
-              @click="showPreview = !showPreview"
+              @click="togglePreview"
           >
             <Eye v-if="showPreview" :size="15"/>
             <EyeOff v-else :size="15"/>
@@ -508,7 +517,7 @@ function isNewGroup(students, index) {
             <!-- 미리보기 -->
             <td
                 v-if="showPreview"
-                class="td-fixed bg-base text-ink py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[500px] min-w-[500px] max-w-[500px] max-h-[120px] overflow-y-auto leading-relaxed left-244px"
+                class="td-fixed bg-base text-ink py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[500px] min-w-[500px] max-w-[500px] leading-relaxed left-244px"
                 :class="freezeColumns ? 'sticky z-[2]' : ''"
             >
               <template v-for="(seg, i) in studentPreviewSpans(student.id)" :key="seg.act.id">
