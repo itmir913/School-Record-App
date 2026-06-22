@@ -447,6 +447,11 @@ function isNewGroup(students, index) {
                 :style="[{ left: '244px' }, freezeColumns ? { borderRight: '1px solid color-mix(in srgb, var(--c-blue) 35%, transparent)' } : {}]"
             >바이트</th>
             <th
+                v-if="showPreview"
+                class="th-fixed text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-[500px] min-w-[400px] left-354px"
+                :class="freezeColumns ? 'sticky top-0 z-[5]' : ''"
+            >미리보기</th>
+            <th
                 v-for="act in recordStore.gridData.activities"
                 :key="act.id"
                 class="text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line text-center tracking-[0.03em] w-[320px] min-w-[280px] cursor-pointer select-none hover:text-ink-2 hover:bg-surface"
@@ -459,11 +464,6 @@ function isNewGroup(students, index) {
                 :style="collapsedActivities.has(act.id) ? { width: '80px', minWidth: '80px', maxWidth: '80px' } : {}"
                 @click="toggleActivity(act.id)"
             >{{ collapsedActivities.has(act.id) ? truncateName(act.name) : act.name }}</th>
-            <th
-                v-if="showPreview"
-                class="text-[13px] font-semibold text-ink-2 bg-base py-2.5 px-2.5 border-b border-line border-r border-line whitespace-nowrap text-center tracking-[0.03em] w-[500px] min-w-[400px]"
-                :class="freezeColumns ? 'sticky top-0 z-[3]' : ''"
-            >미리보기</th>
           </tr>
           </thead>
           <tbody>
@@ -526,6 +526,22 @@ function isNewGroup(students, index) {
                   @click.stop="copyStudentRecord(student.id)"
               >{{ copiedStudents.has(student.id) ? 'Copied!' : 'Copy' }}</button>
             </td>
+            <!-- 미리보기 -->
+            <td
+                v-if="showPreview"
+                class="td-fixed bg-base text-ink py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[500px] min-w-[400px] leading-relaxed left-354px"
+                :class="freezeColumns ? 'sticky z-[2]' : ''"
+            >
+              <template v-for="(seg, i) in studentPreviewSpans(student.id)" :key="seg.act.id">
+                <span v-if="i > 0"> </span>
+                <span
+                    class="act-hl-base cursor-pointer hover:opacity-75 transition-opacity duration-100"
+                    :class="getActivityColorClass(seg.act.id)"
+                    :title="seg.act.name"
+                    @click="focusActivityCell(seg.act.id, student.id)"
+                >{{ seg.content }}</span>
+              </template>
+            </td>
             <!-- 활동 셀 -->
             <td
                 v-for="act in recordStore.gridData.activities"
@@ -566,21 +582,6 @@ function isNewGroup(students, index) {
                       @click.stop="openHistory(act, student)"
                   >History</button>
                 </div>
-              </template>
-            </td>
-            <!-- 미리보기 -->
-            <td
-                v-if="showPreview"
-                class="bg-base text-ink py-2 px-3 border-b border-line-2 border-r border-line-2 align-top w-[500px] min-w-[400px] leading-relaxed"
-            >
-              <template v-for="(seg, i) in studentPreviewSpans(student.id)" :key="seg.act.id">
-                <span v-if="i > 0"> </span>
-                <span
-                    class="act-hl-base cursor-pointer hover:opacity-75 transition-opacity duration-100"
-                    :class="getActivityColorClass(seg.act.id)"
-                    :title="seg.act.name"
-                    @click="focusActivityCell(seg.act.id, student.id)"
-                >{{ seg.content }}</span>
               </template>
             </td>
           </tr>
