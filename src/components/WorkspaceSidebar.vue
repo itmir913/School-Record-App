@@ -168,7 +168,7 @@ const navGroups = [
           @click="$emit('openSnapshot')"
           title="스냅샷 관리"
       >
-        <GitBranch :size="20" class="shrink-0 text-blue-2 opacity-60"/>
+        <GitBranch :size="20" class="shrink-0"/>
         <span v-if="!collapsed">스냅샷(Snapshot)</span>
       </button>
 
@@ -184,10 +184,7 @@ const navGroups = [
           @click="select('settings')"
           title="설정(Settings)"
       >
-        <Settings :size="20"
-                  class="shrink-0"
-                  :class="activeSection === 'settings' ? 'text-blue-2 opacity-100' : 'text-blue-2 opacity-60'"
-        />
+        <Settings :size="20" class="shrink-0"/>
         <span v-if="!collapsed">설정(Settings)</span>
       </button>
     </div>
