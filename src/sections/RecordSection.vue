@@ -316,7 +316,7 @@ function isNewGroup(students, index) {
         <div class="flex items-center gap-2 min-w-0">
           <select
               v-model="selectedAreaId"
-              class="py-2 px-3.5 rounded-btn border border-line bg-base text-ink text-sm cursor-pointer outline-none min-w-[180px] focus:border-blue/50"
+              class="py-2.5 px-3.5 rounded-btn border border-line bg-base text-ink text-sm cursor-pointer outline-none min-w-[180px] focus:border-blue/50"
           >
             <option :value="null" disabled>영역(Area) 선택</option>
             <option v-for="area in areaStore.areas" :key="area.id" :value="area.id">{{ area.name }}</option>
