@@ -277,15 +277,15 @@ code, pre {
 .act-hl-10 { background-color: hsl(310, 48%, 30%); }
 .act-hl-11 { background-color: hsl(340, 52%, 30%); }
 
-[data-theme="light"] .act-hl-0  { background-color: hsl(4,   80%, 87%); }
-[data-theme="light"] .act-hl-1  { background-color: hsl(28,  85%, 84%); }
-[data-theme="light"] .act-hl-2  { background-color: hsl(52,  88%, 82%); }
-[data-theme="light"] .act-hl-3  { background-color: hsl(80,  68%, 83%); }
-[data-theme="light"] .act-hl-4  { background-color: hsl(142, 58%, 82%); }
-[data-theme="light"] .act-hl-5  { background-color: hsl(170, 62%, 81%); }
-[data-theme="light"] .act-hl-6  { background-color: hsl(198, 72%, 83%); }
-[data-theme="light"] .act-hl-7  { background-color: hsl(220, 75%, 86%); }
-[data-theme="light"] .act-hl-8  { background-color: hsl(248, 68%, 87%); }
-[data-theme="light"] .act-hl-9  { background-color: hsl(272, 68%, 87%); }
-[data-theme="light"] .act-hl-10 { background-color: hsl(310, 65%, 87%); }
-[data-theme="light"] .act-hl-11 { background-color: hsl(340, 75%, 87%); }
+[data-theme="light"] .act-hl-0  { background-color: hsl(4,   82%, 83%); }
+[data-theme="light"] .act-hl-1  { background-color: hsl(28,  87%, 79%); }
+[data-theme="light"] .act-hl-2  { background-color: hsl(52,  90%, 74%); }
+[data-theme="light"] .act-hl-3  { background-color: hsl(80,  72%, 75%); }
+[data-theme="light"] .act-hl-4  { background-color: hsl(142, 62%, 74%); }
+[data-theme="light"] .act-hl-5  { background-color: hsl(170, 65%, 73%); }
+[data-theme="light"] .act-hl-6  { background-color: hsl(198, 75%, 79%); }
+[data-theme="light"] .act-hl-7  { background-color: hsl(220, 78%, 82%); }
+[data-theme="light"] .act-hl-8  { background-color: hsl(248, 70%, 83%); }
+[data-theme="light"] .act-hl-9  { background-color: hsl(272, 70%, 83%); }
+[data-theme="light"] .act-hl-10 { background-color: hsl(310, 67%, 83%); }
+[data-theme="light"] .act-hl-11 { background-color: hsl(340, 78%, 83%); }
