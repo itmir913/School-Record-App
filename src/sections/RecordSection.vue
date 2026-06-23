@@ -97,6 +97,10 @@ function getCellContent(activityId, studentId) {
   return cellContent.get(cellKey(activityId, studentId)) ?? ''
 }
 
+function normalizeForCopy(str) {
+  return str.replace(/[\r\n]+/g, ' ').replace(/ {2,}/g, ' ').trim()
+}
+
 function getCellSavingState(activityId, studentId) {
   return savingState.value.get(cellKey(activityId, studentId))
 }
@@ -264,7 +268,7 @@ function markCopied(setRef, key) {
 
 async function copyCell(activityId, studentId) {
   try {
-    await navigator.clipboard.writeText(getCellContent(activityId, studentId))
+    await navigator.clipboard.writeText(normalizeForCopy(getCellContent(activityId, studentId)))
     markCopied(copiedCells, cellKey(activityId, studentId))
   } catch (e) {
     console.error('클립보드 복사 실패:', e)
@@ -273,8 +277,8 @@ async function copyCell(activityId, studentId) {
 
 async function copyStudentRecord(studentId) {
   const joined = recordStore.gridData.activities
-    .map(act => getCellContent(act.id, studentId))
-    .filter(c => c.trim() !== '')
+    .map(act => normalizeForCopy(getCellContent(act.id, studentId)))
+    .filter(c => c !== '')
     .join(' ')
     .replace(/ {2,}/g, ' ')
     .trim()
