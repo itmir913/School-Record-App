@@ -10,6 +10,13 @@
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '0.2.18',
+    date: '2026-06-26',
+    bugFixes: [
+      '한셀 등 MS Excel 이외 프로그램에서 저장한 xlsx 파일 가져오기 오류 수정',
+    ],
+  },
+  {
     version: '0.2.17',
     date: '2026-06-22',
     features: [
