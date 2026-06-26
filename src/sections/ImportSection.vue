@@ -8,6 +8,7 @@ import {Download, FileSpreadsheet} from 'lucide-vue-next'
 import WizardLayout from '../components/WizardLayout.vue'
 import DiffView from '../components/DiffView.vue'
 import {Workbook} from 'exceljs'
+import * as XLSX from 'xlsx'
 import {SAMPLE_A_ROWS, SAMPLE_B_COLS, SAMPLE_B_ROWS} from '../data/sampleImportData'
 
 // ── 스토어 ────────────────────────────────────────────────────
@@ -255,6 +256,38 @@ function cellValue(v) {
   return String(v)
 }
 
+async function loadXlsxRows(buffer) {
+  try {
+    const workbook = new Workbook()
+    await workbook.xlsx.load(buffer)
+    const worksheet = workbook.worksheets[0]
+    const rows = []
+    worksheet.eachRow((row) => {
+      rows.push(row.values.slice(1).map(cellValue))
+    })
+    if (rows.length > 1) {
+      const headerLen = rows[0].length
+      for (let i = 1; i < rows.length; i++) {
+        while (rows[i].length < headerLen) rows[i].push('')
+      }
+    }
+    return rows
+  } catch {
+    // 한셀 등 비표준 xlsx 폴백
+    const wb = XLSX.read(buffer, {type: 'array'})
+    const ws = wb.Sheets[wb.SheetNames[0]]
+    const raw = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''})
+    const rows = raw.map(row => row.map(v => (v === null || v === undefined) ? '' : String(v)))
+    if (rows.length > 1) {
+      const headerLen = rows[0].length
+      for (let i = 1; i < rows.length; i++) {
+        while (rows[i].length < headerLen) rows[i].push('')
+      }
+    }
+    return rows
+  }
+}
+
 function bufferToBase64(buffer) {
   const bytes = new Uint8Array(buffer)
   let binary = ''
@@ -291,19 +324,7 @@ function processFile(file) {
       if (ext === 'csv') {
         rows = parseCsv(decodeCSVBytes(ev.target.result))
       } else {
-        const workbook = new Workbook()
-        await workbook.xlsx.load(ev.target.result)
-        const worksheet = workbook.worksheets[0]
-        rows = []
-        worksheet.eachRow((row) => {
-          rows.push(row.values.slice(1).map(cellValue))
-        })
-        if (rows.length > 1) {
-          const headerLen = rows[0].length
-          for (let i = 1; i < rows.length; i++) {
-            while (rows[i].length < headerLen) rows[i].push('')
-          }
-        }
+        rows = await loadXlsxRows(ev.target.result)
       }
       if (rows.length < 2) {
         parseError.value = '데이터가 없습니다. 헤더 포함 최소 2행이 필요합니다.'
@@ -780,7 +801,7 @@ function resetWizard() {
           <FileSpreadsheet :size="40" class="text-ink-5"/>
           <p v-if="!fileName" class="text-base text-ink-5 m-0">파일을 여기에 드래그하거나 클릭하여 선택</p>
           <p v-else class="text-base font-semibold text-ink-2 m-0">{{ fileName }}</p>
-          <p class="text-sm text-ink-5 m-0">CSV, XLSX, XLS 지원</p>
+          <p class="text-sm text-ink-5 m-0">CSV, XLSX 지원</p>
         </div>
 
         <p v-if="parseError" class="text-sm text-red my-3 mb-6">{{ parseError }}</p>

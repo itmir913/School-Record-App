@@ -2,6 +2,7 @@
 import {computed, ref, watch} from 'vue'
 import {ChevronDown, ChevronRight, Download, FileSpreadsheet, Users} from 'lucide-vue-next'
 import {Workbook} from 'exceljs'
+import * as XLSX from 'xlsx'
 import {save} from '@tauri-apps/plugin-dialog'
 import BaseModal from './BaseModal.vue'
 import {useFileStore} from '../stores/file.js'
@@ -188,6 +189,38 @@ function cellValue(v) {
   return String(v)
 }
 
+async function loadXlsxRows(buffer) {
+  try {
+    const workbook = new Workbook()
+    await workbook.xlsx.load(buffer)
+    const worksheet = workbook.worksheets[0]
+    const rows = []
+    worksheet.eachRow((row) => {
+      rows.push(row.values.slice(1).map(cellValue))
+    })
+    if (rows.length > 1) {
+      const headerLen = rows[0].length
+      for (let i = 1; i < rows.length; i++) {
+        while (rows[i].length < headerLen) rows[i].push('')
+      }
+    }
+    return rows
+  } catch {
+    // 한셀 등 비표준 xlsx 폴백
+    const wb = XLSX.read(buffer, {type: 'array'})
+    const ws = wb.Sheets[wb.SheetNames[0]]
+    const raw = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''})
+    const rows = raw.map(row => row.map(v => (v === null || v === undefined) ? '' : String(v)))
+    if (rows.length > 1) {
+      const headerLen = rows[0].length
+      for (let i = 1; i < rows.length; i++) {
+        while (rows[i].length < headerLen) rows[i].push('')
+      }
+    }
+    return rows
+  }
+}
+
 function decodeCSVBytes(buffer) {
   const bytes = new Uint8Array(buffer)
   if (bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF)
@@ -226,19 +259,7 @@ async function processFile(file) {
       if (ext === 'csv') {
         rows = parseCsv(decodeCSVBytes(ev.target.result))
       } else {
-        const workbook = new Workbook()
-        await workbook.xlsx.load(ev.target.result)
-        const worksheet = workbook.worksheets[0]
-        rows = []
-        worksheet.eachRow((row) => {
-          rows.push(row.values.slice(1).map(cellValue))
-        })
-        if (rows.length > 1) {
-          const headerLen = rows[0].length
-          for (let i = 1; i < rows.length; i++) {
-            while (rows[i].length < headerLen) rows[i].push('')
-          }
-        }
+        rows = await loadXlsxRows(ev.target.result)
       }
 
       if (rows.length < 2) {
