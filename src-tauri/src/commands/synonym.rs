@@ -144,7 +144,8 @@ pub fn get_all_records_for_inspect_impl(
         "all" => {
             let mut stmt = conn
                 .prepare(
-                    "SELECT ar.id, act.name, s.name, COALESCE(a.name, '') AS area_name,
+                    "SELECT ar.id, act.name, s.name,
+                            COALESCE(GROUP_CONCAT(DISTINCT a.name), '') AS area_name,
                             s.grade, s.class_num, s.number, ar.content
                      FROM ActivityRecord ar
                      JOIN Activity act ON ar.activity_id = act.id
@@ -153,7 +154,7 @@ pub fn get_all_records_for_inspect_impl(
                      LEFT JOIN Area a ON aa.area_id = a.id
                      WHERE ar.content != ''
                      GROUP BY ar.id
-                     ORDER BY a.id, act.id, s.grade, s.class_num, s.number",
+                     ORDER BY MIN(a.id), act.id, s.grade, s.class_num, s.number",
                 )
                 .map_err(|e| e.to_string())?;
             let rows = stmt
