@@ -617,7 +617,17 @@ onMounted(() => {
         </div>
 
         <div v-else class="overflow-x-auto border border-line rounded-[10px]">
-          <table class="w-full border-collapse text-sm [&_tr:hover_td]:bg-blue/[0.04] [&_tr:last-child_td]:border-b-0">
+          <table class="min-w-full table-fixed border-collapse text-sm [&_tr:hover_td]:bg-blue/[0.04] [&_tr:last-child_td]:border-b-0">
+            <colgroup>
+              <col class="w-10">
+              <col class="w-10">
+              <col class="w-10">
+              <col class="w-20">
+              <col class="w-36">
+              <col class="w-48">
+              <col class="w-80">
+              <col class="w-60">
+            </colgroup>
             <thead class="bg-surface">
             <tr>
               <th class="py-2.5 px-3.5 text-left font-semibold text-ink-5 border-b border-line whitespace-nowrap">학년</th>
@@ -636,9 +646,9 @@ onMounted(() => {
               <td class="py-2.5 px-3.5 align-top border-b border-raised text-ink-2 whitespace-nowrap text-xs text-ink-4">{{ record.class_num || '' }}</td>
               <td class="py-2.5 px-3.5 align-top border-b border-raised text-ink-2 whitespace-nowrap text-xs text-ink-4">{{ record.number || '—' }}</td>
               <td class="py-2.5 px-3.5 align-top border-b border-raised text-ink-2 whitespace-nowrap text-xs text-ink-4">{{ record.student_name || '—' }}</td>
-              <td class="py-2.5 px-3.5 align-top border-b border-raised whitespace-nowrap text-ink-5 text-xs">{{ record.area_name || '—' }}</td>
-              <td class="py-2.5 px-3.5 align-top border-b border-raised text-ink-2 whitespace-nowrap font-medium">{{ record.activity_name }}</td>
-              <td class="cell-content py-2.5 px-3.5 align-top border-b border-raised text-ink-2 leading-relaxed break-all max-w-[400px]">
+              <td class="py-2.5 px-3.5 align-top border-b border-raised text-ink-5 text-xs break-keep">{{ record.area_name || '—' }}</td>
+              <td class="py-2.5 px-3.5 align-top border-b border-raised text-ink-2 font-medium break-keep">{{ record.activity_name }}</td>
+              <td class="cell-content py-2.5 px-3.5 align-top border-b border-raised text-ink-2 leading-relaxed break-all">
                 <DiffView
                     :before="buildBeforeText(record.content, detectedWords)"
                     :after="record.content"
