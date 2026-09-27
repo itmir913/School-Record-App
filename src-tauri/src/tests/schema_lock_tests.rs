@@ -4,7 +4,13 @@
 //! 정식 출시 이후에는 사용자 PC에 이미 특정 구조의 DB 파일이 존재하므로,
 //! 스키마 변경에는 반드시 버전 bump + 마이그레이션이 따라야 한다.
 //!
-//! ## 스키마를 변경할 때의 절차 (vN → vN+1)
+//! ## ⚠️ 스키마 버전은 소유자의 명시적 승인 없이 올리지 않는다
+//! 이 테스트가 실패했다고 버전을 올려 맞추지 말 것. 스키마 버전 bump는 배포된 모든
+//! 파일을 되돌릴 수 없게 바꾸는 매우 민감한 결정이다. **에이전트·AI는 여기서 멈추고
+//! 사용자(소유자)에게 변경 사유를 설명해 확정을 받은 뒤에만** 아래 절차를 수행한다.
+//! 승인이 없으면 schema.sql·ENCRYPTED_COLUMNS 변경 자체를 되돌리는 것이 기본이다.
+//!
+//! ## 스키마를 변경할 때의 절차 (vN → vN+1, 승인 후에만)
 //! 1. `schema.sql`을 수정한다.
 //! 2. 기존 `tests/schema_history/vN.sql`은 **그대로 둔다**(배포된 구조의 기록).
 //!    수정한 `schema.sql`을 `tests/schema_history/vN+1.sql`로 복사한다.
@@ -113,7 +119,8 @@ fn test_fresh_schema_matches_locked_fingerprint() {
         .unwrap_or_else(|| {
             panic!(
                 "SCHEMA_VERSION={}에 해당하는 지문이 SCHEMA_FINGERPRINTS에 없습니다. \
-                 새 버전의 지문 {}을(를) 추가하세요.",
+                 새 버전의 지문 {}을(를) 추가하세요. \
+                 (스키마 버전 bump는 소유자의 명시적 승인을 받은 경우에만 허용된다)",
                 db::SCHEMA_VERSION, actual
             )
         });
@@ -125,7 +132,10 @@ fn test_fresh_schema_matches_locked_fingerprint() {
          ===== 스키마가 변경되었습니다 (v{ver} 지문 불일치) =====\n\
          schema.sql이 스키마 버전 {ver}로 고정된 구조와 다릅니다.\n\
          버전을 올리지 않고 배포하면 기존 사용자의 DB 파일이 마이그레이션되지 않습니다.\n\n\
-         schema_lock_tests.rs 상단의 '스키마를 변경할 때의 절차'를 따르세요.\n\
+         ⚠️ 에이전트·AI라면 스스로 버전을 올리지 말고 여기서 멈추세요.\n\
+         스키마 버전 bump는 사용자(소유자)의 명시적 승인을 받은 뒤에만 허용됩니다.\n\
+         승인이 없으면 schema.sql 변경을 되돌리는 것이 기본입니다.\n\
+         승인을 받았다면 schema_lock_tests.rs 상단의 '스키마를 변경할 때의 절차'를 따르세요.\n\
          새 버전의 지문: {actual}\n\n\
          현재 schema.sql 덤프:\n{dump}\n",
         ver = db::SCHEMA_VERSION,
@@ -257,7 +267,8 @@ fn test_encrypted_columns_match_locked_list() {
         .collect();
     assert_eq!(
         actual, expected,
-        "암호화 대상 컬럼이 바뀌었습니다. LOCKED_ENCRYPTED_COLUMNS 주석의 확인 사항을 먼저 읽으세요."
+        "암호화 대상 컬럼이 바뀌었습니다. LOCKED_ENCRYPTED_COLUMNS 주석의 확인 사항을 먼저 읽으세요. \
+         이 변경은 스키마 버전 bump를 부르므로 소유자의 명시적 승인 없이 진행하지 마세요."
     );
 }
 
