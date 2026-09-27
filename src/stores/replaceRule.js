@@ -11,24 +11,24 @@ export const useReplaceRuleStore = defineStore('replaceRule', () => {
   const error = ref('')
   const needsRuleUpdate = ref(false)
 
-  async function checkRuleUpdateStatus() {
-    const stored = await invoke('get_config', { key: RULES_VERSION_KEY })
-    needsRuleUpdate.value = stored !== String(DEFAULT_REPLACE_RULES_VERSION)
-  }
-
   async function fetchRules() {
     loading.value = true
     error.value = ''
     try {
       const fetched = await invoke('get_replace_rules')
-      if (!Array.isArray(fetched) || fetched.length === 0) {
+      const stored = await invoke('get_config', { key: RULES_VERSION_KEY })
+      // 시드는 "기본 규칙을 넣은 적이 없는 파일"에만 한다. 버전 키가 그 표식이다.
+      // 목록이 비었다는 것만으로 판정하면, 사용자가 규칙을 전부 지운 순간
+      // 재조회가 기본 규칙(정규식 포함)을 켜진 채로 되살린다.
+      if (stored == null && (!Array.isArray(fetched) || fetched.length === 0)) {
         await invoke('apply_default_replace_rules', { rules: DEFAULT_REPLACE_RULES })
         await invoke('set_config', { key: RULES_VERSION_KEY, value: String(DEFAULT_REPLACE_RULES_VERSION) })
         rules.value = await invoke('get_replace_rules')
+        needsRuleUpdate.value = false
       } else {
         rules.value = fetched
+        needsRuleUpdate.value = stored !== String(DEFAULT_REPLACE_RULES_VERSION)
       }
-      await checkRuleUpdateStatus()
     } catch (e) {
       error.value = e?.toString() ?? '규칙 목록을 불러오지 못했습니다.'
     } finally {

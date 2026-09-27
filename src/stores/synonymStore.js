@@ -16,24 +16,24 @@ export const useSynonymStore = defineStore('synonym', () => {
   const error = ref('')
   const needsSynonymUpdate = ref(false)
 
-  async function checkSynonymUpdateStatus() {
-    const stored = await invoke('get_config', { key: SYNONYM_VERSION_KEY })
-    needsSynonymUpdate.value = stored !== String(DEFAULT_SYNONYMS_VERSION)
-  }
-
   async function fetchGroups() {
     loading.value = true
     error.value = ''
     try {
       const fetched = await invoke('get_synonym_groups')
-      if (fetched.length === 0) {
+      const stored = await invoke('get_config', { key: SYNONYM_VERSION_KEY })
+      // 시드는 "기본 유의어를 넣은 적이 없는 파일"에만 한다. 버전 키가 그 표식이다.
+      // 목록이 비었다는 것만으로 판정하면, 사용자가 그룹을 전부 지운 순간
+      // 재조회가 기본 그룹을 모두 되살린다.
+      if (stored == null && fetched.length === 0) {
         await invoke('apply_default_synonyms', { groups: defaultSynonymGroups() })
         await invoke('set_config', { key: SYNONYM_VERSION_KEY, value: String(DEFAULT_SYNONYMS_VERSION) })
         groups.value = await invoke('get_synonym_groups')
+        needsSynonymUpdate.value = false
       } else {
         groups.value = fetched
+        needsSynonymUpdate.value = stored !== String(DEFAULT_SYNONYMS_VERSION)
       }
-      await checkSynonymUpdateStatus()
     } catch (e) {
       error.value = String(e)
     } finally {
