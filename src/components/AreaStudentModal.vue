@@ -2,7 +2,6 @@
 import {computed, ref, watch} from 'vue'
 import {ChevronDown, ChevronRight, Download, FileSpreadsheet, Users} from '@lucide/vue'
 import {Workbook} from 'exceljs'
-import * as XLSX from 'xlsx'
 import {save} from '@tauri-apps/plugin-dialog'
 import BaseModal from './BaseModal.vue'
 import {useFileStore} from '../stores/file.js'
@@ -10,6 +9,7 @@ import {useStudentStore} from '../stores/student.js'
 import {SAMPLE_CSV} from '../data/sampleStudentCsv.ts'
 import {STUDENT_COL_ALIASES} from '../data/columnAliases'
 import {isValidIdentityPart} from '../services/studentId'
+import {decodeCsvBytes, loadXlsxRows, parseCsv} from '../services/spreadsheet'
 
 const props = defineProps({
   area: {type: Object, required: true},
@@ -91,7 +91,7 @@ function submit() {
 const fileInputRef = ref(null)
 const dragging = ref(false)
 const excelError = ref('')
-const excelStatus = ref(null) // { selected: N, newlyAdded: M } | null
+const excelStatus = ref(null) // { selected, newlyAdded, updated, skipped } | null
 const parsing = ref(false)
 
 // 중앙 별칭표를 그대로 쓴다. 여기에 재선언해 두면 별칭을 중앙에 추가해도
@@ -134,13 +134,13 @@ function bufferToBase64(buffer) {
 }
 
 async function downloadSample() {
-  const path = await save({
-    title: '샘플 파일 저장',
-    defaultPath: '예시_학생_명렬표.xlsx',
-    filters: [{name: 'Excel 파일', extensions: ['xlsx']}],
-  })
-  if (!path) return
   try {
+    const path = await save({
+      title: '샘플 파일 저장',
+      defaultPath: '예시_학생_명렬표.xlsx',
+      filters: [{name: 'Excel 파일', extensions: ['xlsx']}],
+    })
+    if (!path) return
     const csvRows = parseCsv(SAMPLE_CSV)
     const workbook = new Workbook()
     const worksheet = workbook.addWorksheet('예시')
@@ -150,83 +150,6 @@ async function downloadSample() {
   } catch (e) {
     excelError.value = '샘플 파일 저장 실패: ' + String(e)
   }
-}
-
-function parseCsv(text) {
-  const rows = []
-  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
-  for (const line of lines) {
-    if (!line.trim()) continue
-    const row = []
-    let field = ''
-    let inQuotes = false
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i]
-      if (inQuotes) {
-        if (ch === '"' && line[i + 1] === '"') { field += '"'; i++ }
-        else if (ch === '"') inQuotes = false
-        else field += ch
-      } else {
-        if (ch === '"') inQuotes = true
-        else if (ch === ',') { row.push(field); field = '' }
-        else field += ch
-      }
-    }
-    row.push(field)
-    rows.push(row)
-  }
-  return rows
-}
-
-function cellValue(v) {
-  if (v === null || v === undefined) return ''
-  if (typeof v === 'object') {
-    if (v.richText) return v.richText.map(r => r.text).join('')
-    if (v.text !== undefined) return String(v.text)
-    if (v instanceof Date) return v.toLocaleDateString()
-  }
-  return String(v)
-}
-
-async function loadXlsxRows(buffer) {
-  try {
-    const workbook = new Workbook()
-    await workbook.xlsx.load(buffer)
-    const worksheet = workbook.worksheets[0]
-    const rows = []
-    worksheet.eachRow((row) => {
-      rows.push(row.values.slice(1).map(cellValue))
-    })
-    if (rows.length > 1) {
-      const headerLen = rows[0].length
-      for (let i = 1; i < rows.length; i++) {
-        while (rows[i].length < headerLen) rows[i].push('')
-      }
-    }
-    return rows
-  } catch {
-    // 한셀 등 비표준 xlsx 폴백
-    const wb = XLSX.read(buffer, {type: 'array'})
-    const ws = wb.Sheets[wb.SheetNames[0]]
-    const raw = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''})
-    const rows = raw.map(row => row.map(v => (v === null || v === undefined) ? '' : String(v)))
-    if (rows.length > 1) {
-      const headerLen = rows[0].length
-      for (let i = 1; i < rows.length; i++) {
-        while (rows[i].length < headerLen) rows[i].push('')
-      }
-    }
-    return rows
-  }
-}
-
-function decodeCSVBytes(buffer) {
-  const bytes = new Uint8Array(buffer)
-  if (bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF)
-    return new TextDecoder('utf-8').decode(bytes.subarray(3))
-  for (const enc of ['utf-8', 'euc-kr'])
-    try { return new TextDecoder(enc, {fatal: true}).decode(bytes) } catch {}
-  return new TextDecoder('utf-8').decode(bytes)
 }
 
 function autoDetectColMap(headers) {
@@ -256,7 +179,7 @@ async function processFile(file) {
     try {
       let rows
       if (ext === 'csv') {
-        rows = parseCsv(decodeCSVBytes(ev.target.result))
+        rows = parseCsv(decodeCsvBytes(ev.target.result))
       } else {
         rows = await loadXlsxRows(ev.target.result)
       }
@@ -281,7 +204,11 @@ async function processFile(file) {
       }
 
       const {grade: gi, classNum: ci, number: ni, name: nmi} = colMap
-      const parsedRows = rows.slice(1)
+      // 네 칸이 모두 빈 행은 셀 서식만 남은 행이므로 제외 안내에서도 뺀다.
+      const isBlank = (v) => v == null || String(v).trim() === ''
+      const dataRows = rows.slice(1)
+          .filter(row => ![gi, ci, ni, nmi].every(i => isBlank(row[i])))
+      const parsedRows = dataRows
           .map(row => ({
             grade: Number(row[gi]),
             classNum: Number(row[ci]),
@@ -290,6 +217,8 @@ async function processFile(file) {
           }))
           .filter(r => isValidIdentityPart(r.grade) && isValidIdentityPart(r.classNum)
               && isValidIdentityPart(r.number) && r.name)
+      // 버린 행을 알리지 않으면 명단 일부가 빠진 줄 모른 채 배정을 저장한다.
+      const skipped = dataRows.length - parsedRows.length
 
       if (parsedRows.length === 0) {
         excelError.value = '유효한 학생 데이터가 없습니다. 학년·반·번호·이름을 모두 확인해 주세요.'
@@ -297,8 +226,9 @@ async function processFile(file) {
         return
       }
 
-      // 학생 일괄 upsert (없으면 추가, 있으면 유지)
-      const {inserted} = await studentStore.bulkUpsertStudents(
+      // 학생 일괄 upsert. 학생 일괄 추가와 같은 명령이라, 이미 있는 학년·반·번호는
+      // **이름을 파일의 값으로 갱신한다.** 모달의 저장과 무관하게 이 시점에 반영된다.
+      const {inserted, updated} = await studentStore.bulkUpsertStudents(
           parsedRows.map(r => ({grade: r.grade, class_num: r.classNum, number: r.number, name: r.name}))
       )
       await studentStore.fetchStudents()
@@ -315,7 +245,7 @@ async function processFile(file) {
       }
 
       selectedIds.value = matchedIds
-      excelStatus.value = {selected: matchedIds.size, newlyAdded: inserted}
+      excelStatus.value = {selected: matchedIds.size, newlyAdded: inserted, updated, skipped}
       currentView.value = 'list'
     } catch (err) {
       excelError.value = '파일 파싱 중 오류가 발생했습니다: ' + err.message
@@ -344,11 +274,18 @@ async function processFile(file) {
     <!-- ── 리스트 뷰 바디 ─────────────────────────────────── -->
     <div v-if="currentView === 'list'" class="flex-1 overflow-y-auto py-3">
       <div v-if="excelStatus"
-           class="flex items-center gap-1.5 mx-5 mb-1 px-3 py-2 bg-green/[8%] border border-green/20 rounded-lg text-base">
+           class="flex flex-wrap items-center gap-1.5 mx-5 mb-1 px-3 py-2 bg-green/[8%] border border-green/20 rounded-lg text-base">
         <span class="text-green font-semibold">{{ excelStatus.selected }}명 선택됨</span>
         <span v-if="excelStatus.newlyAdded > 0" class="text-blue-2">
           · {{ excelStatus.newlyAdded }}명 신규 추가됨
         </span>
+        <span v-if="excelStatus.updated > 0" class="text-blue-2">
+          · 이미 등록된 {{ excelStatus.updated }}명은 파일의 이름으로 맞춤
+        </span>
+      </div>
+      <div v-if="excelStatus && excelStatus.skipped > 0"
+           class="mx-5 mb-1 px-3 py-2 bg-amber/[8%] border border-amber/20 rounded-lg text-base text-amber">
+        학년·반·번호·이름을 읽을 수 없어 {{ excelStatus.skipped }}행을 제외했습니다. 파일을 확인해 주세요.
       </div>
 
       <p v-if="allStudents.length === 0" class="text-base text-ink-5 leading-[1.7] px-6 py-6 m-0">

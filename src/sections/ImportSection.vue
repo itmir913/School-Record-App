@@ -7,10 +7,10 @@ import {useFileStore} from '../stores/file.js'
 import {AlertTriangle, Download, FileSpreadsheet} from '@lucide/vue'
 import {RECORD_COL_ALIASES, STUDENT_COL_ALIASES} from '../data/columnAliases'
 import {isValidIdentityPart, parseStudentId} from '../services/studentId'
+import {decodeCsvBytes, loadXlsxRows, parseCsv} from '../services/spreadsheet'
 import WizardLayout from '../components/WizardLayout.vue'
 import DiffView from '../components/DiffView.vue'
 import {Workbook} from 'exceljs'
-import * as XLSX from 'xlsx'
 import {SAMPLE_A_ROWS, SAMPLE_B_COLS, SAMPLE_B_ROWS} from '../data/sampleImportData'
 
 // ── 스토어 ────────────────────────────────────────────────────
@@ -213,87 +213,6 @@ function onFileChange(e) {
   e.target.value = ''
 }
 
-function decodeCSVBytes(buffer) {
-  const bytes = new Uint8Array(buffer)
-  if (bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF)
-    return new TextDecoder('utf-8').decode(bytes.subarray(3))
-  for (const enc of ['utf-8', 'euc-kr'])
-    try { return new TextDecoder(enc, { fatal: true }).decode(bytes) } catch {}
-  return new TextDecoder('utf-8').decode(bytes)
-}
-
-function parseCsv(text) {
-  const rows = []
-  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
-  for (const line of lines) {
-    if (!line.trim()) continue
-    const row = []
-    let field = ''
-    let inQuotes = false
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i]
-      if (inQuotes) {
-        if (ch === '"' && line[i + 1] === '"') {
-          field += '"';
-          i++
-        } else if (ch === '"') inQuotes = false
-        else field += ch
-      } else {
-        if (ch === '"') inQuotes = true
-        else if (ch === ',') {
-          row.push(field);
-          field = ''
-        } else field += ch
-      }
-    }
-    row.push(field)
-    rows.push(row)
-  }
-  return rows
-}
-
-function cellValue(v) {
-  if (v === null || v === undefined) return ''
-  if (typeof v === 'object') {
-    if (v.richText) return v.richText.map(r => r.text).join('')
-    if (v.text !== undefined) return String(v.text)
-    if (v instanceof Date) return v.toLocaleDateString()
-  }
-  return String(v)
-}
-
-async function loadXlsxRows(buffer) {
-  try {
-    const workbook = new Workbook()
-    await workbook.xlsx.load(buffer)
-    const worksheet = workbook.worksheets[0]
-    const rows = []
-    worksheet.eachRow((row) => {
-      rows.push(row.values.slice(1).map(cellValue))
-    })
-    if (rows.length > 1) {
-      const headerLen = rows[0].length
-      for (let i = 1; i < rows.length; i++) {
-        while (rows[i].length < headerLen) rows[i].push('')
-      }
-    }
-    return rows
-  } catch {
-    // 한셀 등 비표준 xlsx 폴백
-    const wb = XLSX.read(buffer, {type: 'array'})
-    const ws = wb.Sheets[wb.SheetNames[0]]
-    const raw = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''})
-    const rows = raw.map(row => row.map(v => (v === null || v === undefined) ? '' : String(v)))
-    if (rows.length > 1) {
-      const headerLen = rows[0].length
-      for (let i = 1; i < rows.length; i++) {
-        while (rows[i].length < headerLen) rows[i].push('')
-      }
-    }
-    return rows
-  }
-}
-
 function bufferToBase64(buffer) {
   const bytes = new Uint8Array(buffer)
   let binary = ''
@@ -328,7 +247,7 @@ function processFile(file) {
     try {
       let rows
       if (ext === 'csv') {
-        rows = parseCsv(decodeCSVBytes(ev.target.result))
+        rows = parseCsv(decodeCsvBytes(ev.target.result))
       } else {
         rows = await loadXlsxRows(ev.target.result)
       }
@@ -618,15 +537,13 @@ async function doImport() {
 // ── 예시 파일 다운로드 ─────────────────────────────────────────
 
 async function downloadSampleA() {
-  const filePath = await save({
-    title: 'A타입 예시 파일 저장',
-    defaultPath: '예시_A타입.xlsx',
-    filters: [{name: 'Excel 파일', extensions: ['xlsx']}],
-  })
-
-  if (!filePath) return
-
   try {
+    const filePath = await save({
+      title: 'A타입 예시 파일 저장',
+      defaultPath: '예시_A타입.xlsx',
+      filters: [{name: 'Excel 파일', extensions: ['xlsx']}],
+    })
+    if (!filePath) return
     const headers = ['학년', '반', '번호', '이름', '활동명', '활동내용']
     const workbook = new Workbook()
     const worksheet = workbook.addWorksheet('예시')
@@ -643,13 +560,13 @@ async function downloadSampleA() {
 }
 
 async function downloadSampleB() {
-  const filePath = await save({
-    title: 'B타입 예시 파일 저장',
-    defaultPath: '예시_B타입.xlsx',
-    filters: [{name: 'Excel 파일', extensions: ['xlsx']}],
-  })
-  if (!filePath) return
   try {
+    const filePath = await save({
+      title: 'B타입 예시 파일 저장',
+      defaultPath: '예시_B타입.xlsx',
+      filters: [{name: 'Excel 파일', extensions: ['xlsx']}],
+    })
+    if (!filePath) return
     const workbook = new Workbook()
     const worksheet = workbook.addWorksheet('예시')
     worksheet.addRow(SAMPLE_B_COLS)
