@@ -59,14 +59,13 @@ async function handleSaved({name, byteLimit, activityIds}) {
   if (saving.value) return
   saving.value = true
   try {
-    let areaId
-    if (modalMode.value === 'add') {
-      areaId = await areaStore.createArea(name, byteLimit)
-    } else {
-      areaId = selectedArea.value.id
-      await areaStore.updateArea(areaId, name, byteLimit)
-    }
-    await areaStore.setAreaActivities(areaId, activityIds)
+    await areaStore.saveArea({
+      mode: modalMode.value,
+      id: selectedArea.value?.id,
+      name,
+      byteLimit,
+      activityIds,
+    })
     await activityStore.fetchActivities()  // ActivityDetail.areas 갱신
     closeModal()
   } catch (e) {

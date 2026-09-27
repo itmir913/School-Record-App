@@ -23,24 +23,21 @@ export const useAreaStore = defineStore('area', () => {
         }
     }
 
-    async function createArea(name, byteLimit) {
-        const id = await invoke('create_area', {name, byteLimit})
+    // 영역 저장과 활동 연결은 save_area 한 번으로 끝난다. 둘을 따로 부르면 앞 단계만
+    // 반영된 채 실패할 수 있어, 백엔드가 한 트랜잭션으로 묶는다. id가 없으면 추가다.
+    async function saveArea({mode, id, name, byteLimit, activityIds}) {
+        const areaId = await invoke('save_area', {
+            id: mode === 'add' ? null : id,
+            name,
+            byteLimit,
+            activityIds,
+        })
         await fetchAreas()
-        return id
-    }
-
-    async function updateArea(id, name, byteLimit) {
-        await invoke('update_area', {id, name, byteLimit})
-        await fetchAreas()
+        return areaId
     }
 
     async function deleteArea(id) {
         await invoke('delete_area', {id})
-        await fetchAreas()
-    }
-
-    async function setAreaActivities(areaId, activityIds) {
-        await invoke('set_area_activities', {areaId, activityIds})
         await fetchAreas()
     }
 
@@ -52,5 +49,5 @@ export const useAreaStore = defineStore('area', () => {
         await invoke('set_area_students', {areaId, studentIds})
     }
 
-    return {areas, loading, error, fetchAreas, createArea, updateArea, deleteArea, setAreaActivities, getAreaStudents, setAreaStudents}
+    return {areas, loading, error, fetchAreas, saveArea, deleteArea, getAreaStudents, setAreaStudents}
 })

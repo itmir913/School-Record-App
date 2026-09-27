@@ -121,21 +121,52 @@ pub fn set_activity_areas_impl(
     activity_id: i64,
     area_ids: &[i64],
 ) -> Result<(), String> {
-    with_transaction(conn, || {
+    with_transaction(conn, || replace_activity_areas(conn, activity_id, area_ids))
+}
+
+/// 활동의 영역 연결을 통째로 바꾼다. **트랜잭션을 열지 않는다** — 호출하는 쪽이
+/// `with_transaction` 안에서 불러야 한다.
+fn replace_activity_areas(
+    conn: &Connection,
+    activity_id: i64,
+    area_ids: &[i64],
+) -> Result<(), String> {
+    conn.execute(
+        "DELETE FROM AreaActivity WHERE activity_id = ?1",
+        rusqlite::params![activity_id],
+    )
+    .map_err(|e| e.to_string())?;
+
+    for area_id in area_ids.iter() {
         conn.execute(
-            "DELETE FROM AreaActivity WHERE activity_id = ?1",
-            rusqlite::params![activity_id],
+            "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
+            rusqlite::params![area_id, activity_id],
         )
         .map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
 
-        for area_id in area_ids.iter() {
-            conn.execute(
-                "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
-                rusqlite::params![area_id, activity_id],
-            )
-            .map_err(|e| e.to_string())?;
-        }
-        Ok(())
+/// 활동 저장(추가·수정)과 영역 연결을 **한 트랜잭션**으로 처리한다. `id`가 없으면 추가다.
+///
+/// 따로 부르면 추가는 됐는데 연결에서 실패할 때 영역 없는 활동이 남고, 같은 모달에서
+/// 다시 저장하면 이름 UNIQUE에 걸려 되돌릴 방법이 없었다. 저장된 활동 id를 돌려준다.
+pub fn save_activity_impl(
+    conn: &Connection,
+    id: Option<i64>,
+    name: &str,
+    area_ids: &[i64],
+) -> Result<i64, String> {
+    with_transaction(conn, || {
+        let activity_id = match id {
+            Some(id) => {
+                update_activity_impl(conn, id, name)?;
+                id
+            }
+            None => create_activity_impl(conn, name)?,
+        };
+        replace_activity_areas(conn, activity_id, area_ids)?;
+        Ok(activity_id)
     })
 }
 
@@ -200,4 +231,18 @@ pub fn set_activity_areas(
         .as_ref()
         .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
     set_activity_areas_impl(conn, activity_id, &area_ids)
+}
+
+#[tauri::command]
+pub fn save_activity(
+    id: Option<i64>,
+    name: String,
+    area_ids: Vec<i64>,
+    state: State<DbState>,
+) -> Result<i64, String> {
+    let guard = state.0.lock().map_err(|e| e.to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    save_activity_impl(conn, id, &name, &area_ids)
 }

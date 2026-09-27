@@ -1,3 +1,5 @@
+use crate::commands::student::replace_area_activities;
+use crate::db::with_transaction;
 use crate::state::{DbState, constraint_err};
 use crate::types::{ActivityItem, AreaItem};
 use rusqlite::Connection;
@@ -87,6 +89,30 @@ pub fn update_area_impl(conn: &Connection, id: i64, name: &str, byte_limit: i64)
     Ok(())
 }
 
+/// 영역 저장(추가·수정)과 활동 연결을 **한 트랜잭션**으로 처리한다. `id`가 없으면 추가다.
+///
+/// 따로 부르면 추가는 됐는데 연결에서 실패할 때 활동 없는 영역이 남고, 같은 모달에서
+/// 다시 저장하면 이름 UNIQUE에 걸려 되돌릴 방법이 없었다. 저장된 영역 id를 돌려준다.
+pub fn save_area_impl(
+    conn: &Connection,
+    id: Option<i64>,
+    name: &str,
+    byte_limit: i64,
+    activity_ids: &[i64],
+) -> Result<i64, String> {
+    with_transaction(conn, || {
+        let area_id = match id {
+            Some(id) => {
+                update_area_impl(conn, id, name, byte_limit)?;
+                id
+            }
+            None => create_area_impl(conn, name, byte_limit)?,
+        };
+        replace_area_activities(conn, area_id, activity_ids)?;
+        Ok(area_id)
+    })
+}
+
 pub fn delete_area_impl(conn: &Connection, id: i64) -> Result<(), String> {
     conn.execute("DELETE FROM Area WHERE id = ?1", rusqlite::params![id])
         .map_err(|e| e.to_string())?;
@@ -130,4 +156,19 @@ pub fn delete_area(id: i64, state: State<DbState>) -> Result<(), String> {
         .as_ref()
         .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
     delete_area_impl(conn, id)
+}
+
+#[tauri::command]
+pub fn save_area(
+    id: Option<i64>,
+    name: String,
+    byte_limit: i64,
+    activity_ids: Vec<i64>,
+    state: State<DbState>,
+) -> Result<i64, String> {
+    let guard = state.0.lock().map_err(|e| e.to_string())?;
+    let conn = guard
+        .as_ref()
+        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
+    save_area_impl(conn, id, &name, byte_limit, &activity_ids)
 }

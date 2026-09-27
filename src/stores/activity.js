@@ -38,15 +38,11 @@ export const useActivityStore = defineStore('activity', () => {
     // 오류 문구로 바뀌고 모달을 닫아도 다시 불러올 때까지 목록이 사라졌다.
     // 실패는 호출한 쪽(모달·가져오기 화면)이 표시한다. 뒤이은 fetchActivities의
     // 실패는 목록 읽기 실패이므로 거기서 error에 담긴다.
+    //
+    // 활동 저장과 영역 연결은 save_activity 한 번으로 끝난다. 둘을 따로 부르면 앞 단계만
+    // 반영된 채 실패할 수 있어, 백엔드가 한 트랜잭션으로 묶는다. id가 없으면 추가다.
     async function saveActivity({mode, id, name, areaIds}) {
-        let activityId
-        if (mode === 'add') {
-            activityId = await invoke('create_activity', {name})
-        } else {
-            activityId = id
-            await invoke('update_activity', {id: activityId, name})
-        }
-        await invoke('set_activity_areas', {activityId, areaIds})
+        await invoke('save_activity', {id: mode === 'add' ? null : id, name, areaIds})
         await fetchActivities()
     }
 

@@ -1,5 +1,6 @@
 use crate::commands::area::{
-    create_area_impl, delete_area_impl, get_areas_impl, update_area_impl, validate_byte_limit,
+    create_area_impl, delete_area_impl, get_areas_impl, save_area_impl, update_area_impl,
+    validate_byte_limit,
 };
 use super::{insert_activity, insert_area, insert_student, setup_test_db};
 
@@ -167,4 +168,85 @@ fn test_validate_byte_limit_accepts_positive() {
     assert!(validate_byte_limit(1500).is_ok());
 }
 
+// ── save_area: 저장과 활동 연결을 한 트랜잭션으로 ─────────────────
+// 둘을 따로 부르던 때는 영역만 만들어진 채 연결에서 실패하면 활동 없는 영역이 남았고,
+// 같은 모달에서 다시 저장하면 이름 UNIQUE에 걸렸다. 연결이 실패하면 영역 쪽도 되돌려야 한다.
 
+fn area_links(conn: &rusqlite::Connection, area_id: i64) -> Vec<i64> {
+    let mut stmt = conn
+        .prepare("SELECT activity_id FROM AreaActivity WHERE area_id = ?1 ORDER BY activity_id")
+        .unwrap();
+    stmt.query_map(rusqlite::params![area_id], |r| r.get(0))
+        .unwrap()
+        .map(|r| r.unwrap())
+        .collect()
+}
+
+#[test]
+fn test_save_area_add_creates_area_with_activities() {
+    let conn = setup_test_db();
+    let a1 = insert_activity(&conn, "봉사");
+    let a2 = insert_activity(&conn, "동아리");
+
+    let id = save_area_impl(&conn, None, "자율", 500, &[a1, a2]).unwrap();
+
+    let areas = get_areas_impl(&conn).unwrap();
+    assert_eq!(areas.len(), 1);
+    assert_eq!(areas[0].id, id);
+    assert_eq!(areas[0].byte_limit, 500);
+    assert_eq!(area_links(&conn, id), vec![a1, a2]);
+}
+
+#[test]
+fn test_save_area_edit_updates_and_replaces_links() {
+    let conn = setup_test_db();
+    let a1 = insert_activity(&conn, "봉사");
+    let a2 = insert_activity(&conn, "동아리");
+    let id = save_area_impl(&conn, None, "자율", 500, &[a1]).unwrap();
+
+    let returned = save_area_impl(&conn, Some(id), "자율(개정)", 700, &[a2]).unwrap();
+
+    assert_eq!(returned, id);
+    let areas = get_areas_impl(&conn).unwrap();
+    assert_eq!(areas[0].name, "자율(개정)");
+    assert_eq!(areas[0].byte_limit, 700);
+    assert_eq!(area_links(&conn, id), vec![a2]);
+}
+
+#[test]
+fn test_save_area_add_rolls_back_area_when_link_fails() {
+    let conn = setup_test_db();
+    let a1 = insert_activity(&conn, "봉사");
+
+    // 없는 활동 id → 연결 INSERT가 FK에 걸린다. 영역 INSERT는 이미 실행된 뒤다.
+    let err = save_area_impl(&conn, None, "자율", 500, &[a1, 9999]);
+    assert!(err.is_err());
+
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM Area", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(count, 0, "연결이 실패하면 영역도 남으면 안 된다");
+    let links: i64 = conn
+        .query_row("SELECT COUNT(*) FROM AreaActivity", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(links, 0);
+
+    // 같은 이름으로 다시 저장할 수 있어야 한다(UNIQUE에 걸리지 않는다).
+    let id = save_area_impl(&conn, None, "자율", 500, &[a1]).unwrap();
+    assert_eq!(area_links(&conn, id), vec![a1]);
+}
+
+#[test]
+fn test_save_area_edit_rolls_back_all_when_link_fails() {
+    let conn = setup_test_db();
+    let a1 = insert_activity(&conn, "봉사");
+    let id = save_area_impl(&conn, None, "자율", 500, &[a1]).unwrap();
+
+    let err = save_area_impl(&conn, Some(id), "자율(개정)", 700, &[9999]);
+    assert!(err.is_err());
+
+    let areas = get_areas_impl(&conn).unwrap();
+    assert_eq!(areas[0].name, "자율", "이름 변경도 되돌려야 한다");
+    assert_eq!(areas[0].byte_limit, 500, "글자 수 변경도 되돌려야 한다");
+    assert_eq!(area_links(&conn, id), vec![a1], "기존 연결 삭제도 되돌려야 한다");
+}

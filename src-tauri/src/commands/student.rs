@@ -190,22 +190,30 @@ pub fn set_area_activities_impl(
     area_id: i64,
     activity_ids: &[i64],
 ) -> Result<(), String> {
-    with_transaction(conn, || {
+    with_transaction(conn, || replace_area_activities(conn, area_id, activity_ids))
+}
+
+/// 영역의 활동 연결을 통째로 바꾼다. **트랜잭션을 열지 않는다** — 호출하는 쪽이
+/// `with_transaction` 안에서 불러야 한다(`save_area_impl`이 영역 저장과 한 트랜잭션으로 묶는다).
+pub(crate) fn replace_area_activities(
+    conn: &Connection,
+    area_id: i64,
+    activity_ids: &[i64],
+) -> Result<(), String> {
+    conn.execute(
+        "DELETE FROM AreaActivity WHERE area_id = ?1",
+        rusqlite::params![area_id],
+    )
+    .map_err(|e| e.to_string())?;
+
+    for act_id in activity_ids.iter() {
         conn.execute(
-            "DELETE FROM AreaActivity WHERE area_id = ?1",
-            rusqlite::params![area_id],
+            "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
+            rusqlite::params![area_id, act_id],
         )
         .map_err(|e| e.to_string())?;
-
-        for act_id in activity_ids.iter() {
-            conn.execute(
-                "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
-                rusqlite::params![area_id, act_id],
-            )
-            .map_err(|e| e.to_string())?;
-        }
-        Ok(())
-    })
+    }
+    Ok(())
 }
 
 // ── Tauri 커맨드 (얇은 래퍼) ─────────────────────────────────

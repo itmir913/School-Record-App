@@ -46,3 +46,30 @@ describe('쓰기 실패는 목록 상태(error)를 건드리지 않는다', () =
     expect(store.error).toBe('읽기 실패')
   })
 })
+
+describe('saveActivity는 저장과 영역 연결을 한 번의 호출로 끝낸다', () => {
+  // 따로 부르면 활동만 만들어진 채 연결에서 실패할 수 있다. 원자성은 백엔드
+  // save_activity의 트랜잭션이 보장하므로, 스토어는 그 커맨드 하나만 불러야 한다.
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    invokeMock.mockReset()
+  })
+
+  it('추가 모드는 id 없이 save_activity 하나만 부른다', async () => {
+    invokeMock.mockResolvedValueOnce(7).mockResolvedValueOnce([])
+    await useActivityStore().saveActivity({ mode: 'add', id: 3, name: '봉사', areaIds: [1, 2] })
+
+    expect(invokeMock.mock.calls).toEqual([
+      ['save_activity', { id: null, name: '봉사', areaIds: [1, 2] }],
+      ['get_activities'],
+    ])
+  })
+
+  it('수정 모드는 기존 id를 넘긴다', async () => {
+    invokeMock.mockResolvedValueOnce(3).mockResolvedValueOnce([])
+    await useActivityStore().saveActivity({ mode: 'edit', id: 3, name: '봉사', areaIds: [] })
+
+    expect(invokeMock.mock.calls[0]).toEqual(['save_activity', { id: 3, name: '봉사', areaIds: [] }])
+    expect(invokeMock).toHaveBeenCalledTimes(2)
+  })
+})
