@@ -538,7 +538,9 @@ fn test_unlock_rejects_token_with_wrong_plaintext() {
     let token = encrypt("다른 값", &test_key()).unwrap();
     set_config_impl(&conn, "encryption_verify_token", &token).unwrap();
 
-    assert!(unlock_encryption_impl(&conn, &crypto, "password").is_err());
+    // 다른 이유(설정 누락 등)로 실패해도 통과하지 않도록 비밀번호 오류인지까지 본다.
+    let err = unlock_encryption_impl(&conn, &crypto, "password").unwrap_err();
+    assert!(err.contains("비밀번호가 올바르지 않습니다"), "실제 오류: {err}");
     assert!(crate::state::current_crypto_key(&crypto).unwrap().is_none());
 }
 

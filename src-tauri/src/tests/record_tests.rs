@@ -842,14 +842,19 @@ fn test_save_snapshot_without_note_keeps_existing_note_on_dedup() {
 #[test]
 fn test_bulk_quick_replace_skips_students_not_in_area() {
     // 활동이 영역에 속해도, 영역에 등록되지 않은 학생의 기록은 바꾸면 안 된다.
+    // outsider는 같은 활동을 가진 **다른 영역**에 등록해 둔다 — 그래야 JOIN 자체가
+    // 빠진 경우뿐 아니라 `as_.area_id = aa.area_id` 조건만 빠진 경우도 잡힌다.
     let conn = setup_test_db();
     let area = insert_area(&conn, "영역", 500);
+    let other_area = insert_area(&conn, "다른 영역", 500);
     let act = insert_activity(&conn, "활동");
     let member = insert_student(&conn, 1, 1, 1, "등록");
     let outsider = insert_student(&conn, 1, 1, 2, "미등록");
     conn.execute_batch(&format!(
         "INSERT INTO AreaActivity (area_id, activity_id) VALUES ({area}, {act});
-         INSERT INTO AreaStudent (area_id, student_id) VALUES ({area}, {member});"
+         INSERT INTO AreaActivity (area_id, activity_id) VALUES ({other_area}, {act});
+         INSERT INTO AreaStudent (area_id, student_id) VALUES ({area}, {member});
+         INSERT INTO AreaStudent (area_id, student_id) VALUES ({other_area}, {outsider});"
     ))
     .unwrap();
     insert_record(&conn, act, member, "사과");
