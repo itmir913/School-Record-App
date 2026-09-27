@@ -246,6 +246,28 @@ fn test_with_transaction_early_return_inside_closure_rolls_back() {
     assert_eq!(count, 0);
 }
 
+#[test]
+fn test_with_transaction_rolls_back_when_commit_fails() {
+    // COMMIT 자체가 실패해도 트랜잭션은 열린 채 남는다. 되돌리지 않으면 이후 모든
+    // 쓰기가 그 트랜잭션에 묶인다. 지연된 외래키 위반으로 COMMIT을 실패시킨다.
+    let conn = crate::tests::setup_test_db();
+    let result: Result<(), String> = db::with_transaction(&conn, || {
+        conn.execute_batch(
+            "PRAGMA defer_foreign_keys = ON;
+             INSERT INTO Activity (name) VALUES ('발표');
+             INSERT INTO AreaStudent (area_id, student_id) VALUES (999, 999);",
+        )
+        .map_err(|e| e.to_string())
+    });
+
+    assert!(result.is_err(), "COMMIT 실패가 오류로 올라와야 한다");
+    assert!(!transaction_is_open(&conn), "COMMIT 실패 후에도 트랜잭션이 닫혀 있어야 한다");
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM Activity", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(count, 0);
+}
+
 // ── constraint_err ───────────────────────────────────────────
 
 #[test]
@@ -344,4 +366,36 @@ fn test_open_accepts_an_old_file_missing_later_tables() {
     );
 
     let _ = std::fs::remove_file(&path);
+}
+
+/// 핵심 테이블은 하나만 빠져도 거부한다. 통과시키면 그 테이블을 쓰는 화면에서
+/// `no such table`로 뒤늦게 실패한다.
+#[test]
+fn test_open_rejects_file_missing_any_core_table() {
+    for table in [
+        "Student",
+        "Area",
+        "Activity",
+        "AreaActivity",
+        "AreaStudent",
+        "ActivityRecord",
+        "ActivityRecordHistory",
+        "Snapshot",
+    ] {
+        let path = temp_path(&format!("missing_{table}"));
+        {
+            let conn = db::create_new(&path).unwrap();
+            conn.execute_batch(&format!("PRAGMA foreign_keys = OFF; DROP TABLE {table};"))
+                .unwrap();
+        }
+
+        match db::open_existing(&path) {
+            Err(db::OpenError::NotAppDatabase { missing }) => {
+                assert!(missing.contains(table), "{table} 누락이 안내돼야 한다: {missing}")
+            }
+            other => panic!("{table}가 없는 파일은 거부해야 한다: {:?}", other.map(|_| ())),
+        }
+
+        let _ = std::fs::remove_file(&path);
+    }
 }

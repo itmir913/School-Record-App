@@ -1,5 +1,5 @@
 use crate::commands::record::{
-    bulk_import_records_impl, get_area_grid_impl, get_record_history_impl,
+    bulk_import_records_impl, bulk_quick_replace_impl, get_area_grid_impl, get_record_history_impl,
     preview_import_records_impl, save_snapshot_internal, upsert_record_impl,
 };
 use crate::types::ImportRecordInput;
@@ -798,4 +798,112 @@ fn test_encrypted_save_snapshot_changed_content_adds_row() {
     assert_eq!(entries.len(), 2);
     assert_eq!(entries[0].content, "바뀜");
     assert_eq!(entries[1].content, "처음");
+}
+
+#[test]
+fn test_encrypted_save_snapshot_compares_latest_not_oldest() {
+    // A → B → A로 되돌린 경우 세 번째 A는 가장 최근 행(B)과 달라 새 행이 된다.
+    // 가장 오래된 행(A)과 비교하면 "변경 없음"으로 보고 B 행의 note까지 덮는다.
+    let conn = setup_test_db();
+    let key = Some(enc_key());
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+
+    for content in ["A", "B", "A"] {
+        upsert_record_impl(&conn, act_id, stu_id, content, key).unwrap();
+        save_snapshot_internal(&conn, act_id, stu_id, Some(content), key).unwrap();
+    }
+
+    let entries = get_record_history_impl(&conn, act_id, stu_id, 10, 0, key).unwrap();
+    let contents: Vec<&str> = entries.iter().map(|e| e.content.as_str()).collect();
+    assert_eq!(contents, ["A", "B", "A"]);
+    assert_eq!(entries[1].note.as_deref(), Some("B"));
+}
+
+#[test]
+fn test_save_snapshot_without_note_keeps_existing_note_on_dedup() {
+    // 내용이 같을 때 note는 **이번 작업 이름으로** 갱신된다(CLAUDE.md). 이번 작업에
+    // 이름이 없으면 갱신할 것이 없으므로 기존 note를 그대로 둔다 — 지우지 않는다.
+    let conn = setup_test_db();
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+
+    upsert_record_impl(&conn, act_id, stu_id, "발표 내용", None).unwrap();
+    save_snapshot_internal(&conn, act_id, stu_id, Some("메모"), None).unwrap();
+    save_snapshot_internal(&conn, act_id, stu_id, None, None).unwrap();
+
+    let entries = get_record_history_impl(&conn, act_id, stu_id, 10, 0, None).unwrap();
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0].note.as_deref(), Some("메모"));
+}
+
+// ── 영역 범위 ────────────────────────────────────────────────
+
+#[test]
+fn test_bulk_quick_replace_skips_students_not_in_area() {
+    // 활동이 영역에 속해도, 영역에 등록되지 않은 학생의 기록은 바꾸면 안 된다.
+    let conn = setup_test_db();
+    let area = insert_area(&conn, "영역", 500);
+    let act = insert_activity(&conn, "활동");
+    let member = insert_student(&conn, 1, 1, 1, "등록");
+    let outsider = insert_student(&conn, 1, 1, 2, "미등록");
+    conn.execute_batch(&format!(
+        "INSERT INTO AreaActivity (area_id, activity_id) VALUES ({area}, {act});
+         INSERT INTO AreaStudent (area_id, student_id) VALUES ({area}, {member});"
+    ))
+    .unwrap();
+    insert_record(&conn, act, member, "사과");
+    insert_record(&conn, act, outsider, "사과");
+
+    let changed = bulk_quick_replace_impl(&conn, area, "사과", "배", None).unwrap();
+
+    assert_eq!(changed, 1);
+    let outsider_content: String = conn
+        .query_row(
+            "SELECT content FROM ActivityRecord WHERE student_id = ?1",
+            [outsider],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(outsider_content, "사과");
+}
+
+#[test]
+fn test_area_grid_returns_only_area_activity_student_pairs() {
+    // 그리드에는 (영역 활동 × 영역 학생)의 기록만 와야 한다. 한쪽만 맞는 기록이 섞이면
+    // 다른 영역의 내용(암호화 파일이면 복호화된 평문)까지 화면으로 넘어간다.
+    let conn = setup_test_db();
+    let area = insert_area(&conn, "영역", 500);
+    let in_act = insert_activity(&conn, "영역 활동");
+    let out_act = insert_activity(&conn, "다른 활동");
+    let member = insert_student(&conn, 1, 1, 1, "등록");
+    let outsider = insert_student(&conn, 1, 1, 2, "미등록");
+    conn.execute_batch(&format!(
+        "INSERT INTO AreaActivity (area_id, activity_id) VALUES ({area}, {in_act});
+         INSERT INTO AreaStudent (area_id, student_id) VALUES ({area}, {member});"
+    ))
+    .unwrap();
+    insert_record(&conn, in_act, member, "보여야 함");
+    insert_record(&conn, out_act, member, "다른 활동 기록");
+    insert_record(&conn, in_act, outsider, "다른 학생 기록");
+
+    let grid = get_area_grid_impl(&conn, area, None).unwrap();
+
+    let pairs: Vec<(i64, i64)> = grid.records.iter().map(|r| (r.activity_id, r.student_id)).collect();
+    assert_eq!(pairs, [(in_act, member)]);
+}
+
+#[test]
+fn test_bulk_import_existing_named_student_not_counted_as_updated() {
+    // 이미 이름이 있는 학생은 이름을 바꾸지 않는다. 바꾸지 않았으면 갱신 수에도 들지 않는다.
+    let conn = setup_test_db();
+    let act_id = insert_activity(&conn, "발표");
+    insert_student(&conn, 1, 1, 1, "홍길동");
+
+    let result =
+        bulk_import_records_impl(&conn, &[make_import(1, 1, 1, Some("다른이름"), act_id, "내용")], None)
+            .unwrap();
+
+    assert_eq!(result.students_created, 0);
+    assert_eq!(result.students_updated, 0);
 }

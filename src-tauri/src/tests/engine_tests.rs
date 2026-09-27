@@ -332,6 +332,45 @@ fn test_scope_areas_excludes_students_not_in_area() {
 }
 
 #[test]
+fn test_scope_areas_requires_membership_in_the_same_area() {
+    // 활동이 두 영역에 걸쳐 있어도, 학생은 **조회하는 그 영역**에 등록돼 있어야 한다.
+    let conn = setup_test_db();
+    let area_a = insert_area(&conn, "영역A", 500);
+    let area_b = insert_area(&conn, "영역B", 500);
+    let act = insert_activity(&conn, "공통 활동");
+    let stu = insert_student(&conn, 1, 1, 1, "A에만 등록");
+    conn.execute_batch(&format!(
+        "INSERT INTO AreaActivity (area_id, activity_id) VALUES ({area_a}, {act}), ({area_b}, {act});
+         INSERT INTO AreaStudent (area_id, student_id) VALUES ({area_a}, {stu});"
+    ))
+    .unwrap();
+    insert_record(&conn, act, stu, "기록");
+
+    let records = get_records_for_scope(&conn, "areas", &[area_b], None).unwrap();
+    assert!(records.is_empty(), "영역B에 등록되지 않은 학생의 기록이 들어왔다");
+}
+
+#[test]
+fn test_scope_areas_dedupes_record_shared_by_two_areas() {
+    // 같은 기록이 두 영역을 통해 잡혀도 한 번만 나와야 한다.
+    // 중복되면 미리보기에 두 번 뜨고 치환 대상 수가 부풀려진다.
+    let conn = setup_test_db();
+    let area_a = insert_area(&conn, "영역A", 500);
+    let area_b = insert_area(&conn, "영역B", 500);
+    let act = insert_activity(&conn, "공통 활동");
+    let stu = insert_student(&conn, 1, 1, 1, "양쪽 등록");
+    conn.execute_batch(&format!(
+        "INSERT INTO AreaActivity (area_id, activity_id) VALUES ({area_a}, {act}), ({area_b}, {act});
+         INSERT INTO AreaStudent (area_id, student_id) VALUES ({area_a}, {stu}), ({area_b}, {stu});"
+    ))
+    .unwrap();
+    insert_record(&conn, act, stu, "기록");
+
+    let records = get_records_for_scope(&conn, "areas", &[area_a, area_b], None).unwrap();
+    assert_eq!(records.len(), 1);
+}
+
+#[test]
 fn test_scope_areas_empty_ids_returns_empty() {
     let conn = setup_test_db();
     let records = get_records_for_scope(&conn, "areas", &[], None).unwrap();

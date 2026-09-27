@@ -129,6 +129,31 @@ fn test_restore_snapshot_reverts_content() {
 }
 
 #[test]
+fn test_restore_snapshot_refused_before_migration() {
+    // 다른 쓰기 경로와 같은 가드다. 마이그레이션이 끝나지 않은 파일에는 쓰지 않는다.
+    let conn = setup_test_db();
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+    upsert_record_impl(&conn, act_id, stu_id, "초기 내용", None).unwrap();
+    let snap = create_snapshot_impl(&conn, None, None).unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "수정된 내용", None).unwrap();
+    conn.pragma_update(None, "user_version", crate::db::SCHEMA_VERSION - 1)
+        .unwrap();
+
+    let err = restore_snapshot_impl(&conn, snap.id).unwrap_err();
+
+    assert!(err.contains("파일 형식 업데이트"), "오류: {err}");
+    let content: String = conn
+        .query_row(
+            "SELECT content FROM ActivityRecord WHERE activity_id=?1 AND student_id=?2",
+            rusqlite::params![act_id, stu_id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(content, "수정된 내용");
+}
+
+#[test]
 fn test_restore_snapshot_sets_empty_when_no_history() {
     let conn = setup_test_db();
     // 빈 DB에서 스냅샷 생성 (히스토리 없음)

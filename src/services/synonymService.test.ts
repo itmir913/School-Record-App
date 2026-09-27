@@ -64,6 +64,10 @@ describe('performInspection', () => {
     expect(performInspection([1], [group(1, 'g', ['a.b'])], [record(1, 'axb')])).toEqual([])
   })
 
+  it('영문 단어는 대소문자를 구분한다', () => {
+    expect(performInspection([1], [group(1, 'g', ['AI'])], [record(1, 'ai 활용')])).toEqual([])
+  })
+
   it('중복 단어는 한 번만 검사한다', () => {
     const groups = [group(1, 'a', ['노력']), group(2, 'b', ['노력'])]
     const result = performInspection([1, 2], groups, [record(1, '노력함')])

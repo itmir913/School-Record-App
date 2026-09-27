@@ -501,6 +501,48 @@ fn test_disable_encryption_keeps_backup() {
 }
 
 #[test]
+fn test_disable_encryption_clears_key_from_memory() {
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    let (db_path, tmp_dir) = setup_temp_db_path_state();
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+
+    disable_encryption_impl(&conn, &crypto, &db_path).unwrap();
+
+    assert!(
+        crate::state::current_crypto_key(&crypto).unwrap().is_none(),
+        "암호화를 끄면 키가 메모리에 남으면 안 된다"
+    );
+    std::fs::remove_dir_all(&tmp_dir).ok();
+}
+
+#[test]
+fn test_status_not_unlocked_for_plain_file_even_with_key() {
+    // 다른 파일에서 쓰던 키가 남아 있어도, 암호화를 쓰지 않는 파일은 "잠금 해제됨"이 아니다.
+    let conn = setup_test_db();
+    let crypto = crypto_state(Some(test_key()));
+
+    let status = get_encryption_status_impl(&conn, &crypto).unwrap();
+
+    assert!(!status.enabled);
+    assert!(!status.unlocked);
+}
+
+#[test]
+fn test_unlock_rejects_token_with_wrong_plaintext() {
+    // 키로 풀리기만 하면 통과시키지 않는다. 풀린 값이 검증 문자열이어야 한다.
+    let conn = setup_test_db();
+    let crypto = crypto_state(None);
+    set_config_impl(&conn, "encryption_enabled", "true").unwrap();
+    set_config_impl(&conn, "encryption_pbkdf2_salt", &B64.encode([42u8; 16])).unwrap();
+    let token = encrypt("다른 값", &test_key()).unwrap();
+    set_config_impl(&conn, "encryption_verify_token", &token).unwrap();
+
+    assert!(unlock_encryption_impl(&conn, &crypto, "password").is_err());
+    assert!(crate::state::current_crypto_key(&crypto).unwrap().is_none());
+}
+
+#[test]
 fn test_change_password_requires_new_password_afterward() {
     let conn = setup_test_db();
     let crypto = crypto_state(None);
@@ -1423,6 +1465,22 @@ fn test_retry_pending_purge_errors_when_nothing_pending() {
     let conn = setup_test_db();
     let err = retry_pending_purge_impl(&conn).unwrap_err();
     assert!(err.contains("정리할 항목이 없습니다"), "에러 메시지: {err}");
+}
+
+#[test]
+fn test_purge_failure_keeps_pending_marker() {
+    // VACUUM이 실패했는데 표시를 지우면 다시 시도할 근거가 사라져 잔재가 영구히 남는다.
+    // 트랜잭션 안에서는 VACUUM이 실행되지 않으므로 그것으로 실패를 만든다.
+    let conn = setup_test_db();
+    set_config_impl(&conn, "encryption_purge_pending", "암호화").unwrap();
+    conn.execute_batch("BEGIN").unwrap();
+
+    let result = resume_pending_purge(&conn);
+    let still_pending = is_purge_pending(&conn).unwrap();
+    conn.execute_batch("ROLLBACK").unwrap();
+
+    assert!(result.is_err(), "VACUUM 실패가 오류로 올라와야 한다");
+    assert!(still_pending, "정리에 실패하면 표시가 남아 있어야 한다");
 }
 
 #[test]

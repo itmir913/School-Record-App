@@ -412,3 +412,77 @@ fn test_disabled_rule_still_checked_for_empty_and_identical_text() {
     assert!(validate_replace_rule_for_save("", "x", false, false).is_err());
     assert!(validate_replace_rule_for_save("같음", "같음", false, false).is_err());
 }
+
+// ── preview / apply ───────────────────────────────────────────
+
+#[test]
+fn test_preview_replace_excludes_unchanged_records() {
+    let conn = setup_test_db();
+    let act = insert_activity(&conn, "활동");
+    let s1 = insert_student(&conn, 1, 1, 1, "학생1");
+    let s2 = insert_student(&conn, 1, 1, 2, "학생2");
+    insert_record(&conn, act, s1, "사과를 먹었다");
+    insert_record(&conn, act, s2, "귤을 먹었다");
+    create_replace_rule_db(&conn, "사과", "배", false, 0).unwrap();
+
+    let items = preview_replace_impl(&conn, "all", &[], None, &mut empty_cache()).unwrap();
+
+    assert_eq!(items.len(), 1, "바뀌지 않는 기록은 미리보기에 나오면 안 된다");
+    assert_eq!(items[0].student_id, s1);
+    assert_eq!(items[0].result, "배를 먹었다");
+}
+
+#[test]
+fn test_apply_replace_plain_file_keeps_pre_replace_history() {
+    // 암호화 경로는 crypto_cmd_tests가 본다. 평문 파일에서도 치환 전 내용이 남아야 한다.
+    let conn = setup_test_db();
+    let act = insert_activity(&conn, "활동");
+    let stu = insert_student(&conn, 1, 1, 1, "학생");
+    insert_record(&conn, act, stu, "사과를 먹었다");
+    create_replace_rule_db(&conn, "사과", "배", false, 0).unwrap();
+
+    apply_replace_impl(&conn, "all", &[], None, &mut empty_cache()).unwrap();
+
+    let (content, note): (String, Option<String>) = conn
+        .query_row(
+            "SELECT content, note FROM ActivityRecordHistory ORDER BY id DESC LIMIT 1",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .unwrap();
+    assert_eq!(content, "사과를 먹었다");
+    assert_eq!(note.as_deref(), Some("치환 적용 전"));
+}
+
+#[test]
+fn test_apply_replace_is_atomic_on_mid_failure() {
+    // 두 번째 기록을 쓰다 실패하면 첫 번째 기록의 치환과 히스토리도 함께 되돌아가야 한다.
+    // 그렇지 않으면 일부만 치환된 채 "치환 적용 전" 히스토리만 남는다.
+    let conn = setup_test_db();
+    let act = insert_activity(&conn, "활동");
+    let s1 = insert_student(&conn, 1, 1, 1, "학생1");
+    let s2 = insert_student(&conn, 1, 1, 2, "학생2");
+    insert_record(&conn, act, s1, "사과");
+    insert_record(&conn, act, s2, "사과");
+    create_replace_rule_db(&conn, "사과", "배", false, 0).unwrap();
+    conn.execute_batch(&format!(
+        "CREATE TRIGGER fail_second BEFORE UPDATE ON ActivityRecord
+         WHEN NEW.student_id = {s2} BEGIN SELECT RAISE(ABORT, 'forced'); END;"
+    ))
+    .unwrap();
+
+    assert!(apply_replace_impl(&conn, "all", &[], None, &mut empty_cache()).is_err());
+
+    let first: String = conn
+        .query_row(
+            "SELECT content FROM ActivityRecord WHERE student_id = ?1",
+            [s1],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(first, "사과", "첫 번째 기록의 치환이 롤백되어야 한다");
+    let history: i64 = conn
+        .query_row("SELECT COUNT(*) FROM ActivityRecordHistory", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(history, 0, "롤백된 치환의 히스토리가 남으면 안 된다");
+}

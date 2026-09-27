@@ -185,6 +185,23 @@ fn test_set_area_students_replaces() {
 }
 
 #[test]
+fn test_set_area_students_rolls_back_on_insert_failure() {
+    // 기존 목록을 지운 뒤 새 목록을 넣다 실패하면 지운 것도 되돌려야 한다.
+    // 따로 커밋되면 영역의 학생 목록이 통째로 사라진다.
+    let conn = setup_test_db();
+    let area_id = insert_area(&conn, "영어", 400);
+    let stu1 = insert_student(&conn, 1, 1, 1, "가");
+    let stu2 = insert_student(&conn, 1, 1, 2, "나");
+    set_area_students_impl(&conn, area_id, &[stu1]).unwrap();
+
+    let missing_student = 99_999;
+    assert!(set_area_students_impl(&conn, area_id, &[stu2, missing_student]).is_err());
+
+    let ids = get_area_students_impl(&conn, area_id).unwrap();
+    assert_eq!(ids, vec![stu1]);
+}
+
+#[test]
 fn test_set_area_students_empty_clears_all() {
     let conn = setup_test_db();
     let area_id = insert_area(&conn, "체육", 300);
