@@ -62,9 +62,13 @@ onMounted(async () => {
   try {
     await config.loadAll()
   } catch (e) {
-    // 빈 catch로 삼키면 암호화 상태·환경설정이 실제와 어긋난 채 화면이 뜬다.
-    // configStore가 preferencesError로 들고 있고 각 섹션이 렌더한다.
-    console.error('환경설정 로드 실패:', e)
+    // 환경설정 로드 실패는 loadAll이 preferencesError에 담고 삼킨다. 여기까지
+    // 오는 것은 암호화 상태 조회 실패다. 새로 만든 파일은 홈에서 이 값을 읽지
+    // 않으므로, 알리지 않으면 설정 화면이 이전 파일의 암호화 상태를 그대로 보여준다.
+    project.openWarnings.push(
+        `암호화 상태를 확인하지 못했습니다. 설정 화면의 암호화 표시가 실제와 다를 수 ` +
+        `있으니 파일을 다시 열어 주세요. ${e}`
+    )
   }
 })
 </script>
