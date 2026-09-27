@@ -274,7 +274,8 @@ impl std::fmt::Display for OpenError {
             ),
             OpenError::NotAppDatabase { missing } => write!(
                 f,
-                "이 프로그램에서 만든 학생부 파일이 아닙니다.                  다른 파일을 선택해주세요. (파일 안에 {missing} 정보가 없습니다)"
+                "이 프로그램에서 만든 학생부 파일이 아닙니다. \
+                 다른 파일을 선택해주세요. (파일 안에 {missing} 정보가 없습니다)"
             ),
         }
     }

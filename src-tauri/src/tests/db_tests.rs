@@ -335,6 +335,8 @@ fn test_open_rejects_a_database_that_is_not_ours() {
         message.contains("학생부 파일이 아닙니다"),
         "사용자가 읽을 수 있는 안내여야 한다: {message}"
     );
+    // 문자열 줄 이음(`\`)이 빠지면 들여쓰기 공백이 그대로 안내문에 들어간다.
+    assert!(!message.contains("  "), "안내문에 연속 공백이 섞였다: {message}");
     assert_eq!(
         std::fs::read(&path).unwrap(),
         before,
