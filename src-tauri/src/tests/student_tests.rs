@@ -1,6 +1,6 @@
 use crate::commands::student::{
     bulk_upsert_students_impl, create_student_impl, delete_student_impl, get_area_students_impl,
-    get_students_impl, set_area_activities_impl, set_area_students_impl, update_student_impl,
+    get_students_impl, replace_area_activities, set_area_students_impl, update_student_impl,
     validate_student_identity,
 };
 use crate::types::StudentInput;
@@ -221,8 +221,8 @@ fn test_set_area_activities_replaces() {
     let act1 = insert_activity(&conn, "소묘");
     let act2 = insert_activity(&conn, "채색");
 
-    set_area_activities_impl(&conn, area_id, &[act1]).unwrap();
-    set_area_activities_impl(&conn, area_id, &[act2]).unwrap();
+    replace_area_activities(&conn, area_id, &[act1]).unwrap();
+    replace_area_activities(&conn, area_id, &[act2]).unwrap();
 
     let count: i64 = conn
         .query_row(
@@ -248,9 +248,9 @@ fn test_set_area_activities_empty_clears_all() {
     let conn = setup_test_db();
     let area_id = insert_area(&conn, "음악", 300);
     let act_id = insert_activity(&conn, "합창");
-    set_area_activities_impl(&conn, area_id, &[act_id]).unwrap();
+    replace_area_activities(&conn, area_id, &[act_id]).unwrap();
 
-    set_area_activities_impl(&conn, area_id, &[]).unwrap();
+    replace_area_activities(&conn, area_id, &[]).unwrap();
 
     let count: i64 = conn
         .query_row(

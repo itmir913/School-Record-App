@@ -116,17 +116,9 @@ pub fn create_activities_batch_impl(
     Ok(map)
 }
 
-pub fn set_activity_areas_impl(
-    conn: &Connection,
-    activity_id: i64,
-    area_ids: &[i64],
-) -> Result<(), String> {
-    with_transaction(conn, || replace_activity_areas(conn, activity_id, area_ids))
-}
-
 /// 활동의 영역 연결을 통째로 바꾼다. **트랜잭션을 열지 않는다** — 호출하는 쪽이
-/// `with_transaction` 안에서 불러야 한다.
-fn replace_activity_areas(
+/// `with_transaction` 안에서 불러야 한다(`save_activity_impl`이 활동 저장과 한 트랜잭션으로 묶는다).
+pub(crate) fn replace_activity_areas(
     conn: &Connection,
     activity_id: i64,
     area_ids: &[i64],
@@ -190,14 +182,6 @@ pub fn create_activity(name: String, state: State<DbState>) -> Result<i64, Strin
     create_activity_impl(conn, &name)
 }
 
-#[tauri::command]
-pub fn update_activity(id: i64, name: String, state: State<DbState>) -> Result<(), String> {
-    let guard = state.0.lock().map_err(|e| e.to_string())?;
-    let conn = guard
-        .as_ref()
-        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
-    update_activity_impl(conn, id, &name)
-}
 
 #[tauri::command]
 pub fn delete_activity(id: i64, state: State<DbState>) -> Result<(), String> {
@@ -220,18 +204,6 @@ pub fn create_activities_batch(
     create_activities_batch_impl(conn, &names)
 }
 
-#[tauri::command]
-pub fn set_activity_areas(
-    activity_id: i64,
-    area_ids: Vec<i64>,
-    state: State<DbState>,
-) -> Result<(), String> {
-    let guard = state.0.lock().map_err(|e| e.to_string())?;
-    let conn = guard
-        .as_ref()
-        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
-    set_activity_areas_impl(conn, activity_id, &area_ids)
-}
 
 #[tauri::command]
 pub fn save_activity(

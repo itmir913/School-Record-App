@@ -1,6 +1,6 @@
 use crate::commands::activity::{
     create_activity_impl, delete_activity_impl, get_activities_impl, save_activity_impl,
-    set_activity_areas_impl, update_activity_impl,
+    replace_activity_areas, update_activity_impl,
 };
 use super::{insert_activity, insert_area, insert_record, insert_student, setup_test_db};
 
@@ -110,8 +110,8 @@ fn test_set_activity_areas_replaces() {
     let area1 = insert_area(&conn, "국어", 500);
     let area2 = insert_area(&conn, "수학", 500);
 
-    set_activity_areas_impl(&conn, act_id, &[area1]).unwrap();
-    set_activity_areas_impl(&conn, act_id, &[area2]).unwrap();
+    replace_activity_areas(&conn, act_id, &[area1]).unwrap();
+    replace_activity_areas(&conn, act_id, &[area2]).unwrap();
 
     let count: i64 = conn
         .query_row(
@@ -137,9 +137,9 @@ fn test_set_activity_areas_empty_clears_all() {
     let conn = setup_test_db();
     let act_id = insert_activity(&conn, "과제");
     let area_id = insert_area(&conn, "영어", 400);
-    set_activity_areas_impl(&conn, act_id, &[area_id]).unwrap();
+    replace_activity_areas(&conn, act_id, &[area_id]).unwrap();
 
-    set_activity_areas_impl(&conn, act_id, &[]).unwrap();
+    replace_activity_areas(&conn, act_id, &[]).unwrap();
 
     let count: i64 = conn
         .query_row(

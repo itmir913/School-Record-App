@@ -185,14 +185,6 @@ pub fn set_area_students_impl(
     })
 }
 
-pub fn set_area_activities_impl(
-    conn: &Connection,
-    area_id: i64,
-    activity_ids: &[i64],
-) -> Result<(), String> {
-    with_transaction(conn, || replace_area_activities(conn, area_id, activity_ids))
-}
-
 /// 영역의 활동 연결을 통째로 바꾼다. **트랜잭션을 열지 않는다** — 호출하는 쪽이
 /// `with_transaction` 안에서 불러야 한다(`save_area_impl`이 영역 저장과 한 트랜잭션으로 묶는다).
 pub(crate) fn replace_area_activities(
@@ -273,19 +265,6 @@ pub fn delete_student(id: i64, state: State<DbState>) -> Result<(), String> {
         .as_ref()
         .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
     delete_student_impl(conn, id)
-}
-
-#[tauri::command]
-pub fn set_area_activities(
-    area_id: i64,
-    activity_ids: Vec<i64>,
-    state: State<DbState>,
-) -> Result<(), String> {
-    let guard = state.0.lock().map_err(|e| e.to_string())?;
-    let conn = guard
-        .as_ref()
-        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
-    set_area_activities_impl(conn, area_id, &activity_ids)
 }
 
 #[tauri::command]

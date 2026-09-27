@@ -132,24 +132,6 @@ pub fn get_areas(state: State<DbState>) -> Result<Vec<AreaItem>, String> {
 }
 
 #[tauri::command]
-pub fn create_area(name: String, byte_limit: i64, state: State<DbState>) -> Result<i64, String> {
-    let guard = state.0.lock().map_err(|e| e.to_string())?;
-    let conn = guard
-        .as_ref()
-        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
-    create_area_impl(conn, &name, byte_limit)
-}
-
-#[tauri::command]
-pub fn update_area(id: i64, name: String, byte_limit: i64, state: State<DbState>) -> Result<(), String> {
-    let guard = state.0.lock().map_err(|e| e.to_string())?;
-    let conn = guard
-        .as_ref()
-        .ok_or_else(|| "DB가 열려있지 않습니다.".to_string())?;
-    update_area_impl(conn, id, &name, byte_limit)
-}
-
-#[tauri::command]
 pub fn delete_area(id: i64, state: State<DbState>) -> Result<(), String> {
     let guard = state.0.lock().map_err(|e| e.to_string())?;
     let conn = guard
