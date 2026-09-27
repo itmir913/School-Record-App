@@ -660,7 +660,17 @@ async function focusActivityCell(actId, studentId) {
 
 const historyModal = ref(null)
 
-function openHistory(act, student) {
+// 모달의 "현재 버전 저장"은 화면이 아니라 DB의 값을 기록한다. 먼저 저장해 둘을
+// 맞추고, 저장에 실패하면 열지 않는다 — 열어 두면 화면 값을 보존했다고 믿지만
+// 실제로는 이전 값이 기록된다. 쓰기가 실패하는 상태라 스냅샷도 어차피 실패한다.
+async function openHistory(act, student) {
+  try {
+    await flushPendingDebounces()
+  } catch (e) {
+    saveError.value =
+        `저장하지 못한 내용이 있어 히스토리를 열 수 없습니다: ${String(e)}`
+    return
+  }
   historyModal.value = {
     activityId: act.id,
     studentId: student.id,
