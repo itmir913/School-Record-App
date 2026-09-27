@@ -90,6 +90,16 @@ test:ts    vitest run
 - `.idea/`는 `.gitignore`에 있지만 실행 구성은 **추적 대상이다**. 새로 추가하려면
   `git add -f`가 필요하다.
 
+## 셸 힙독 금지
+- **Bash 도구에서 셸 힙독(`<<EOF`, `<<'EOF'` 등)을 쓰지 않는다.** 힙독은 백슬래시를 조용히
+  먹어 `\b`가 제어문자, `\n`이 진짜 줄바꿈이 된다 — 정규식·이스케이프가 든 파일이 문법 오류
+  없이 망가진 채 초록불이 될 수 있다.
+- 파일은 Write/Edit 도구로 쓴다. 여러 줄을 셸로 넘겨야 하면 파일로 쓰고 경로를 넘긴다
+  (`git commit -F <파일>`처럼). 히어스트링(`<<<`)은 허용한다.
+- 규칙만으로는 지켜지지 않아 `.claude/hooks/no-heredoc.mjs`(PreToolUse 훅, `.claude/settings.json`)가
+  도구 단계에서 막는다. `.claude/`는 `.gitignore`에 있지만 **이 두 파일은 추적 대상이다**
+  (새로 추가하려면 `git add -f`).
+
 ## GIT / COMMIT RULES
 - **GPG 서명 필수**: 모든 커밋에 `-S` 플래그 사용. `git commit -S -m "..."`
 - **Co-Authored-By / Co-Worked 문구 삽입 금지**: 커밋 메시지에 Claude 관련 문구 일절 포함하지 않는다.
