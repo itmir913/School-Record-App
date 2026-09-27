@@ -41,7 +41,8 @@ function buildBeforeText(content, detectedWords) {
 
 const newGroupName = ref('')
 const addGroupError = ref('')
-const removeGroupError = ref('')
+// 그룹·단어 삭제 오류. 목록 위에 띄운다(store.error는 목록 자체를 가린다).
+const removeError = ref('')
 const showAddGroup = ref(false)
 
 async function submitNewGroup() {
@@ -59,11 +60,20 @@ async function submitNewGroup() {
 
 async function removeGroup(id) {
   if (!confirm('그룹을 삭제하면 포함된 모든 단어도 삭제됩니다. 계속하시겠습니까?')) return
-  removeGroupError.value = ''
+  removeError.value = ''
   try {
     await store.deleteGroup(id)
   } catch (e) {
-    removeGroupError.value = String(e)
+    removeError.value = String(e)
+  }
+}
+
+async function removeWord(id) {
+  removeError.value = ''
+  try {
+    await store.deleteWord(id)
+  } catch (e) {
+    removeError.value = String(e)
   }
 }
 
@@ -244,6 +254,7 @@ function backToScope() {
     return
   }
   inspectResults.value = []
+  exportError.value = ''
   step.value = 3
 }
 
@@ -264,6 +275,8 @@ function bufferToBase64(buffer) {
 }
 
 const exporting = ref(false)
+// Step 4 전용. store.error는 Step 1에서만 렌더되므로 거기 담으면 실패가 보이지 않는다.
+const exportError = ref('')
 const exportResult = ref(null)
 
 async function exportToExcel() {
@@ -277,10 +290,17 @@ async function exportToExcel() {
   const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`
   const defaultPath = `유의어점검결과_${stamp}.xlsx`
 
-  const filePath = await save({
-    defaultPath,
-    filters: [{name: 'Excel 파일', extensions: ['xlsx']}],
-  })
+  exportError.value = ''
+  let filePath
+  try {
+    filePath = await save({
+      defaultPath,
+      filters: [{name: 'Excel 파일', extensions: ['xlsx']}],
+    })
+  } catch (e) {
+    exportError.value = `저장 위치를 고르는 창을 열지 못했습니다: ${String(e)}`
+    return
+  }
   if (!filePath) return
 
   exporting.value = true
@@ -326,7 +346,7 @@ async function exportToExcel() {
     }
     step.value++
   } catch (e) {
-    store.error = String(e)
+    exportError.value = `Excel 파일을 저장하지 못했습니다: ${String(e)}`
   } finally {
     exporting.value = false
   }
@@ -341,6 +361,7 @@ function resetWizard() {
   searching.value = false
   searchError.value = ''
   exporting.value = false
+  exportError.value = ''
   exportResult.value = null
 }
 
@@ -392,8 +413,8 @@ onMounted(() => {
 
         <template v-else>
 
-          <!-- 그룹 삭제 에러 -->
-          <div v-if="removeGroupError" class="msg-error mb-3">{{ removeGroupError }}</div>
+          <!-- 그룹·단어 삭제 에러 -->
+          <div v-if="removeError" class="msg-error mb-3">{{ removeError }}</div>
 
           <!-- 그룹 카드 목록 -->
           <div class="flex flex-col gap-4 mb-6">
@@ -419,7 +440,7 @@ onMounted(() => {
                   {{ item.word }}
                   <button
                       class="flex items-center bg-transparent border-none cursor-pointer text-ink-4 p-0 ml-0.5 transition-colors hover:text-red"
-                      @click="store.deleteWord(item.id)"
+                      @click="removeWord(item.id)"
                   >
                     <X :size="11"/>
                   </button>
@@ -664,6 +685,8 @@ onMounted(() => {
             {{ exporting ? '저장 중...' : 'Excel 내보내기' }}
           </button>
         </div>
+
+        <div v-if="exportError" class="msg-error mb-3">{{ exportError }}</div>
 
         <div v-if="inspectResults.length === 0"
              class="flex flex-col items-center gap-2 py-16 px-[18px] text-center border border-dashed border-green/20 bg-green/[0.03] rounded-lg">
