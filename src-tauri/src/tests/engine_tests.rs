@@ -106,14 +106,17 @@ fn test_apply_rules_korean_quotes() {
 }
 
 #[test]
-fn test_apply_rules_priority_order() {
-    // priority=0 규칙이 먼저 적용되어 "foo"→"bar"로 변환되면
-    // priority=1 규칙 "foo"→"baz"는 이미 "bar"가 되었으므로 적용 안 됨
+fn test_apply_rules_follows_slice_order_not_priority() {
+    // apply_rules는 priority를 보지 않고 받은 순서대로 적용한다.
+    // priority 정렬은 fetch_rules_from_db의 몫이다
+    // (test_fetch_rules_ordered_by_priority_then_old_text).
+    // 일부러 priority가 큰 규칙을 앞에 둔다 — 앞 규칙이 "foo"를 먼저 바꾸므로
+    // 뒤 규칙은 적용될 대상이 없다.
     let rules = vec![
-        make_rule(1, "foo", "bar", true, 0),
         make_rule(2, "foo", "baz", true, 1),
+        make_rule(1, "foo", "bar", true, 0),
     ];
-    assert_eq!(apply_rules("foo", &rules), "bar");
+    assert_eq!(apply_rules("foo", &rules), "baz");
 }
 
 // ── apply_rules_cached ───────────────────────────────────────
@@ -281,6 +284,14 @@ fn test_scope_areas_filters_by_area() {
         rusqlite::params![area2, act2],
     )
     .unwrap();
+    // 학생이 두 영역 모두에 등록돼 있어야 활동 기준 필터만 검증된다
+    for area in [area1, area2] {
+        conn.execute(
+            "INSERT INTO AreaStudent (area_id, student_id) VALUES (?1, ?2)",
+            rusqlite::params![area, stu],
+        )
+        .unwrap();
+    }
 
     insert_record(&conn, act1, stu, "영역1 기록");
     insert_record(&conn, act2, stu, "영역2 기록");
@@ -288,6 +299,36 @@ fn test_scope_areas_filters_by_area() {
     let records = get_records_for_scope(&conn, "areas", &[area1], None).unwrap();
     assert_eq!(records.len(), 1);
     assert_eq!(records[0].content, "영역1 기록");
+}
+
+/// 활동이 영역에 속해도 그 영역에 등록되지 않은 학생의 기록은 범위 밖이다.
+/// 점검(get_all_records_for_inspect)·빠른 교체·기록 그리드와 같은 기준이어야
+/// 사용자가 고른 영역보다 넓게 치환되지 않는다.
+#[test]
+fn test_scope_areas_excludes_students_not_in_area() {
+    let conn = setup_test_db();
+    let area = insert_area(&conn, "영역", 500);
+    let act = insert_activity(&conn, "활동");
+    let registered = insert_student(&conn, 1, 1, 1, "등록학생");
+    let unregistered = insert_student(&conn, 1, 1, 2, "미등록학생");
+
+    conn.execute(
+        "INSERT INTO AreaActivity (area_id, activity_id) VALUES (?1, ?2)",
+        rusqlite::params![area, act],
+    )
+    .unwrap();
+    conn.execute(
+        "INSERT INTO AreaStudent (area_id, student_id) VALUES (?1, ?2)",
+        rusqlite::params![area, registered],
+    )
+    .unwrap();
+
+    insert_record(&conn, act, registered, "등록 기록");
+    insert_record(&conn, act, unregistered, "미등록 기록");
+
+    let records = get_records_for_scope(&conn, "areas", &[area], None).unwrap();
+    assert_eq!(records.len(), 1, "영역에 등록되지 않은 학생의 기록은 제외되어야 함");
+    assert_eq!(records[0].student_id, registered);
 }
 
 #[test]

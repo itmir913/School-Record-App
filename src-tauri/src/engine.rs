@@ -206,10 +206,14 @@ pub fn get_records_for_scope(
                 return Ok(vec![]);
             }
             let placeholders = area_ids.iter().map(|_| "?").collect::<Vec<_>>().join(", ");
+            // 영역에 등록된 학생의 기록만 대상이다. 점검·빠른 교체·기록 그리드와 같은
+            // 기준이어야 한다 — 활동만으로 거르면 같은 활동을 쓰는 다른 영역 학생이나
+            // 영역에서 뺀 학생의 기록까지 치환된다.
             let sql = format!(
                 "SELECT ar.activity_id, ar.student_id, ar.content
                  FROM ActivityRecord ar
                  JOIN AreaActivity aa ON aa.activity_id = ar.activity_id
+                 JOIN AreaStudent ast ON ast.student_id = ar.student_id AND ast.area_id = aa.area_id
                  WHERE aa.area_id IN ({placeholders}) AND ar.content != ''
                  GROUP BY ar.activity_id, ar.student_id"
             );
