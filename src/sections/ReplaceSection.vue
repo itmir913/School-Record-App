@@ -54,6 +54,7 @@ async function commitEdit(rule) {
         editForm.value.isRegex,
     )
     editingId.value = null
+    invalidatePreview()
   } catch (e) {
     editError.value = e?.toString() ?? '수정 실패'
   }
@@ -65,6 +66,7 @@ async function toggleEnabled(rule) {
     await ruleStore.updateRule(
         rule.id, rule.old_text, rule.new_text, !rule.enabled, rule.priority, rule.is_regex,
     )
+    invalidatePreview()
   } catch (e) {
     operationError.value = e?.toString() ?? '수정 실패'
   }
@@ -79,6 +81,7 @@ async function adjustPriority(rule, delta) {
     await ruleStore.updateRule(
         rule.id, rule.old_text, rule.new_text, rule.enabled, newPriority, rule.is_regex,
     )
+    invalidatePreview()
   } catch (e) {
     operationError.value = e?.toString() ?? '수정 실패'
   } finally {
@@ -90,6 +93,7 @@ async function deleteRule(id) {
   operationError.value = ''
   try {
     await ruleStore.deleteRule(id)
+    invalidatePreview()
   } catch (e) {
     operationError.value = e?.toString() ?? '삭제 실패'
   }
@@ -104,6 +108,7 @@ async function onApplyRuleUpdate() {
   isUpdatingRules.value = true
   try {
     await ruleStore.applyRuleUpdate()
+    invalidatePreview()
   } catch (e) {
     operationError.value = e?.toString() ?? '기본 규칙 갱신 실패'
   } finally {
@@ -122,6 +127,7 @@ async function submitAdd() {
     await ruleStore.createRule(newRule.value.oldText, newRule.value.newText, newRule.value.priority, newRule.value.isRegex)
     newRule.value = {oldText: '', newText: '', priority: 0, isRegex: false}
     showAddForm.value = false
+    invalidatePreview()
   } catch (e) {
     addError.value = e?.toString() ?? '추가 실패'
   }
@@ -146,6 +152,9 @@ watch(scopeMode, () => {
   selectedAreaIds.value = []
 })
 
+// selectedAreaIds는 push/splice로 바뀌므로 복사본을 감시한다.
+watch(() => [scopeMode.value, [...selectedAreaIds.value]], invalidatePreview)
+
 // ── 위저드 네비게이션 ─────────────────────────────────────────
 
 const canGoNext = computed(() => {
@@ -154,6 +163,7 @@ const canGoNext = computed(() => {
 })
 
 function goPrev() {
+  invalidatePreview()
   step.value--
 }
 
@@ -168,6 +178,22 @@ const isPreviewing = ref(false)
 const hasRanPreview = ref(false)
 const PREVIEW_LIMIT = 50
 const showAllPreview = ref(false)
+
+// 미리보기는 그 순간의 규칙·범위에 대한 것이다. 둘 중 하나라도 바뀌면 버린다.
+// 남겨두면 "적용 (N건)" 버튼이 옛 미리보기 기준으로 켜진 채, 실제 적용은
+// 사용자가 보지 못한 현재 규칙·범위로 실행된다.
+// 진행 중인 미리보기도 세대를 올려 무효로 만든다. 그러지 않으면 규칙을 바꾼 뒤
+// 늦게 도착한 옛 결과가 다시 채워진다.
+let previewGen = 0
+
+function invalidatePreview() {
+  previewGen++
+  isPreviewing.value = false
+  previewItems.value = []
+  hasRanPreview.value = false
+  showAllPreview.value = false
+  previewError.value = ''
+}
 
 const visiblePreviewItems = computed(() =>
     showAllPreview.value ? previewItems.value : previewItems.value.slice(0, PREVIEW_LIMIT),
@@ -186,15 +212,21 @@ async function runPreview() {
   applyResult.value = null
   hasRanPreview.value = false
   isPreviewing.value = true
+  const myGen = ++previewGen
   try {
     const [st, ids] = scopeArgs()
-    previewItems.value = await ruleStore.previewReplace(st, ids)
+    const items = await ruleStore.previewReplace(st, ids)
+    if (myGen !== previewGen) return
+    previewItems.value = items
     showAllPreview.value = false
   } catch (e) {
+    if (myGen !== previewGen) return
     previewError.value = e?.toString() ?? '미리보기 실패'
   } finally {
-    isPreviewing.value = false
-    hasRanPreview.value = true
+    if (myGen === previewGen) {
+      isPreviewing.value = false
+      hasRanPreview.value = true
+    }
   }
 }
 
@@ -230,11 +262,7 @@ function resetWizard() {
   addError.value = ''
   scopeMode.value = 'all'
   selectedAreaIds.value = []
-  previewItems.value = []
-  previewError.value = ''
-  isPreviewing.value = false
-  hasRanPreview.value = false
-  showAllPreview.value = false
+  invalidatePreview()
   applyResult.value = null
   applyError.value = ''
   isApplying.value = false
