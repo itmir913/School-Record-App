@@ -16,6 +16,9 @@
 - Font size: `text-base` minimum. `text-sm` / `text-xs` only for exceptions (table cell preview, badge, caption) with explicit justification.
 
 ## DB SCHEMA RULES (정식 출시 이후 적용)
+- **릴리스 기준 버전은 0.2.11이다.** 그보다 이전 버전(0.1.x~0.2.10)으로 만든 파일은 모두 개발용이었고 삭제되어 **실제로 존재하지 않는다.**
+- 따라서 감사에서 **0.2.11 이전 스키마와의 호환성은 범위에서 제외**한다. "옛 릴리즈 파일에 테이블·컬럼이 없다"는 류의 발견은 보고하지 말 것.
+- **스키마 버전(`SCHEMA_VERSION`)을 올리는 변경은 착수 전에 반드시 사용자에게 확인한다.** 아래 절차는 확인을 받은 뒤에 수행한다.
 - 이미 배포된 앱이므로 사용자 PC에 기존 구조의 DB 파일이 존재한다. **`schema.sql`을 변경할 때, 또는 `ENCRYPTED_COLUMNS`(`commands/crypto.rs`)에 컬럼을 추가·제거해 저장된 값의 표현이 바뀔 때 아래를 모두 수행한다.**
   1. `db.rs`의 `SCHEMA_VERSION`을 올린다.
   2. `db.rs`의 `MIGRATIONS`에 이전 버전 → 새 버전 SQL을 추가한다.
