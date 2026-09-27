@@ -65,7 +65,11 @@ pub fn decrypt(value: &str, key: &[u8]) -> Result<String, String> {
         .map_err(|e| format!("nonce 변환 실패: {e}"))?;
     let plaintext = cipher
         .decrypt(nonce, ciphertext.as_ref())
-        .map_err(|_| "복호화 실패: 비밀번호가 올바르지 않습니다.".to_string())?;
+        // 인증 실패는 키가 틀린 경우와 저장된 값이 손상된 경우를 구분하지 못한다.
+        // 잠금 해제는 검증 토큰으로 따로 판정하므로(commands/crypto.rs의 verify_password),
+        // 여기까지 오는 것은 대개 이미 해제된 세션에서 셀 하나가 풀리지 않는 경우다.
+        // "비밀번호가 틀렸다"고 단정하면 사용자가 멀쩡한 비밀번호를 의심하게 된다.
+        .map_err(|_| "복호화 실패: 데이터가 손상되었거나 암호화 키가 맞지 않습니다.".to_string())?;
     String::from_utf8(plaintext).map_err(|e| format!("UTF-8 변환 실패: {e}"))
 }
 

@@ -90,6 +90,23 @@ fn test_decrypt_wrong_key_returns_error() {
 }
 
 #[test]
+fn test_decrypt_failure_does_not_blame_the_password() {
+    // 인증 실패는 키가 틀린 경우와 값이 손상된 경우를 구분하지 못한다. 이 오류는 대개
+    // 이미 잠금 해제된 세션에서 셀 하나가 풀리지 않을 때 뜨므로, "비밀번호가 틀렸다"고
+    // 단정하면 사용자가 멀쩡한 비밀번호를 의심한다. (잠금 해제의 비밀번호 오류 문구는
+    // commands/crypto.rs의 verify_password가 따로 정한다.)
+    let key = derive_key("key", &[1u8; 16]);
+    // 암호문 본문의 한 글자를 바꾼다(base64로는 유효하고 GCM 인증만 실패하도록).
+    let ciphertext = encrypt("비밀 내용", &key).unwrap();
+    let at = ciphertext.find(':').unwrap() + 2;
+    let replacement = if &ciphertext[at..at + 1] == "A" { "B" } else { "A" };
+    let ciphertext = format!("{}{}{}", &ciphertext[..at], replacement, &ciphertext[at + 1..]);
+    let err = decrypt(&ciphertext, &key).unwrap_err();
+    assert!(err.contains("복호화 실패"), "에러 메시지: {err}");
+    assert!(!err.contains("비밀번호"), "비밀번호 탓으로 단정하면 안 된다: {err}");
+}
+
+#[test]
 fn test_decrypt_malformed_no_colon_returns_error() {
     let key = derive_key("pw", &[0u8; 16]);
     let result = decrypt("invaliddatawithnocolon", &key);
