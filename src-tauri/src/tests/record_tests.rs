@@ -725,3 +725,77 @@ fn test_bulk_import_new_record_creates_no_pre_image() {
         .unwrap();
     assert_eq!(empty_rows, 0, "새 기록에는 보존할 원본이 없다");
 }
+
+// ── 암호화 파일의 히스토리 중복 방지 ─────────────────────────────
+//
+// 암호문은 매번 다른 nonce로 만들어져 같은 평문이라도 값이 달라진다. 저장된
+// 문자열끼리 비교하면 같은 내용이 다시 저장될 때마다 히스토리 행이 쌓인다.
+// 평문 파일과 같은 결과가 나와야 한다.
+
+fn enc_key() -> [u8; 32] {
+    crate::crypto::derive_key("password", &[42u8; 16])
+}
+
+fn history_count(conn: &rusqlite::Connection) -> i64 {
+    conn.query_row("SELECT COUNT(*) FROM ActivityRecordHistory", [], |r| r.get(0))
+        .unwrap()
+}
+
+#[test]
+fn test_encrypted_reimport_same_content_adds_no_history() {
+    let conn = setup_test_db();
+    let key = Some(enc_key());
+    let act_id = insert_activity(&conn, "발표");
+    let rows = [make_import(1, 1, 1, Some("홍길동"), act_id, "같은 내용")];
+
+    bulk_import_records_impl(&conn, &rows, key).unwrap();
+    let after_first = history_count(&conn);
+    assert_eq!(after_first, 1, "첫 가져오기는 import 행 하나를 남긴다");
+
+    bulk_import_records_impl(&conn, &rows, key).unwrap();
+    assert_eq!(
+        history_count(&conn),
+        after_first,
+        "같은 CSV를 다시 가져와도 히스토리 행이 늘면 안 된다"
+    );
+}
+
+#[test]
+fn test_encrypted_save_snapshot_same_plaintext_updates_note_only() {
+    let conn = setup_test_db();
+    let key = Some(enc_key());
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+
+    upsert_record_impl(&conn, act_id, stu_id, "같은 내용", key).unwrap();
+    save_snapshot_internal(&conn, act_id, stu_id, Some("첫 메모"), key).unwrap();
+    assert_eq!(history_count(&conn), 1);
+
+    // 같은 평문을 다시 저장하면 암호문이 새로 만들어진다
+    upsert_record_impl(&conn, act_id, stu_id, "같은 내용", key).unwrap();
+    save_snapshot_internal(&conn, act_id, stu_id, Some("두 번째"), key).unwrap();
+    assert_eq!(history_count(&conn), 1, "내용이 같으면 새 행을 만들지 않는다");
+
+    // 의도된 동작(CLAUDE.md): 가장 최근 행의 note가 이번 작업 이름으로 갱신된다
+    let entries = get_record_history_impl(&conn, act_id, stu_id, 10, 0, key).unwrap();
+    assert_eq!(entries[0].note.as_deref(), Some("두 번째"));
+    assert_eq!(entries[0].content, "같은 내용");
+}
+
+#[test]
+fn test_encrypted_save_snapshot_changed_content_adds_row() {
+    let conn = setup_test_db();
+    let key = Some(enc_key());
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+
+    upsert_record_impl(&conn, act_id, stu_id, "처음", key).unwrap();
+    save_snapshot_internal(&conn, act_id, stu_id, None, key).unwrap();
+    upsert_record_impl(&conn, act_id, stu_id, "바뀜", key).unwrap();
+    save_snapshot_internal(&conn, act_id, stu_id, None, key).unwrap();
+
+    let entries = get_record_history_impl(&conn, act_id, stu_id, 10, 0, key).unwrap();
+    assert_eq!(entries.len(), 2);
+    assert_eq!(entries[0].content, "바뀜");
+    assert_eq!(entries[1].content, "처음");
+}

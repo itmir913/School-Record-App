@@ -1,4 +1,5 @@
 use crate::commands::crypto::resolve_data_key;
+use crate::commands::record::insert_history_if_changed_encrypted;
 use crate::crypto::{maybe_decrypt, maybe_encrypt};
 use crate::db::with_transaction;
 use crate::state::{CryptoStateHandle, DbState};
@@ -16,19 +17,41 @@ pub fn create_snapshot_impl(
     let stored_memo = memo.as_deref().map(|m| maybe_encrypt(m, key)).transpose()?;
 
     with_transaction(conn, || {
-        conn.execute(
-            "INSERT INTO ActivityRecordHistory (activity_record_id, content, changed_at, note)
-             SELECT r.id, r.content, r.updated_at, NULL
-             FROM ActivityRecord r
-             WHERE NOT EXISTS (
-                 SELECT 1 FROM ActivityRecordHistory h
-                 WHERE h.id = (SELECT MAX(h2.id) FROM ActivityRecordHistory h2
-                               WHERE h2.activity_record_id = r.id)
-                   AND h.content = r.content
-             )",
-            [],
-        )
-        .map_err(|e| e.to_string())?;
+        match key {
+            None => {
+                conn.execute(
+                    "INSERT INTO ActivityRecordHistory (activity_record_id, content, changed_at, note)
+                     SELECT r.id, r.content, r.updated_at, NULL
+                     FROM ActivityRecord r
+                     WHERE NOT EXISTS (
+                         SELECT 1 FROM ActivityRecordHistory h
+                         WHERE h.id = (SELECT MAX(h2.id) FROM ActivityRecordHistory h2
+                                       WHERE h2.activity_record_id = r.id)
+                           AND h.content = r.content
+                     )",
+                    [],
+                )
+                .map_err(|e| e.to_string())?;
+            }
+            // 암호문은 nonce가 매번 달라 SQL로는 같은 내용을 가려내지 못한다.
+            // 기록마다 복호화해서 비교한다(insert_history_if_changed_encrypted 참고).
+            Some(k) => {
+                let records: Vec<(i64, String)> = {
+                    let mut stmt = conn
+                        .prepare("SELECT id, content FROM ActivityRecord")
+                        .map_err(|e| e.to_string())?;
+                    let rows = stmt
+                        .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
+                        .map_err(|e| e.to_string())?
+                        .collect::<Result<Vec<_>, _>>()
+                        .map_err(|e| e.to_string())?;
+                    rows
+                };
+                for (record_id, content) in records {
+                    insert_history_if_changed_encrypted(conn, record_id, &content, None, k)?;
+                }
+            }
+        }
 
         conn.execute(
             "INSERT INTO Snapshot (memo) VALUES (?1)",

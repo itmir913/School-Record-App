@@ -474,3 +474,59 @@ fn test_legacy_history_is_never_rewritten_by_new_logic() {
 
     assert_eq!(before, after, "기존 히스토리 행이 덮어써지면 안 된다");
 }
+
+// 암호문은 매번 다른 nonce로 만들어진다. 같은 평문을 다시 저장한 뒤 스냅샷을
+// 찍어도 평문 파일처럼 히스토리 행이 늘지 않아야 한다.
+#[test]
+fn test_encrypted_create_snapshot_same_plaintext_adds_no_history() {
+    let conn = setup_test_db();
+    let key = Some(crate::crypto::derive_key("password", &[42u8; 16]));
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+    let count = |conn: &rusqlite::Connection| -> i64 {
+        conn.query_row("SELECT COUNT(*) FROM ActivityRecordHistory", [], |r| r.get(0))
+            .unwrap()
+    };
+
+    upsert_record_impl(&conn, act_id, stu_id, "같은 내용", key).unwrap();
+    create_snapshot_impl(&conn, None, key).unwrap();
+    assert_eq!(count(&conn), 1);
+
+    upsert_record_impl(&conn, act_id, stu_id, "같은 내용", key).unwrap();
+    create_snapshot_impl(&conn, None, key).unwrap();
+    assert_eq!(count(&conn), 1, "같은 내용을 다시 저장해도 히스토리 행이 늘면 안 된다");
+
+    upsert_record_impl(&conn, act_id, stu_id, "바뀐 내용", key).unwrap();
+    create_snapshot_impl(&conn, None, key).unwrap();
+    assert_eq!(count(&conn), 2, "내용이 바뀌면 새 행이 생겨야 한다");
+}
+
+// 암호화를 켜면 ActivityRecord.content와 ActivityRecordHistory.content가 각각
+// 다른 nonce로 암호화된다. 전환 직후 스냅샷이 모든 기록에 중복 행을 만들면 안 된다.
+#[test]
+fn test_create_snapshot_after_enable_encryption_adds_no_history() {
+    use crate::commands::crypto::{enable_encryption_impl, resolve_data_key};
+    use crate::state::CryptoState;
+
+    let conn = setup_test_db();
+    let crypto = std::sync::Mutex::new(CryptoState { key: None });
+    let act_id = insert_activity(&conn, "발표");
+    let stu_id = insert_student(&conn, 1, 1, 1, "홍길동");
+    let count = |conn: &rusqlite::Connection| -> i64 {
+        conn.query_row("SELECT COUNT(*) FROM ActivityRecordHistory", [], |r| r.get(0))
+            .unwrap()
+    };
+
+    upsert_record_impl(&conn, act_id, stu_id, "평문 내용", None).unwrap();
+    create_snapshot_impl(&conn, None, None).unwrap();
+    assert_eq!(count(&conn), 1);
+
+    let (db_path, tmp_dir) = super::setup_temp_db_path_state();
+    enable_encryption_impl(&conn, &crypto, &db_path, "password").unwrap();
+    let key = resolve_data_key(&conn, &crypto).unwrap();
+    assert!(key.is_some());
+
+    create_snapshot_impl(&conn, None, key).unwrap();
+    std::fs::remove_dir_all(&tmp_dir).ok();
+    assert_eq!(count(&conn), 1, "암호화 전환만으로 히스토리 행이 늘면 안 된다");
+}
