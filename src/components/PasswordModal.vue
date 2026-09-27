@@ -100,6 +100,9 @@ function validate() {
 }
 
 function handleSubmit() {
+  // 버튼은 loading 중 비활성이지만 입력칸의 Enter는 막히지 않는다. 두 번 보내면
+  // 열기 절차가 두 번 돌고, 비밀번호 변경은 두 번째 요청이 옛 비밀번호로 실패한다.
+  if (props.loading) return
   if (!validate()) return
   if (props.mode === 'unlock') {
     emit('submit', {password: password.value})

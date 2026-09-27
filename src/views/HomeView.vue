@@ -25,34 +25,60 @@ const passwordLoading = ref(false)
 const showReleaseNotesModal = ref(false)
 const releaseNotesToShow = ref([])
 
+// 열기·만들기가 진행 중인지. 두 번 누르면 두 흐름이 겹쳐, 뒤의 open_project가
+// 연결을 바꿔 끼운 뒤 앞 흐름의 백업·버전 기록이 다른 파일에 실행된다.
+const busy = ref(false)
+
 // 화면 아래 버전 표기에 쓴다. 네트워크 요청이 아니라 앱 자신의 버전을 읽는 것이다.
 onMounted(() => {
   update.loadCurrentVersion()
 })
 
 async function handleNew() {
+  if (busy.value) return
+  busy.value = true
   error.value = ''
-  const path = await save({
-    title: '새 학생부 파일 위치 선택',
-    defaultPath: 'school_record.db',
-    filters: [{name: 'SQLite DB', extensions: ['db']}],
-  })
-  if (!path) return
   try {
+    const path = await save({
+      title: '새 학생부 파일 위치 선택',
+      defaultPath: 'school_record.db',
+      filters: [{name: 'SQLite DB', extensions: ['db']}],
+    })
+    if (!path) return
     await project.newProject(path)
     router.push('/workspace')
   } catch (e) {
     error.value = String(e)
+  } finally {
+    busy.value = false
   }
 }
 
 async function handleOpen() {
+  if (busy.value) return
+  busy.value = true
+  try {
+    await openSelectedFile()
+  } finally {
+    busy.value = false
+  }
+}
+
+async function openSelectedFile() {
   error.value = ''
-  const path = await open({
-    title: '기존 학생부 파일 선택',
-    filters: [{name: 'SQLite DB', extensions: ['db']}],
-    multiple: false,
-  })
+  // 대화상자 실패는 열기 실패와 따로 받는다. 아래 catch로 보내면 아무것도 열지
+  // 않았는데 closeProject를 부르게 된다.
+  let path
+  try {
+    path = await open({
+      title: '기존 학생부 파일 선택',
+      filters: [{name: 'SQLite DB', extensions: ['db']}],
+      multiple: false,
+    })
+  } catch (e) {
+    error.value = `파일 선택 창을 열지 못했습니다: ${String(e)}`
+    return
+  }
   if (!path) return
   try {
     await project.openProject(path)
@@ -136,6 +162,8 @@ async function showReleaseNotesOrNavigate() {
 }
 
 async function handlePasswordSubmit({password}) {
+  if (busy.value) return
+  busy.value = true
   passwordError.value = ''
   passwordLoading.value = true
   try {
@@ -149,6 +177,7 @@ async function handlePasswordSubmit({password}) {
     passwordError.value = String(e)
   } finally {
     passwordLoading.value = false
+    busy.value = false
   }
 }
 
