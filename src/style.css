@@ -150,6 +150,15 @@ input[type="password"]::-ms-clear {
 ::-webkit-scrollbar-thumb:hover { background-color: var(--c-ink-5); }
 ::-webkit-scrollbar-corner      { background-color: transparent; }
 
+/*
+ * 스크롤은 되지만 스크롤바는 그리지 않는다.
+ * 사이드바처럼 폭이 고정된 영역은 스크롤바가 생기는 순간 내용 폭이 12px 줄어
+ * 아이콘 정렬이 어긋난다. 항목 수가 적어 스크롤 위치를 눈으로 알 필요가 없는
+ * 곳에만 쓸 것.
+ */
+.scrollbar-hidden { scrollbar-width: none; }
+.scrollbar-hidden::-webkit-scrollbar { width: 0; height: 0; }
+
 /* ── Modal overlay ────────────────────────────────── */
 .modal-overlay {
   @apply fixed inset-0 z-50 flex items-center justify-center;
