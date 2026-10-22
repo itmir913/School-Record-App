@@ -15,20 +15,17 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+# 로컬 입구는 npm run ci 하나이고, 여기서는 그 조각(test:rust, test:ts)을
+# 잡으로 나눠 병렬로 돌린다. 벽시계가 합이 아니라 긴 쪽(Rust)이 된다.
+# package.json의 ci에 조각을 더하면 여기에도 잡을 더해야 합이 같다.
 jobs:
-  ci:
+  rust:
     permissions:
       contents: read
 
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v7
-
-      - name: setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: 'npm'
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -42,12 +39,28 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
+      - name: test
+        run: npm run test:rust
+
+  ts:
+    permissions:
+      contents: read
+
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+
       - name: install frontend dependencies
         # npm install과 달리 락파일을 고치지 않고 그대로 설치한다.
         # 같은 커밋이면 항상 같은 의존성으로 테스트된다.
-        run: npm ci
+        # audit은 Dependabot이 맡으므로 CI 결과와 묶지 않는다.
+        run: npm ci --no-audit
 
-      # 검증 진입점은 npm run ci 하나다. 로컬·IntelliJ·여기가 모두 이것만 부른다.
-      # 여기에 개별 명령을 직접 적으면 그 순간 CI와 로컬이 갈라진다.
       - name: test
-        run: npm run ci
+        run: npm run test:ts
