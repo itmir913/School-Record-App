@@ -1,3 +1,6 @@
 @import "tailwindcss";
 @import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 @source "../public/manual/sections/**/*.html";
+
+/* 세로 스크롤바를 늘 띄워, 내용 길이가 바뀌어도 화면이 옆으로 밀리지 않게 한다. */
+html { overflow-y: scroll; }
