@@ -1,15 +1,58 @@
 name: "publish"
 
+# **수동 전용이다.** 여기서 나가는 것은 설치 파일과 포터블 실행 파일 — 한 번
+# 내려받히면 그 기계에 남고, 릴리스 자산을 지워도 이미 받은 사람에게는 닿지 않는다.
+# 되돌릴 수 없는 것은 자동으로 나가지 않는다.
+#
+# **태그 제한을 `on:`의 글로브 패턴으로 하지 마라.** 전에 태그 push 트리거를 두고
+# 패턴으로 좁히다 `+`가 리터럴 문자로 읽혀 의도한 태그가 걸리지 않았다(981bc91).
+# 막는 것은 아래 `tag-only` 잡의 일이다 — 조건식이 한 곳에 있고 사유를 말한다.
 on:
   workflow_dispatch:
 
 jobs:
+  # **릴리스는 태그에서만 나간다.** 브랜치에서 누르면 되돌릴 이름이 없고, 나간 것이
+  # 어느 커밋인지 자산 파일명으로만 짐작하게 된다.
+  # 조용히 `exit 1`하지 않는다 — 누른 사람이 로그를 뒤지지 않게 고치는 명령까지 찍는다.
+  tag-only:
+    name: Tag only
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$REF_TYPE" != "tag" ]; then
+            echo "::error::Publish a tag, not '$REF_NAME' ($REF_TYPE): gh workflow run \"publish\" --ref <tag>"
+            exit 1
+          fi
+
+  # **릴리스를 거는 것은 `gate.yml` 하나이고, `ci.yml`이 부르는 것과 같은 파일이다.**
+  # 전에는 이 워크플로가 검사를 하나도 돌리지 않고 릴리스를 만들었다. 관문의 정의를
+  # 여기에 다시 적지 마라 — 정의가 둘이면 하나만 고쳐지고, 그때 관대해지는 쪽은
+  # 언제나 릴리스다.
+  gate:
+    name: Gate
+    needs: tag-only
+    permissions:
+      contents: read
+    uses: ./.github/workflows/gate.yml
+
   build:
+    needs: gate
     permissions:
       contents: read
     strategy:
       fail-fast: false
       matrix:
+        # 번들 경로·확장자·업로드 이름은 플랫폼마다 다르므로 단계 안에 적지 않고
+        # 매트릭스 항목의 값으로 둔다. 단계에 직접 적으면 타깃을 바꿀 때 조용히 어긋난다.
+        #
+        # **`--target`을 주면 산출물이 `src-tauri/target/<target>/release/...`로 옮겨 간다**
+        # (안 주면 `src-tauri/target/release/...`). macOS는 universal 타깃을 주므로 경로에
+        # `universal-apple-darwin`이 들어가고, Windows는 타깃을 주지 않으므로 들어가지 않는다.
         include:
           - platform: "macos-latest"
             build_args: "--target universal-apple-darwin --bundles dmg"
@@ -49,6 +92,8 @@ jobs:
       - name: build
         run: npm run build -- ${{ matrix.build_args }}
 
+      # **`--no-bundle` 포터블은 `bundle/` 밑에 없다.** 번들 과정을 건너뛰므로
+      # `src-tauri/target/release/`(타깃을 주지 않은 기본 경로) 바로 밑에 실행 파일이 떨어진다.
       - name: build portable (Windows only)
         if: matrix.platform == 'windows-latest'
         run: npm run build -- --no-bundle
@@ -59,6 +104,12 @@ jobs:
         run: |
           VERSION=$(node -p 'require("./src-tauri/tauri.conf.json").version')
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      # 경로가 어긋났을 때 로그만 보고 알도록 번들 디렉터리를 먼저 찍는다.
+      # 매트릭스 잡의 끝에서 깨지는 단계라 되돌아오는 데 오래 걸린다.
+      - name: list bundle directory
+        shell: bash
+        run: ls -la "${{ matrix.bundle_path }}"
 
       - name: rename installer artifact
         shell: bash
@@ -75,6 +126,8 @@ jobs:
           cp "src-tauri/target/release/school-record-app.exe" \
              "school-record-app-${VERSION}-windows-x64-portable.exe"
 
+      # 서명하지 않은 Windows 실행 파일은 그대로 올리면 내려받는 쪽에 보안 경고가 뜬다.
+      # 압축은 `shell: pwsh` + `Compress-Archive`로 한다 — windows-latest의 bash에는 `zip`이 없다.
       - name: zip installer artifact (Windows only)
         if: matrix.platform == 'windows-latest'
         shell: pwsh
@@ -112,8 +165,10 @@ jobs:
           name: windows-x64-portable
           path: school-record-app-${{ steps.version.outputs.VERSION }}-windows-x64-portable.zip
 
+  # 태그 확인과 관문을 둘 다 기다린다. `build`만 기다리면 관문이 빨간 채로도
+  # 릴리스가 나갈 수 있다.
   release:
-    needs: build
+    needs: [tag-only, gate, build]
     runs-on: ubuntu-latest
     permissions:
       contents: write

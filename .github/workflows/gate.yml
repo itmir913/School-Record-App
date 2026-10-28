@@ -1,0 +1,70 @@
+name: "Gate"
+
+# **관문의 정의는 여기 하나다.** `ci.yml`(push·PR)과 `publish.yml`(수동 릴리스)이
+# 둘 다 이 파일을 `uses:`로 부른다.
+#
+# **왜 하나로 뺐나.** 전에는 `ci.yml`이 검사를 돌리고 `publish.yml`은 **아무 검사도
+# 돌리지 않고** 설치 파일과 릴리스를 만들었다. 관문을 지나지 않은 바이트가 사람 기계에
+# 내려가 남는다 — 릴리스 자산을 지워도 이미 받은 사람에게는 닿지 않는다.
+#
+# **관문 단계를 이 파일에 풀어 쓰지 마라.** 부르는 것은 `package.json`의 명령뿐이다
+# (`test:rust`, `test:ts` — `npm run ci`가 잇는 조각). 단계를 풀어 쓰면 스크립트에
+# 검사를 더한 사람이 이 파일을 안 고쳐 **조용히 한쪽에서만 빠진다.** 검사를 더하거나
+# 빼려면 `package.json`의 `ci`를 고치고, 조각이 늘면 여기에 잡을 더한다.
+#
+# **조각을 잡으로 나눈 것은 실행뿐이고 정의는 `ci` 하나다**(2026-10-22, 784d540).
+# 벽시계가 합이 아니라 가장 긴 조각(Rust)이 된다. 하나가 빨개도 나머지는 끝까지 돌도록
+# 잡을 나눠 두었다.
+#
+# 준비 단계(toolchain·apt·node)가 조각마다 다르므로 matrix 하나로 묶지 않는다 —
+# 묶으면 Rust 잡이 쓰지 않는 node_modules를, TS 잡이 쓰지 않는 webkit2gtk를 받는다.
+
+on:
+  workflow_call:
+
+# **권한을 여기서 선언하지 않는다.** 부르는 쪽의 것을 그대로 물려받는다 — 재사용
+# 워크플로는 권한을 올릴 수 없으므로, 여기서 좁혀 두면 부르는 쪽 설정과 무관하게
+# 막히는 단계가 생긴다. 좁히는 것은 부르는 파일의 일이다.
+
+jobs:
+  rust:
+    name: Rust
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: test
+        run: npm run test:rust
+
+  ts:
+    name: TypeScript
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: install frontend dependencies
+        # npm install과 달리 락파일을 고치지 않고 그대로 설치한다.
+        # 같은 커밋이면 항상 같은 의존성으로 테스트된다.
+        # audit은 Dependabot이 맡으므로 CI 결과와 묶지 않는다.
+        run: npm ci --no-audit
+
+      - name: test
+        run: npm run test:ts
