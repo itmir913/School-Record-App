@@ -87,7 +87,12 @@ jobs:
           workspaces: src-tauri
 
       - name: install frontend dependencies
-        run: npm install
+        # **관문과 같은 명령이다.** npm install은 package.json의 범위를 러너에서 다시
+        # 해석하고 package-lock.json을 고치는데, 그 수정은 러너와 함께 버려진다 —
+        # 그러면 관문은 락파일의 버전으로 테스트하고 나가는 설치 파일은 그날
+        # 레지스트리에 있던 버전으로 빌드된다. 둘 다 초록이라 아무 신호도 없다.
+        # audit은 Dependabot이 맡으므로 릴리스 결과와 묶지 않는다.
+        run: npm ci --no-audit
 
       - name: build
         run: npm run build -- ${{ matrix.build_args }}
